@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<COMPLIANCE-DUMP xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+ xsi:noNamespaceSchemaLocation="compliance.xsd"
+ version="1.0.0">
+  <GENERAL>
+      <HOST>rtr2</HOST>
+      <DATE>20180409-03:43 PDT</DATE>
+      <VENDOR>CISCO</VENDOR>
+      <PRODUCT>NCS5501</PRODUCT>
+      <OS>IOS-XR</OS>
+      <VERSION>6.1.31</VERSION>
+      <IPADDR>11.11.11.33</IPADDR>
+  </GENERAL>
+
+  <INTEGRITY>
+    <DIRECTORIES>
+      <DIRECTORY>
+        <NAME>/misc/scratch</NAME>
+        <CMD>ls -ld</CMD> 
+        <CMD-OUTPUT>drwxr-xr-x 8 root root 4096 Apr  9 05:10 /misc/scratch/</CMD-OUTPUT>      
+      </DIRECTORY>
+    </DIRECTORIES>
+    <FILES>
+      <FILE>
+        <NAME>/etc/passwd</NAME>
+        <CMD>ls -la</CMD>
+        <CMD-OUTPUT>-rw-r--r-- 1 root root 917 Apr  3 19:08 /etc/passwd</CMD-OUTPUT>
+        <CHECKSUM>44428c5828b96b244000e1289491b46f</CHECKSUM>
+        <CONTENT>['root:x:0:0:root:/root:/bin/sh', 'daemon:x:1:1:daemon:/usr/sbin:/bin/sh', 'bin:x:2:2:bin:/bin:/bin/sh', 'sys:x:3:3:sys:/dev:/bin/sh', 'sync:x:4:65534:sync:/bin:/bin/sync', 'games:x:5:60:games:/usr/games:/bin/sh', 'man:x:6:12:man:/var/cache/man:/bin/sh', 'lp:x:7:7:lp:/var/spool/lpd:/bin/sh', 'mail:x:8:8:mail:/var/mail:/bin/sh', 'news:x:9:9:news:/var/spool/news:/bin/sh', 'uucp:x:10:10:uucp:/var/spool/uucp:/bin/sh', 'proxy:x:13:13:proxy:/bin:/bin/sh', 'www-data:x:33:33:www-data:/var/www:/bin/sh', 'backup:x:34:34:backup:/var/backups:/bin/sh', 'list:x:38:38:Mailing List Manager:/var/list:/bin/sh', 'irc:x:39:39:ircd:/var/run/ircd:/bin/sh', 'gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/bin/sh', 'nobody:x:65534:65534:nobody:/nonexistent:/bin/sh', 'sshd:x:999:999::/var/run/sshd:/bin/false', 'messagebus:x:998:997::/var/lib/dbus:/bin/false', 'rpc:x:997:995::/:/bin/false', 'rpcuser:x:996:994::/var/lib/nfs:/bin/false', 'vagrant:x:1000:1009::/home/vagrant:/bin/sh']</CONTENT>    
+      </FILE>
+    </FILES>
+  </INTEGRITY>
+</COMPLIANCE-DUMP>

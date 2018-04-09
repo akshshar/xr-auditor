@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0.0">
+
+<!-- definition of simple elements -->
+<xs:element name="HOST" type="xs:string"/>
+<xs:element name="VENDOR" type="xs:string"/>
+<xs:element name="PRODUCT" type="xs:string"/>
+<xs:element name="OS" type="xs:string"/>
+<xs:element name="VERSION" type="xs:string"/>
+<xs:element name="IPADDR" type="xs:string"/>
+<xs:element name="DATE" type="xs:string"/>
+
+<xs:element name="NAME" type="xs:string"/>
+<xs:element name="CMD" type="xs:string"/>
+<xs:element name="CMD-OUTPUT" type="xs:string"/>
+<xs:element name="CHECKSUM" type="xs:string"/>
+<xs:element name="CONTENT" type="xs:string"/>
+
+
+<xs:attribute name="DATE">
+  <xs:simpleType>
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9]:[0-9][0-9] [A-Z].*"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:attribute>
+
+
+<!-- definition of complex elements -->
+<xs:element name="DIRECTORY">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element ref="NAME"/>
+      <xs:element ref="CMD"/>
+      <xs:element ref="CMD-OUTPUT"/> 
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+<xs:element name="FILE">
+  <xs:complexType>
+    <xs:sequence>
+        <xs:element ref="NAME"/>
+        <xs:element ref="CMD"/>
+        <xs:element ref="CMD-OUTPUT"/>
+        <xs:element ref="CHECKSUM"/>
+        <xs:element ref="CONTENT"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+
+<xs:element name="DIRECTORIES">
+  <xs:complexType>
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="DIRECTORY"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+
+<xs:element name="FILES">
+  <xs:complexType>
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="FILE"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+
+<xs:element name="INTEGRITY">
+  <xs:complexType>
+    <xs:sequence>
+        <xs:element ref="DIRECTORIES"/>
+        <xs:element ref="FILES"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+
+<xs:element name="GENERAL">
+  <xs:complexType>
+    <xs:sequence>
+        <xs:element ref="HOST"/>
+        <xs:element ref="DATE"/>
+        <xs:element ref="VENDOR"/>
+        <xs:element ref="PRODUCT"/>
+        <xs:element ref="OS"/>
+        <xs:element ref="VERSION"/>
+        <xs:element ref="IPADDR"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+
+
+
+<xs:element name="COMPLIANCE-DUMP">
+  <xs:complexType>
+    <xs:sequence>
+      <xs:element ref="GENERAL"/>
+      <xs:element ref="INTEGRITY"/>
+    </xs:sequence>
+    <xs:attribute name="version" type="xs:string" use="required"/>
+  </xs:complexType>
+</xs:element>
+
+</xs:schema>

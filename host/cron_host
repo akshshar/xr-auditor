@@ -1,0 +1,1 @@
+* * * * * root PATH=/sbin:/usr/sbin:/bin:/usr/bin:${PATH};/usr/bin/python /root/host_dummy.py
