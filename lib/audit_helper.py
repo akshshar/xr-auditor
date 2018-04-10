@@ -13,7 +13,7 @@
 
 from ztp_helper import ZtpHelpers
 import subprocess, posixpath
-import datetime
+import datetime, os, re
 
 class AuditHelpers(ZtpHelpers):
 
@@ -42,8 +42,6 @@ class AuditHelpers(ZtpHelpers):
 
         cmd = "export AAA_USER="+root_lr_user+" && source /pkg/bin/ztp_helper.sh && echo -ne \""+cmd+"\\n \" | xrcmd \"admin\""
 
-        print "cmd is"
-        print cmd
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
         out, err = process.communicate()
 
@@ -117,6 +115,35 @@ class AuditHelpers(ZtpHelpers):
 
         return {"status" : result["status"], "output" : result["output"]}
 
+
+
+    def hostcmd(self, root_lr_user=None, cmd=None):
+        """Issue a cmd in the host linux shell and obtain the output
+           :param cmd: Dictionary representing the XR exec cmd
+                       and response to potential prompts
+                       { 'exec_cmd': '', 'prompt_response': '' }
+           :type cmd: string 
+           :return: Return a dictionary with status and output
+                    { 'status': 'error/success', 'output': '' }
+           :rtype: string
+        """
+
+        if cmd is None:
+            return {"status" : "error", "output" : "No command specified"}
+
+        if root_lr_user is None:
+            return {"status" : "error", "output" : "root-lr user not specified"}
+
+        status = "success"
+
+
+        if self.debug:
+            self.logger.debug("Received host command request: \"%s\"" % cmd)
+
+
+        result = self.admincmd(root_lr_user="root", cmd="run ssh root@10.0.2.16 "+cmd)
+
+        return {"status" : result["status"], "output" : result["output"]}
 
 
 
@@ -366,20 +393,21 @@ class AuditHelpers(ZtpHelpers):
 
 
 
-    def cron_job(self, croncmd=None, croncmd_fname=None, cronfile=None, standby=False, action="add"):
+    def cron_job(self, standby=False, folder="/etc/cron.d", croncmd=None, croncmd_fname=None, cronfile=None, action="add"):
         """Pretty useful method to cleanly add or delete cronjobs 
            on the active and/or standby RP.
            Leverages execute_cmd_on_standby(), scp_to_standby() methods defined above
+           :param folder: folder to place the final cron file. By default this is set to /etc/cron.d (Activates by default)
            :param croncmd: croncmd to be added to crontab on Active RP 
            :param croncmd_fname: user can specify a custom name for the file to create under
-                                 /etc/cron.d . If not specified, then the name is randomly generated
+                                 the folder . If not specified, then the name is randomly generated
                                  in the following form:
-                                 /etc/cron.d/audit_cron_timestamp
+                                 /<folder>/audit_cron_timestamp
                                  where timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
  
  
            :param cronfile: Absolute Path to user specified cronfile to blindly place and activate. 
-                            Name of the target file under /etc/cron.d will be the same as original filename.
+                            Name of the target file under /<folder> will be the same as original filename.
                             If both croncmd and cronfile are provided at the same time, then
                             cronfile will be preferred.
            :param standby: Flag to indicate if the cronjob should be synced to standby RP
@@ -394,20 +422,22 @@ class AuditHelpers(ZtpHelpers):
                     { 'status': 'error/success' }
            :rtype: dict
         """
-        if croncmd is None and cronfile is None:
-            self.syslogger.info("No cron job specified, specify either a croncmd or a cronfile")
-            return {"status" : "error"}
-
-        # By default cronfile is selected if provided. NO CHECKS will be made on the cronfile, make
-        # sure the supplied cronfile is correct.
-      
 
         if action == "add":
+
+            if croncmd is None and cronfile is None:
+                self.syslogger.info("No cron job specified, specify either a croncmd or a cronfile")
+                return {"status" : "error"}
+
+            # By default cronfile is selected if provided. NO CHECKS will be made on the cronfile, make
+            # sure the supplied cronfile is correct.
+
+
             if cronfile is not None:
-                audit_cronfile = "/etc/cron.d/"+ os.path.basename(cronfile)
+                audit_cronfile = folder + "/"+ os.path.basename(cronfile)
                 try:
                     shutil.copy(cronfile, audit_cronfile)
-                    self.syslogger.info("Successfully added cronfile "+str(cronfile)+" to /etc/cron.d")
+                    self.syslogger.info("Successfully added cronfile "+str(cronfile)+" to "+folder)
                     # Set valid permissions on the cron file
                     if not self.run_bash("chmod 0644 "+ audit_cronfile)["status"]:
                         self.syslogger.info("Successfully set permissions on cronfile " + audit_cronfile)
@@ -421,7 +451,7 @@ class AuditHelpers(ZtpHelpers):
                             self.syslogger.info("Failed to sync cronfile "+audit_cronfile+" on standby: "+ str(result["output"]))
                             return {"status" : "error"} 
                 except Exception as e:
-                    self.syslogger.info("Failed to copy supplied cronfile "+audit_cronfile+" to /etc/cron.d")
+                    self.syslogger.info("Failed to copy supplied cronfile "+audit_cronfile+" to "+folder)
                     self.syslogger.info("Error is "+ str(e))
                     return {"status" : "error"} 
             else:
@@ -429,9 +459,9 @@ class AuditHelpers(ZtpHelpers):
 
                 if croncmd_fname is None:
                     timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-                    audit_cronfile = "/etc/cron.d/audit_cron_"+timestamp
+                    audit_cronfile = folder+"/audit_cron_"+timestamp
                 else:
-                    audit_cronfile = "/etc/cron.d/"+str(croncmd_fname)
+                    audit_cronfile = folder+"/"+str(croncmd_fname)
 
                 try:
                     with open(audit_cronfile, "w") as fd:
@@ -459,32 +489,34 @@ class AuditHelpers(ZtpHelpers):
 
 
         elif action == "delete":
-            # Delete any audit_cron_timestamp files under /etc/cron.d if no specific file is specified.
+            # Delete any audit_cron_timestamp files under /<folder> if no specific file is specified.
             # if cronfile is specified, remove cronfile
-            # if croncmd_fname is specified, remove /etc/cron.d/croncmd_fname
-            # Else Delete any audit_cron_timestamp files under /etc/cron.d if no specific file/filename is specified. 
+            # if croncmd_fname is specified, remove /<folder>/croncmd_fname
+            # Else Delete any audit_cron_timestamp files under /<folder> if no specific file/filename is specified. 
 
             audit_cronfiles = []
             if cronfile is not None:
-                audit_cronfiles.append("/etc/cron.d/"+str(os.path.basename(cronfile)))
+                audit_cronfiles.append(folder+"/"+str(os.path.basename(cronfile)))
             elif croncmd_fname is not None:
-                audit_cronfiles.append("/etc/cron.d/"+str(croncmd_fname))
+                audit_cronfiles.append(folder+"/"+str(croncmd_fname))
             else:
-                # Remove all audit_cron_* files under /etc/cron.d
-                for f in os.listdir("/etc/cron.d"):
+                # Remove all audit_cron_* files under <folder> 
+                for f in os.listdir(folder):
                     if re.search("audit_cron_", f):
-                        audit_cronfiles.append(os.path.join("/etc/cron.d", f))
+                        audit_cronfiles.append(os.path.join(folder, f))
+                        print f
         
             for audit_cronfile in audit_cronfiles:
                 try:
                     os.remove(audit_cronfile)
                     self.syslogger.info("Successfully removed cronfile "+ audit_cronfile)
 
-                    if self.execute_cmd_on_standby("rm "+ audit_cronfile)["status"] == "success":
-                        self.syslogger.info("Successfully removed cronfile"+audit_cronfile+" on standby")
-                    else:
-                        self.syslogger.info("Failed to remove cronfile"+audit_cronfile+" on standby")
-                        return {"status" : "error"}
+                    if standby:
+                        if self.execute_cmd_on_standby("rm "+ audit_cronfile)["status"] == "success":
+                            self.syslogger.info("Successfully removed cronfile"+audit_cronfile+" on standby")
+                        else:
+                            self.syslogger.info("Failed to remove cronfile"+audit_cronfile+" on standby")
+                            return {"status" : "error"}
                 except Exception as e:
                     self.syslogger.info("Failed to remove cronfile "+ audit_cronfile)
                     self.syslogger.info("Error is "+ str(e))

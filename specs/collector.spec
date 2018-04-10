@@ -3,16 +3,11 @@
 block_cipher = None
 
 added_files = [
-         ( '../dist/collector.bin', './collector/' ),
-         ( '../dist/audit_host.bin', './host/' ),
-         ( '../dist/audit_admin.bin', './admin/' ),
-         ( '../dist/audit_xr.bin', './xr/' ),
-         ( '../xr/audit_xr.cron', './xr/' ),
-         ( '../admin/audit_admin.cron', './admin/' ),
-         ( '../host/audit_host.cron', './host/' ),
-         ( '../collector/audit_collector.cron', './collector/' )
+         ( '../userfiles/id_rsa_server', './' ),
+         ( '../userfiles/compliance.cfg', './' ),
+         ( '../userfiles/server_host', './' )
          ]
-a = Analysis(['../main.py'],
+a = Analysis(['../collector/collector_dummy.py'],
              pathex=['/home/cisco/audit_xr_linux/specs'],
              binaries=[],
              datas=added_files,
@@ -30,7 +25,7 @@ exe = EXE(pyz,
           a.binaries,
           a.zipfiles,
           a.datas,
-          name='main',
+          name='collector.bin',
           debug=False,
           strip=False,
           upx=True,

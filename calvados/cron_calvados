@@ -1,1 +1,0 @@
-* * * * * root PATH=/sbin:/usr/sbin:/bin:/usr/bin:${PATH};/usr/bin/python /root/calvados_dummy.py
