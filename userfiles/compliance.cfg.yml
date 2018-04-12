@@ -1,0 +1,11 @@
+---
+DIR:
+    - /usr/bin
+    - /usr/lib
+FILE:
+    - /etc/ssh/sshd_config
+    - /etc/passwd
+CHK:
+    - /etc/ssh/sshd_config
+CON:
+    - /etc/ssh/sshd_config

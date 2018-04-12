@@ -6,7 +6,7 @@ import time
 
 log_formatter = logging.Formatter('%(asctime)s %(levelname)s %(funcName)s(%(lineno)d) %(message)s')
 
-logFile = '/misc/scratch/dummy_log'
+logFile = '/misc/app_host/dummy_log'
 
 my_handler = RotatingFileHandler(logFile, mode='a', maxBytes=1024*1024, 
                                  backupCount=2, encoding=None, delay=0)

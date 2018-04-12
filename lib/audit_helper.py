@@ -14,8 +14,169 @@
 from ztp_helper import ZtpHelpers
 import subprocess, posixpath
 import datetime, os, re
+import glob
+import yaml
+from lxml import etree
+import pdb
+import xmltodict as xd
+import ast, json
+from pprint import pprint
 
 class AuditHelpers(ZtpHelpers):
+
+    def __init__(self, 
+                 syslog_server=None, 
+                 syslog_port=None, 
+                 syslog_file=None,
+                 compliance_xsd=None,
+                 compliance_cfg=None,
+                 id_rsa_file=None,
+                 server_host=None):
+
+        super(AuditHelpers, self).__init__(syslog_server, syslog_port, syslog_file)
+
+        if compliance_xsd is None:
+            self.syslogger.info("No Compliance xsd file - compliance_xsd provided, aborting")
+            return None
+
+
+        if compliance_cfg is None:
+            self.syslogger.info("No Compliance config file - compliance_cfg provided, aborting")
+            return None
+
+        if id_rsa_file is None:
+            self.syslogger.info("No private key file - id_rsa_file provided, aborting")
+            return None
+
+
+        if server_host is None:
+            self.syslogger.info("No server_host - ip or dns name provided, aborting")
+            return None
+ 
+        self.compliance_xsd = compliance_xsd
+        self.compliance_xsd_dict = {}
+        self.compliance_cfg = compliance_cfg
+        self.compliance_cfg_dict = {}
+        self.id_rsa_file = id_rsa_file 
+        self.server_host = server_host
+        self.compliance_xsd_dict = self.xsd_to_dict()
+        self.compliance_cfg_dict = self.yaml_to_dict()
+
+        self.calendar_months = {'Jan':'01', 'Feb':'02', 'Mar':'03', 'Apr':'04',
+                                'May':'05', 'Jun':'06', 'Jul':'07', 'Aug':'08',
+                                'Sep':'09', 'Oct':'10', 'Nov':'11', 'Dec':'12'}
+
+
+    def get_host(self):
+        try:
+            result = self.xrcmd({"exec_cmd" : "show running-config hostname"})
+
+            if result["status"] == "success":
+                return result["output"][0].split(' ')[1]
+            else:
+                return []
+        except Exception as e:
+            self.syslogger.info("Failed to fetch hostname (Not configured?), Error: %s" %e) 
+            return []
+
+
+    def get_product(self):
+        try:
+            result = self.xrcmd({"exec_cmd" : "show inventory details"})
+            if result["status"] == "success":
+                index = 0
+                for line in result["output"]:
+                    if '0/RP0' in line:
+                        match = result["output"][index+1]
+                    index=index+1
+
+                product = match.split(',')[0].split(':')[1].strip()
+                return product
+            else:
+                return ""
+        except Exception as e:
+            self.syslogger.info("Failed to fetch product name, Error: %s" % e) 
+            return ""
+
+
+    def get_vendor(self):
+        return "Cisco"
+
+    def get_os(self):
+        return "IOS-XR"
+
+    def get_date(self):
+
+        try:
+            if self.compliance_xsd_dict["xs:schema"]["xs:attribute"]['@name'] == 'DATE':
+                pattern = self.compliance_xsd_dict["xs:schema"]["xs:attribute"]['xs:simpleType']['xs:restriction']['xs:pattern']['@value']
+        except Exception as e:
+            sys.syslogger.info("Failed to fetch pattern for DATE from compliance xsd, Error:"+e)
+            sys.syslogger.info("Using default pattern: CCYYMMDD-HH:MI TZ")
+ 
+        try:
+            result = self.xrcmd({"exec_cmd" : "show clock"})
+
+            if result["status"] == "success":
+                HH = result["output"][0].split(' ')[0].split(':')[0] 
+                MI = result["output"][0].split(' ')[0].split(':')[1]
+                CCYY = result["output"][0].split(' ')[-1]
+                MM = self.calendar_months[result["output"][0].split(' ')[3]]
+                DD = result["output"][0].split(' ')[4]
+                TZ = result["output"][0].split(' ')[1]
+  
+                date = CCYY+MM+DD+"-"+HH+":"+MI+' '+TZ
+ 
+                if re.match(pattern, date):
+                    return date
+                else:
+                    sys.syslogger.info("Failed to match requested pattern, please change format as needed")
+                    sys.syslogger.info("Using default pattern: CCYYMMDD-HH:MI TZ")
+            else:
+                return ""
+        except Exception as e:
+            self.syslogger.info("Failed to fetch product name, Error: %s" % e)
+            return ""
+        
+
+    def get_version(self):
+        try:
+            result = self.xrcmd({"exec_cmd" : "show version"})
+
+            if result["status"] == "success":
+                return result["output"][0].split(' ')[-1] 
+            else:
+                return ""
+        except Exception as e:
+            self.syslogger.info("Failed to fetch hostname, Error: %s" % e)
+            return ""
+
+
+    def get_mgmt_ip(self):
+        try:
+            result = self.xrcmd({"exec_cmd" : "show interface MgmtEth0/RP0/CPU0/0"})
+
+            if result["status"] == "success":
+                return result["output"][3].split(' ')[-1]
+            else:
+                return ""
+        except Exception as e:
+            self.syslogger.info("Failed to fetch hostname, Error: %s" % e)
+            return ""
+
+        
+    def get_general_field(self, field):
+        field_dict = {
+                'HOST': self.get_host, 
+                'DATE': self.get_date, 
+                'VENDOR': self.get_vendor,
+                'PRODUCT': self.get_product,
+                'OS': self.get_os, 
+                'VERSION': self.get_version, 
+                'IPADDR' : self.get_mgmt_ip
+                }
+        return field_dict[field]()
+
 
     def admincmd(self, root_lr_user=None, cmd=None):
         """Issue an admin exec cmd and obtain the output
@@ -104,8 +265,6 @@ class AuditHelpers(ZtpHelpers):
         # Show commands using Parent class helper method: xrcmd
 
         show_plat_vm = self.xrcmd({"exec_cmd" : "show platform vm"})
-
-        print show_plat_vm["output"]
 
         for line in show_plat_vm["output"]:
             if '0/RP' in line:
@@ -504,11 +663,12 @@ class AuditHelpers(ZtpHelpers):
                 for f in os.listdir(folder):
                     if re.search("audit_cron_", f):
                         audit_cronfiles.append(os.path.join(folder, f))
-                        print f
-        
+
+       
             for audit_cronfile in audit_cronfiles:
                 try:
-                    os.remove(audit_cronfile)
+                    for filename in glob.glob(audit_cronfile):
+                        os.remove(filename)
                     self.syslogger.info("Successfully removed cronfile "+ audit_cronfile)
 
                     if standby:
@@ -523,6 +683,134 @@ class AuditHelpers(ZtpHelpers):
                     return {"status" : "error"}
 
         return {"status" : "success"}                        
+
+
+    def validate_xml(xml_path, xsd_path):
+
+        try:
+            xmlschema_doc = etree.parse(xsd_path)
+            xmlschema = etree.XMLSchema(xmlschema_doc)
+            xml_doc = etree.parse(xml_path)
+            result = xmlschema.validate(xml_doc)
+        except Exception as e:
+            self.syslogger.info("Failed to parse generated XML against compliance xml schema")
+            self.syslogger.info("Error is %s" % e) 
+        return result
+
+   
+    def xsd_to_dict(self):
+        xsd_dict = {}
+        try:
+            with open(self.compliance_xsd,'r') as f:
+                xsd_dict_raw = xd.parse(f)
+                xsd_dict = ast.literal_eval(json.dumps(xsd_dict_raw))
+        except Exception as e:
+            self.syslogger.info("Failed to parse compliance xsd file")
+            self.syslogger.info("Error is %s" % e)
+            return {}
+
+        if self.debug:
+            self.logger.debug(xsd_dict)
+
+        return xsd_dict
+
+    def yaml_to_dict(self):
+        yaml_dict = {}
+        try:
+            with open(self.compliance_cfg, 'r') as stream:
+                try:
+                    yaml_dict = yaml.load(stream)
+                except yaml.YAMLError as e:
+                    self.syslogger.info("Failed to parse YAML file, Error: %s" % e)
+        except Exception as e:
+            self.syslogger.info("Failed to open compliance config YAML file")
+            self.syslogger.info("Error is %s" % e)
+            
+        if self.debug:
+            self.logger.debug(yaml_dict)
+
+        return yaml_dict
+
+
+    def gather_general_data(self):
+        general_fields= []
+        general_fields_dict = {}
+
+        for element in self.compliance_xsd_dict["xs:schema"]["xs:element"]:
+            try:
+                if "xs:complexType" in element.keys():
+                    if element["@name"] == "GENERAL":
+                        general_fields_dict = element["xs:complexType"]["xs:sequence"]["xs:element"]
+                for field in general_fields_dict:
+                   general_fields.append(field["@ref"])
+            except Exception as e:
+                self.syslogger.info("Failed to gather General fields from the compliance file")
+                self.syslogger.info("Error is: "+e)
+
+        general_data_dict = {}
+
+        for field in general_fields:
+            value = self.get_general_field(field)
+            general_data_dict[field] = value
+       
+        return general_data_dict 
+
+
+    def get_checksum(self, filename):
+        try:
+            result = self.run_bash(cmd="md5sum "+filename)
+            if result["status"] == "success":
+                return result["output"]
+            else:
+                return ""
+        except Exception as e:
+            self.syslogger.info("Failed to md5 checksum of file "+filename)
+            self.syslogger.info("Error is: "+e) 
+            return "" 
+
+    def get_file_content(self, filename):
+        try:
+            with open(filename, 'r') as f:
+                file_content = f.readlines()        
+            return file_content
+        except Exception as e:
+            self.syslogger.info("Failed to md5 checksum of file "+filename)                
+            self.syslogger.info("Error is: "+e) 
+            return []
+
+
+    def run_cmd_on_element(self, cmd=None, element_type, element_name):
+        if cmd is None:
+            if element_type = 'file':
+                cmd = "ls -la"
+            elif element_type = 'dir':
+                cmd = "ls -ld"
+        try:
+            result = self.run_bash(cmd=cmd+" "+ element_name)
+            if result["status"] == "success":
+                return result["output"]
+            else:
+                return ""
+        except Exception as e:
+            self.syslogger.info("Failed to run cmd: "+cmd+" on "+element_type+" "+element_name)                
+            self.syslogger.info("Error is: "+e) 
+            return "" 
+
+
+    def handle_integrity_field(self, field):
+        field_dict = {
+                'CHK': self.get_host,
+                'DIR': self.get_date,
+                'FILE': self.get_vendor,
+                'CON': self.get_product,
+                }
+        return field_dict[field]()
+    
+#{'CHK': ['/etc/ssh/sshd_config'], 'DIR': ['/usr/bin', '/usr/lib'], 'FILE': ['/etc/ssh/sshd_config', '/etc/passwd'], 'CON': ['/etc/ssh/sshd_config']}
+
+    def gather_integrity_data(self):
+        
+    
 
 
 

@@ -6,8 +6,8 @@ SCRIPT_PATH=$(dirname `which $0`)
 cd $SCRIPT_PATH
 
 #Clean up
-rm -r build/
-rm -r dist/
+#rm -r build/
+#rm -r dist/
 
 
 # First build the individual cron scripts

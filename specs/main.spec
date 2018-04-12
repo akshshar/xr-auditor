@@ -10,7 +10,11 @@ added_files = [
          ( '../xr/audit_xr.cron', './xr/' ),
          ( '../admin/audit_admin.cron', './admin/' ),
          ( '../host/audit_host.cron', './host/' ),
-         ( '../collector/audit_collector.cron', './collector/' )
+         ( '../collector/audit_collector.cron', './collector/' ),
+         ( '../userfiles/id_rsa_server', './userfiles' ),
+         ( '../userfiles/compliance.cfg.yml', './userfiles' ),
+         ( '../userfiles/server_host', './userfiles' ),
+         ( '../userfiles/compliance.xsd', './userfiles' )
          ]
 a = Analysis(['../main.py'],
              pathex=['/home/cisco/audit_xr_linux/specs'],

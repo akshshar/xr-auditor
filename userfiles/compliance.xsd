@@ -38,6 +38,8 @@
   </xs:complexType>
 </xs:element>
 
+
+
 <xs:element name="CMD-LIST">
   <xs:complexType>
     <xs:sequence minOccurs="0" maxOccurs="unbounded">
@@ -51,7 +53,7 @@
   <xs:complexType>
     <xs:sequence>
       <xs:element ref="NAME"/>
-      <xs:element ref="CMD-LIST" minOccurs="0"/>
+      <xs:element ref="CMD-LIST"/>
     </xs:sequence>
   </xs:complexType>
 </xs:element>

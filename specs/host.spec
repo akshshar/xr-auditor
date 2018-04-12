@@ -3,7 +3,7 @@
 block_cipher = None
 
 added_files = [
-         ( '../userfiles/compliance.cfg', './' )
+         ( '../userfiles/compliance.cfg.yml', './userfiles' )
          ]
 a = Analysis(['../host/host_dummy.py'],
              pathex=['/home/cisco/audit_xr_linux/specs'],

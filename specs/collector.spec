@@ -3,9 +3,10 @@
 block_cipher = None
 
 added_files = [
-         ( '../userfiles/id_rsa_server', './' ),
-         ( '../userfiles/compliance.cfg', './' ),
-         ( '../userfiles/server_host', './' )
+         ( '../userfiles/id_rsa_server', './userfiles' ),
+         ( '../userfiles/compliance.cfg.yml', './userfiles' ),
+         ( '../userfiles/server_host', './userfiles' ),
+         ( '../userfiles/compliance.xsd', './userfiles' )
          ]
 a = Analysis(['../collector/collector_dummy.py'],
              pathex=['/home/cisco/audit_xr_linux/specs'],

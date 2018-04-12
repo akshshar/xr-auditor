@@ -1,1 +1,1 @@
-* * * * * root PATH=/sbin:/usr/sbin:/bin:/usr/bin:${PATH};/misc/scratch/audit_collector.bin
+* * * * * root PATH=/sbin:/usr/sbin:/bin:/usr/bin:${PATH};/misc/scratch/collector.bin
