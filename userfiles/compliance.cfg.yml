@@ -1,11 +1,15 @@
 ---
 DIR:
-    - /usr/bin
-    - /usr/lib
+    - NAME: /usr/bin
+      CMD: 
+          - "ls -ld"
+    - NAME: /usr/lib
+
 FILE:
-    - /etc/ssh/sshd_config
-    - /etc/passwd
-CHK:
-    - /etc/ssh/sshd_config
-CON:
-    - /etc/ssh/sshd_config
+    - NAME: /etc/ssh/sshd_config
+      CHK: on
+      CON: on
+      CMD:
+          - "ls -la"
+    - NAME: /etc/passwd
+      CHK: on   

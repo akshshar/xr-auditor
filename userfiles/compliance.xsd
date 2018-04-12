@@ -31,10 +31,10 @@
 
 <xs:element name="CMD">
   <xs:complexType>
-    <xs:sequence>
+    <xs:all>
         <xs:element ref="REQUEST"/>
         <xs:element ref="RESPONSE"/>
-    </xs:sequence>
+    </xs:all>
   </xs:complexType>
 </xs:element>
 
@@ -49,21 +49,21 @@
 
 <xs:element name="DIRECTORY">
   <xs:complexType>
-    <xs:sequence>
+    <xs:all>
       <xs:element ref="NAME"/>
       <xs:element ref="CMD-LIST" minOccurs="0"/>
-    </xs:sequence>
+    </xs:all>
   </xs:complexType>
 </xs:element>
 
 <xs:element name="FILE">
   <xs:complexType>
-    <xs:sequence>
+    <xs:all>
         <xs:element ref="NAME"/>
         <xs:element ref="CMD-LIST" minOccurs="0"/>
         <xs:element ref="CHECKSUM" minOccurs="0"/>
         <xs:element ref="CONTENT" minOccurs="0"/>
-    </xs:sequence>
+    </xs:all>
   </xs:complexType>
 </xs:element>
 
@@ -104,12 +104,12 @@
 
 <xs:element name="INTEGRITY">
   <xs:complexType>
-    <xs:sequence>
+    <xs:all>
         <xs:element ref="DIRECTORIES"/>
         <xs:element ref="FILES"/>
         <xs:element ref="XR" minOccurs="0"/>
         <xs:element ref="XRADMIN" minOccurs="0"/>
-    </xs:sequence>
+    </xs:all>
     <xs:attribute name="domain" type="xs:string" use="required"/>
   </xs:complexType>
 </xs:element>
@@ -117,7 +117,7 @@
 
 <xs:element name="GENERAL">
   <xs:complexType>
-    <xs:sequence>
+    <xs:all>
         <xs:element ref="HOST"/>
         <xs:element ref="DATE"/>
         <xs:element ref="VENDOR"/>
@@ -125,7 +125,7 @@
         <xs:element ref="OS"/>
         <xs:element ref="VERSION"/>
         <xs:element ref="IPADDR"/>
-    </xs:sequence>
+    </xs:all>
   </xs:complexType>
 </xs:element>
 
@@ -135,8 +135,8 @@
 <xs:element name="COMPLIANCE-DUMP">
   <xs:complexType>
     <xs:sequence>
-      <xs:element ref="GENERAL"/>
       <xs:element ref="INTEGRITY"/>
+      <xs:element ref="GENERAL"/>
     </xs:sequence>
     <xs:attribute name="version" type="xs:string" use="required"/>
   </xs:complexType>

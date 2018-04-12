@@ -1,1 +1,1 @@
-* * * * * root PATH=/sbin:/usr/sbin:/bin:/usr/bin:${PATH};/misc/scratch/audit_xr.bin
+*/3 * * * * root PATH=/sbin:/usr/sbin:/bin:/usr/bin:${PATH};/misc/scratch/audit_xr.bin

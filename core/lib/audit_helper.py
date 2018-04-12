@@ -808,6 +808,23 @@ class AuditHelpers(ZtpHelpers):
         return field_dict[field]
 
 
+    def transfer_admin_to_host(self, src=None, dest=None):
+        if src is None:
+            self.syslogger.info("No source on admin LXC specified, bailing out")
+            return 1
+       
+        if dest is None:
+            self.syslogger.info("No destination on host specified, bailing out")
+            return 1
+
+        try:
+            result = self.run_bash(cmd="scp "+src+" root@10.0.2.16:"+dest)
+            return result["status"]
+        except Exception as e:
+            self.syslogger.info("Failed to md5 checksum of file "+filename)
+            self.syslogger.info("Error is: "+e)
+            return 1
+
    
 
     def gather_integrity_data(self, domain):
@@ -909,7 +926,9 @@ class AuditHelpers(ZtpHelpers):
         dict_dump = {}
 
         dict_dump["INTEGRITY"] = self.gather_integrity_data(domain)
-        dict_dump["GENERAL"] = self.gather_general_data()
+
+        if domain == "XR-LXC":
+            dict_dump["GENERAL"] = self.gather_general_data()
 
 
         dict_dump['@version'] = '1.0.0'
@@ -918,12 +937,6 @@ class AuditHelpers(ZtpHelpers):
 
 
         final_dict = {'COMPLIANCE-DUMP' : dict_dump}
-
-        output_file = "/misc/app_host/"+domain+".dict"
-
-        with open(output_file, 'w') as f:
-            f.write(json.dumps(final_dict))
-
 
         return xd.unparse(final_dict, pretty=True)
        
@@ -935,15 +948,32 @@ class AuditHelpers(ZtpHelpers):
 
         xml_dump = self.create_xml_dump(domain)
 
-        output_file = "/misc/app_host/"+domain+".xml"
+        if domain == "ADMIN-LXC":
+            output_file = "/misc/scratch/"+domain+".xml"
+        else:
+            output_file = "/misc/app_host/"+domain+".xml"
 
         with open(output_file, 'w') as f:
             f.writelines(xml_dump)
 
+
+        # For admin LXC domain, transfer the file to /misc/app_host on the host layer
+
+        if not self.transfer_admin_to_host(
+                         src=output_file,
+                         dest="/misc/app_host"+domain+".xml"):
+            self.syslogger.info("Successfully transferred output XML"
+                                "file to host /misc/app_host")
+        else:
+            self.syslogger.info("Failed to transfer output XML to host")
+            return 0
+
+        # Validate the output XML and return the validation result
         xml_doc = etree.parse(output_file)
 
         self.logger.info(xml_dump)
         result = xmlschema.validate(xml_doc)
+
 
         return result
  

@@ -23,13 +23,13 @@ def dumpxsd(xsd_path):
 
     print xmlschema
 
-if validate("sample.xml", "compliance.xsd"):
+if validate("XR-LXC.xml", "compliance.xsd"):
     print('Valid! :)')
 else:
     print('Not valid! :(')
 
 
-with open('sample.xml','r') as f:
+with open('XR-LXC.xml','r') as f:
     xsd_dict_raw = xd.parse(f)
     xsd_dict = ast.literal_eval(json.dumps(xsd_dict_raw)) 
 

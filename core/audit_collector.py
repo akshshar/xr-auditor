@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
 #!/usr/bin/env python
 
-from lib.audit_helper import AuditHelpers
+from lib.audit_collector_helper import AuditHelpers
 from pprint import pprint
 import pdb
 import subprocess
@@ -29,16 +30,13 @@ if __name__ == "__main__":
     # If nothing is specified, then logging will happen to local log rotated file.
 
 
-    audit_obj = IosxrAuditMain(syslog_file="/root/audit_python.log", syslog_server="11.11.11.2", syslog_port=514,
-                               compliance_xsd=IosxrAuditMain.current_dir()+"/userfiles/compliance.xsd",
-                               compliance_cfg=IosxrAuditMain.current_dir()+"/userfiles/compliance.cfg.yml",
-                               id_rsa_file=IosxrAuditMain.current_dir()+"/userfiles/id_rsa_server",
-                               server_host=IosxrAuditMain.current_dir()+"/userfiles/server_host")
+    audit_obj = IosxrAuditMain(compliance_xsd=IosxrAuditMain.current_dir()+"/userfiles/compliance.xsd",
+                               compliance_cfg=IosxrAuditMain.current_dir()+"/userfiles/compliance.cfg.yml")
 
     if audit_obj is None:
         sys.exit(1)
 
-    audit_obj.toggle_debug(1)
+    audit_obj.toggle_debug(0)
     if audit_obj.debug:
         for root, directories, filenames in os.walk(IosxrAuditMain.current_dir()):
             for directory in directories:
@@ -46,10 +44,6 @@ if __name__ == "__main__":
             for filename in filenames:
                 audit_obj.logger.debug(os.path.join(root,filename))
 
-    audit_obj.toggle_debug(0)
+    #audit_obj.toggle_debug(0)
 
-    if audit_obj.validate_xml_dump(domain="XR-LXC"):
-        print('Valid! :)')
-    else:
-        print('Not valid! :(')
-
+    audit_obj.validate_and_send()

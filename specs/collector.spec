@@ -6,9 +6,10 @@ added_files = [
          ( '../userfiles/id_rsa_server', './userfiles' ),
          ( '../userfiles/compliance.cfg.yml', './userfiles' ),
          ( '../userfiles/server_host', './userfiles' ),
-         ( '../userfiles/compliance.xsd', './userfiles' )
+         ( '../userfiles/compliance.xsd', './userfiles' ),
+         ( '../userfiles/remote_server_user', './userfiles' )
          ]
-a = Analysis(['../collector/collector_dummy.py'],
+a = Analysis(['../core/audit_collector.py'],
              pathex=['/home/cisco/audit_xr_linux/specs'],
              binaries=[],
              datas=added_files,

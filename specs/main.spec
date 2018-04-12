@@ -16,7 +16,7 @@ added_files = [
          ( '../userfiles/server_host', './userfiles' ),
          ( '../userfiles/compliance.xsd', './userfiles' )
          ]
-a = Analysis(['../main.py'],
+a = Analysis(['../core/main.py'],
              pathex=['/home/cisco/audit_xr_linux/specs'],
              binaries=[],
              datas=added_files,

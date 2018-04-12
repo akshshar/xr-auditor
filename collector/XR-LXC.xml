@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COMPLIANCE-DUMP version="1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compliance.xsd">
+	<INTEGRITY domain="XR-LXC">
+		<FILES>
+			<FILE>
+				<CHECKSUM>d7e4f42b44b3fb07df51498831ca70d4</CHECKSUM>
+				<CMD-LIST>
+					<CMD>
+						<REQUEST>ls -la</REQUEST>
+						<RESPONSE>-rwxr-xr-x 1 root root 3275 Apr  3 18:28 /etc/ssh/sshd_config
+</RESPONSE>
+					</CMD>
+					<CMD>
+						<REQUEST>ls -la</REQUEST>
+						<RESPONSE>-rw-r--r-- 1 root root 954 Apr 10 01:59 /etc/passwd
+</RESPONSE>
+					</CMD>
+				</CMD-LIST>
+				<NAME>/etc/passwd</NAME>
+			</FILE>
+			<FILE>
+				<CHECKSUM>d7e4f42b44b3fb07df51498831ca70d4</CHECKSUM>
+				<CMD-LIST>
+					<CMD>
+						<REQUEST>ls -la</REQUEST>
+						<RESPONSE>-rwxr-xr-x 1 root root 3275 Apr  3 18:28 /etc/ssh/sshd_config
+</RESPONSE>
+					</CMD>
+					<CMD>
+						<REQUEST>ls -la</REQUEST>
+						<RESPONSE>-rw-r--r-- 1 root root 954 Apr 10 01:59 /etc/passwd
+</RESPONSE>
+					</CMD>
+				</CMD-LIST>
+				<NAME>/etc/passwd</NAME>
+			</FILE>
+		</FILES>
+		<DIRECTORIES>
+			<DIRECTORY>
+				<CMD-LIST>
+					<CMD>
+						<REQUEST>ls -ld</REQUEST>
+						<RESPONSE>drwxr-xr-x 3 root root 20480 Apr  3 18:28 /usr/bin
+</RESPONSE>
+					</CMD>
+					<CMD>
+						<REQUEST>ls -ld</REQUEST>
+						<RESPONSE>drwxr-xr-x 4 root root 4096 Apr  3 18:28 /usr/lib
+</RESPONSE>
+					</CMD>
+				</CMD-LIST>
+				<NAME>/usr/lib</NAME>
+			</DIRECTORY>
+			<DIRECTORY>
+				<CMD-LIST>
+					<CMD>
+						<REQUEST>ls -ld</REQUEST>
+						<RESPONSE>drwxr-xr-x 3 root root 20480 Apr  3 18:28 /usr/bin
+</RESPONSE>
+					</CMD>
+					<CMD>
+						<REQUEST>ls -ld</REQUEST>
+						<RESPONSE>drwxr-xr-x 4 root root 4096 Apr  3 18:28 /usr/lib
+</RESPONSE>
+					</CMD>
+				</CMD-LIST>
+				<NAME>/usr/lib</NAME>
+			</DIRECTORY>
+		</DIRECTORIES>
+	</INTEGRITY>
+	<GENERAL>
+		<PRODUCT>NCS-5501</PRODUCT>
+		<VENDOR>Cisco</VENDOR>
+		<IPADDR>11.11.11.33/24</IPADDR>
+		<HOST>rtr</HOST>
+		<VERSION>6.1.31</VERSION>
+		<DATE>20180412-15:07 UTC</DATE>
+		<OS>IOS-XR</OS>
+	</GENERAL>
+</COMPLIANCE-DUMP>

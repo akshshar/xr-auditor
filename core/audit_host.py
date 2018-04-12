@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
 
     audit_obj = IosxrAuditMain(syslog_file="/root/audit_python.log", syslog_server="11.11.11.2", syslog_port=514,
-                               compliance_xsd=IosxrAuditMain.current_dir()+"/userfiles/compliance.xsd",
+                               compliance_xsd=IosxrAuditMain.current_dir()+"/userfiles/compliance_integrity.xsd",
                                compliance_cfg=IosxrAuditMain.current_dir()+"/userfiles/compliance.cfg.yml",
                                id_rsa_file=IosxrAuditMain.current_dir()+"/userfiles/id_rsa_server",
                                server_host=IosxrAuditMain.current_dir()+"/userfiles/server_host")
@@ -48,7 +48,7 @@ if __name__ == "__main__":
 
     audit_obj.toggle_debug(0)
 
-    if audit_obj.validate_xml_dump(domain="XR-LXC"):
+    if audit_obj.validate_xml_dump(domain="HOST"):
         print('Valid! :)')
     else:
         print('Not valid! :(')

@@ -7,6 +7,7 @@ import subprocess
 import sys, os
 import shutil
 import datetime
+import xmltodict as xd
 
 class IosxrAuditMain(AuditHelpers):
 
@@ -302,17 +303,26 @@ if __name__ == "__main__":
                 audit_obj.logger.debug(os.path.join(root,filename))
 
     audit_obj.toggle_debug(0)
-    #audit_obj.setup_xr_audit()
+    audit_obj.setup_xr_audit()
 
-    #audit_obj.setup_admin_audit(root_lr_user="root")
+    audit_obj.setup_admin_audit(root_lr_user="root")
 
-    #audit_obj.setup_host_audit(root_lr_user="root")
+    audit_obj.setup_host_audit(root_lr_user="root")
 
-    #audit_obj.setup_collector()
+    audit_obj.setup_collector()
 
-    print audit_obj.gather_general_data()
-    print audit_obj.compliance_cfg_dict
+    #print audit_obj.gather_general_data()
+    #print audit_obj.compliance_cfg_dict
 
+    #print audit_obj.gather_integrity_data("XR-LXC")
+
+    #dict_dump = audit_obj.create_xml_dump(domain="XR-LXC")
+
+    #if audit_obj.validate_xml_dump(domain="XR-LXC"):
+    #    print('Valid! :)')
+    #else:
+    #    print('Not valid! :(')
+    #print xd.unparse(dict_dump)
     #with open(bundle_dir+'/id_rsa_server') as f:
     #    lines = f.readlines()
 
