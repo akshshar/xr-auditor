@@ -17,21 +17,30 @@ SERVER_HOST:
       CONNECTION_TYPE: "IP"
       DOMAIN_NAME_SERVER : ""
 
-# Specify Name for the Compliance File to be generated on 
-# remote server. By default, the format is:
-# compliance_audit_%%router_hostname%%_%%router_mgmt_ip%%.xml
-# The strings between %% symbols denote router settings obtained from
-# the router dynamically.
+# Specify router parameters as an ordered list,to be used for the name 
+# compliance XML file. 
+# Valid supported parameters today are:
+#      1)  router_hostname
+#      2)  router_mgmt_ip
+#
+# So, if both the above parameters are specified, then final compliance 
+# file will look something like:
+#
+#        compliance_audit_{{router_hostname}}_{{router_mgmt_ip}}.xml
+#
+#
 #    For e.g. compliance_audit_rtr1_11_11_11_33.xml
 #             where  rtr1        =  router_hostname
 #                    11_11_11_33 =  router_mgmt_ip (with . replaced with _) 
 # 
-# Valid supported parameters today are:
-#      1)  router_hostname
-#      2)  router_mgmt_ip
 #
 
 COMPLIANCE_XMLNAME_PARAMS_ORDERED:
          - "router_hostname"
          - "router_mgmt_ip"
-  
+ 
+
+# Specify the remote directory on the server
+# where the compliance XML file should be copied
+
+REMOTE_DIRECTORY: "/home/cisco"

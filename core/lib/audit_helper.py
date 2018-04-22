@@ -14,12 +14,12 @@
 from ztp_helper import ZtpHelpers
 import subprocess, posixpath
 import datetime, os, re
-import glob, copy
+import glob
 import yaml
 from lxml import etree
 import pdb
 import xmltodict as xd
-import ast, json
+import json
 from pprint import pprint
 import logging, logging.handlers
 
@@ -54,7 +54,8 @@ class AuditHelpers(ZtpHelpers):
                                     "Specify one of "+', '.join(VALID_DOMAINS))
                 self.exit = True 
 
-        if self.domain == "XR-LXC":
+        if ( self.domain == "XR-LXC" or
+             self.domain == "COLLECTOR" ):
             super(AuditHelpers, self).__init__(syslog_server, syslog_port, syslog_file)
         elif self.domain == "MAIN":
             super(AuditHelpers, self).__init__(syslog_server, syslog_port, syslog_file)
@@ -138,10 +139,10 @@ class AuditHelpers(ZtpHelpers):
             if result["status"] == "success":
                 return result["output"][0].split(' ')[1]
             else:
-                return ""
+                return []
         except Exception as e:
             self.syslogger.info("Failed to fetch hostname (Not configured?), Error: %s" %e) 
-            return :""
+            return []
 
 
     def get_product(self):
@@ -767,7 +768,7 @@ class AuditHelpers(ZtpHelpers):
         try:
             with open(self.compliance_xsd,'r') as f:
                 xsd_dict_raw = xd.parse(f)
-                xsd_dict = ast.literal_eval(json.dumps(xsd_dict_raw))
+                xsd_dict = json.loads(json.dumps(xsd_dict_raw))
         except Exception as e:
             self.syslogger.info("Failed to parse compliance xsd file")
             self.syslogger.info("Error is %s" % e)
@@ -785,7 +786,7 @@ class AuditHelpers(ZtpHelpers):
         try:
             with open(xml_file,'r') as f:
                 xml_dict_raw = xd.parse(f)
-                xml_dict = ast.literal_eval(json.dumps(xml_dict_raw))
+                xml_dict = json.loads(json.dumps(xml_dict_raw))
         except Exception as e:
             self.syslogger.info("Failed to parse compliance xml file")
             self.syslogger.info("Error is %s" % e)
@@ -1022,7 +1023,7 @@ class AuditHelpers(ZtpHelpers):
 
         xml_dump = xd.unparse(final_dict, pretty=True)
 
-        self.logger.info(xml_dump)
+        #self.logger.info(xml_dump)
 
         if self.domain == "ADMIN-LXC":
             output_file = "/misc/scratch/"+self.domain+".xml"
@@ -1040,19 +1041,19 @@ class AuditHelpers(ZtpHelpers):
         
         xmlschema_doc = etree.parse(self.compliance_xsd)
 
-        print "\n\n######################################\n\n"
-        print etree.tostring(xmlschema_doc.getroot(), encoding='utf8',method='xml')
+        #print "\n\n######################################\n\n"
+        #print etree.tostring(xmlschema_doc.getroot(), encoding='utf8',method='xml')
 
         xmlschema = etree.XMLSchema(xmlschema_doc)
 
         # Validate the output XML and return the validation result
         xml_doc = etree.parse(xml_file)
 
-        print "\n\n######################################\n\n"
+        #print "\n\n######################################\n\n"
 
-        print etree.tostring(xml_doc.getroot(), encoding='utf8',method='xml')
+        #print etree.tostring(xml_doc.getroot(), encoding='utf8',method='xml')
 
-        print "\n\n######################################\n\n"
+        #print "\n\n######################################\n\n"
 
         result = xmlschema.validate(xml_doc)
 

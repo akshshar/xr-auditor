@@ -2,13 +2,19 @@
 #!/usr/bin/env python
 
 from lib.audit_helper import AuditHelpers
+from lib.audit_helper import VALID_DOMAINS
 from pprint import pprint
 import pdb
 import subprocess
 import sys, os
-import shutil
+import shutil, copy
 import datetime
 import xmltodict as xd
+import json
+from ctypes import cdll
+libc = cdll.LoadLibrary('libc.so.6')
+_setns = libc.setns
+CLONE_NEWNET = 0x40000000
 
 class IosxrAuditMain(AuditHelpers):
     def __init__(self,
@@ -25,10 +31,9 @@ class IosxrAuditMain(AuditHelpers):
             if not self.server_cfg_dict:
                 self.exit = True
 
-        self.compliance_xmlname_parameters = { "router_hostname" : self.get_host,
-                                               "router_mgmt_ip" : self.get_mgmt_ip}
+        self.compliance_xmlname_parameters = { "router_hostname" : self.get_hostname_string,
+                                               "router_mgmt_ip" : self.get_mgmt_ip_dashed}
 
-        pdb.set_trace()
         try:
             # Extract the absolute path for server private key
             self.id_rsa_file = self.server_cfg_dict["ID_RSA_FILE_PATH"]
@@ -37,6 +42,10 @@ class IosxrAuditMain(AuditHelpers):
             # Extract the Remote user for Server connection over SSH
             self.remote_user = self.server_cfg_dict["USER"]
 
+            # Extract the directory on the remote server where the final compliance
+            # file should be placed.
+            self.remote_directory = self.server_cfg_dict["REMOTE_DIRECTORY"]
+             
 
             # Extract the remote Server's domain name or IP address
 
@@ -82,7 +91,21 @@ class IosxrAuditMain(AuditHelpers):
             self.exit = True
 
 
+    def get_hostname_string(self):
+        hostname = self.get_host()
+        if not hostname:
+            return ""
+        else:
+            return str(hostname)
 
+    def get_mgmt_ip_dashed(self):
+        mgmt_ip = self.get_mgmt_ip()
+        if mgmt_ip == "":
+            return ""
+        else:
+            return ('_'.join(mgmt_ip.split('.'))).split('/')[0]
+
+        
     def collate_xml(self, domain_list, xml_directory="/misc/app_host"):
         collated_xml_dict = {}
         xml_dict = {}
@@ -90,7 +113,7 @@ class IosxrAuditMain(AuditHelpers):
 
         for domain in domain_list:
             if domain in VALID_DOMAINS:
-                xml_file = "/misc/app_host/"+domain+".xml"
+                xml_file = xml_directory+"/"+domain+".xml"
                 xml_dict = self.xml_to_dict(xml_file)
                 integrity_list.append(xml_dict["COMPLIANCE-DUMP"]["INTEGRITY-SET"]["INTEGRITY"])
                 if domain == "XR-LXC":
@@ -112,6 +135,32 @@ class IosxrAuditMain(AuditHelpers):
             f.writelines(collated_xml_dump)
 
         return output_file
+
+
+    def send_to_server(self, filename):
+        with open(self.get_netns_path(nsname=self.vrf)) as fd:
+            self.setns(fd, CLONE_NEWNET)
+            if filename is None:
+                self.syslogger.info("No filename specified, bailing out")
+                return False
+
+            fname = os.path.basename(self.compliance_xmlname)
+
+            cmd =  "cat "+filename+" | ssh -i "+ os.path.abspath(self.id_rsa_file)
+            cmd =  cmd + " -o StrictHostKeyChecking=no "
+            cmd =  cmd + self.remote_user+"@"+self.server_connection
+            cmd =  cmd + " \"cat > "+self.remote_directory+"/"+fname+"\""
+
+            print cmd
+
+            try:
+                result = self.run_bash(cmd)
+                return result["status"]
+            except Exception as e:
+                self.syslogger.info("Failed to transfer file to remote host")
+                self.syslogger.info("Error is: "+e)
+                return False
+    
 
     @classmethod
     def current_dir(cls):
@@ -158,7 +207,12 @@ if __name__ == "__main__":
     if audit_obj.validate_xml_dump(xml_file):
         audit_obj.syslogger.info('Valid XML! :)')
         audit_obj.syslogger.info('Successfully created output XML: '+str(xml_file))
-        sys.exit(0)
+        if not audit_obj.send_to_server(xml_file):
+            audit_obj.syslogger.info("Successfully transferred audit result to Remote Server, over SSH")
+            sys.exit(0)
+        else:
+            audit_obj.syslogger.info("Failed to send audit result to Remote Server")
+            sys.exit(1)
     else:
         audit_obj.syslogger.info('Output XML Not valid! :(')
         sys.exit(1)

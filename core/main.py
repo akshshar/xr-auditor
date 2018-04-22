@@ -291,7 +291,7 @@ if __name__ == "__main__":
         audit_obj.syslogger.info("Exit flag is set, aborting")
         sys.exit(1)
 
-    audit_obj.toggle_debug(1)
+    audit_obj.toggle_debug(0)
     if audit_obj.debug:
         for root, directories, filenames in os.walk(IosxrAuditMain.current_dir()):
             for directory in directories:
