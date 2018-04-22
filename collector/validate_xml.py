@@ -20,21 +20,35 @@ def validate(xml_path, xsd_path):
 def dumpxsd(xsd_path):
     xmlschema_doc = etree.parse(xsd_path)
     xmlschema = etree.XMLSchema(xmlschema_doc)
+    print etree.tostring(xmlschema_doc.getroot(), encoding='utf8',method='xml') 
 
-    print xmlschema
+def dumpxml(xml_path):
+    xml_doc = etree.parse(xml_path)
+    print etree.tostring(xml_doc.getroot(), encoding='utf8',method='xml')
 
-if validate("XR-LXC.xml", "compliance.xsd"):
+"\n\n#############################################\n\n"
+dumpxsd("compliance.xsd")
+print "\n\n#############################################\n\n"
+
+dumpxml("sample.xml")
+
+print "\n\n#############################################\n\n"
+if validate("sample.xml", "compliance.xsd"):
     print('Valid! :)')
 else:
     print('Not valid! :(')
 
 
-with open('XR-LXC.xml','r') as f:
+print "\n\n#############################################\n\n"
+
+with open('sample.xml','r') as f:
     xsd_dict_raw = xd.parse(f)
     xsd_dict = ast.literal_eval(json.dumps(xsd_dict_raw)) 
 
 
 print pprint(xsd_dict)
+
+pdb.set_trace()
 
 sys.exit(0)
 general_fields= []

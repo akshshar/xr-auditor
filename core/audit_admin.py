@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from lib.audit_admin_helper import AuditHelpers
+from lib.audit_helper import AuditHelpers
 from pprint import pprint
 import pdb
 import subprocess
@@ -29,10 +29,12 @@ if __name__ == "__main__":
     # If nothing is specified, then logging will happen to local log rotated file.
 
 
-    audit_obj = IosxrAuditMain(compliance_xsd=IosxrAuditMain.current_dir()+"/userfiles/compliance_integrity.xsd",
+    audit_obj = IosxrAuditMain(domain="ADMIN-LXC",
+                               compliance_xsd=IosxrAuditMain.current_dir()+"/userfiles/compliance.xsd",
                                compliance_cfg=IosxrAuditMain.current_dir()+"/userfiles/compliance.cfg.yml")
 
-    if audit_obj is None:
+    if audit_obj.exit:
+        audit_obj.syslogger.info("Exit flag is set, aborting")
         sys.exit(1)
 
     audit_obj.toggle_debug(0)
@@ -43,10 +45,22 @@ if __name__ == "__main__":
             for filename in filenames:
                 audit_obj.logger.debug(os.path.join(root,filename))
 
-    #audit_obj.toggle_debug(0)
 
-    if audit_obj.validate_xml_dump(domain="ADMIN-LXC"):
-        print('Valid! :)')
+
+    xml_file = audit_obj.create_xml_dump()
+
+    if audit_obj.validate_xml_dump(xml_file):
+        audit_obj.syslogger.info('Valid XML! :)')
+        audit_obj.syslogger.info('Successfully created output XML: '+str(xml_file))
+        if not audit_obj.transfer_admin_to_host(
+                         src=xml_file,
+                         dest="/misc/app_host/ADMIN-LXC.xml"):
+            audit_obj.syslogger.info("Successfully transferred output XML"
+                                "file to host /misc/app_host")
+            sys.exit(0)
+        else:
+            audit_obj.syslogger.info("Failed to transfer output XML to host")
+            sys.exit(1)
     else:
-        print('Not valid! :(')
-
+        audit_obj.syslogger.info('Output XML Not valid! :(')
+        sys.exit(1)

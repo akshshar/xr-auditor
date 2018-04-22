@@ -1,72 +1,200 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<COMPLIANCE-DUMP xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
- xsi:noNamespaceSchemaLocation="compliance.xsd"
- version="1.0.0">
-  <GENERAL>
-      <HOST>rtr2</HOST>
-      <DATE>20180409-03:43 PDT</DATE>
-      <VENDOR>CISCO</VENDOR>
-      <PRODUCT>NCS5501</PRODUCT>
-      <OS>IOS-XR</OS>
-      <VERSION>6.1.31</VERSION>
-      <IPADDR>11.11.11.33</IPADDR>
-  </GENERAL>
-
-  <INTEGRITY domain="XR-LXC">
-    <DIRECTORIES>
-      <DIRECTORY>
-        <NAME>/misc/scratch</NAME>
-        <CMD-LIST>
-            <CMD>
-              <REQUEST>ls -ld</REQUEST> 
-              <RESPONSE>drwxr-xr-x 8 root root 4096 Apr  9 05:10 /misc/scratch/</RESPONSE>
-            </CMD>
-            <CMD>
-              <REQUEST>ls -ldr</REQUEST>
-              <RESPONSE>drwxr-xr-x 89 root root 4096 Apr  9 05:10 /misc/scratch/</RESPONSE>
-            </CMD>
-        </CMD-LIST> 
-      </DIRECTORY>
-      <DIRECTORY>
-        <NAME>/misc/scratch2</NAME>
-        <CMD-LIST>
-            <CMD>
-              <REQUEST>ls -ld</REQUEST>
-              <RESPONSE>drwxr-xr-x 8 root root 4096 Apr  9 05:10 /misc/scratch/</RESPONSE>
-            </CMD>
-            <CMD>
-              <REQUEST>ls -ldr</REQUEST>
-              <RESPONSE>drwxr-xr-x 89 root root 4096 Apr  9 05:10 /misc/scratch/</RESPONSE>
-            </CMD>
-        </CMD-LIST>
-      </DIRECTORY>
-
-
-    </DIRECTORIES>
-    <FILES>
-      <FILE>
-        <NAME>/etc/passwd</NAME>
-        <CMD-LIST>
-            <CMD>
-             <REQUEST>ls -la</REQUEST>
-            <RESPONSE>-rw-r--r-- 1 root root 917 Apr  3 19:08 /etc/passwd</RESPONSE>
-            </CMD>
-        </CMD-LIST>
-        <CONTENT>['root:x:0:0:root:/root:/bin/sh', 'daemon:x:1:1:daemon:/usr/sbin:/bin/sh', 'bin:x:2:2:bin:/bin:/bin/sh', 'sys:x:3:3:sys:/dev:/bin/sh', 'sync:x:4:65534:sync:/bin:/bin/sync', 'games:x:5:60:games:/usr/games:/bin/sh', 'man:x:6:12:man:/var/cache/man:/bin/sh', 'lp:x:7:7:lp:/var/spool/lpd:/bin/sh', 'mail:x:8:8:mail:/var/mail:/bin/sh', 'news:x:9:9:news:/var/spool/news:/bin/sh', 'uucp:x:10:10:uucp:/var/spool/uucp:/bin/sh', 'proxy:x:13:13:proxy:/bin:/bin/sh', 'www-data:x:33:33:www-data:/var/www:/bin/sh', 'backup:x:34:34:backup:/var/backups:/bin/sh', 'list:x:38:38:Mailing List Manager:/var/list:/bin/sh', 'irc:x:39:39:ircd:/var/run/ircd:/bin/sh', 'gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/bin/sh', 'nobody:x:65534:65534:nobody:/nonexistent:/bin/sh', 'sshd:x:999:999::/var/run/sshd:/bin/false', 'messagebus:x:998:997::/var/lib/dbus:/bin/false', 'rpc:x:997:995::/:/bin/false', 'rpcuser:x:996:994::/var/lib/nfs:/bin/false', 'vagrant:x:1000:1009::/home/vagrant:/bin/sh']</CONTENT>    
-      </FILE>
-      <FILE>
-        <NAME>/etc/passw2</NAME>
-        <CMD-LIST>
-            <CMD>
-             <REQUEST>ls -la</REQUEST>
-            <RESPONSE>-rw-r--r-- 1 root root 917 Apr  3 19:08 /etc/passwd</RESPONSE>
-            </CMD>
-        </CMD-LIST>
-        <CHECKSUM>213127y1eh187</CHECKSUM>
-        <CONTENT>['root:xasdcasdada:0:0:root:/root:/bin/sh', 'daemon:x:1:1:daemon:/usr/sbin:/bin/sh', 'bin:x:2:2:bin:/bin:/bin/sh', 'sys:x:3:3:sys:/dev:/bin/sh', 'sync:x:4:65534:sync:/bin:/bin/sync', 'games:x:5:60:games:/usr/games:/bin/sh', 'man:x:6:12:man:/var/cache/man:/bin/sh', 'lp:x:7:7:lp:/var/spool/lpd:/bin/sh', 'mail:x:8:8:mail:/var/mail:/bin/sh', 'news:x:9:9:news:/var/spool/news:/bin/sh', 'uucp:x:10:10:uucp:/var/spool/uucp:/bin/sh', 'proxy:x:13:13:proxy:/bin:/bin/sh', 'www-data:x:33:33:www-data:/var/www:/bin/sh', 'backup:x:34:34:backup:/var/backups:/bin/sh', 'list:x:38:38:Mailing List Manager:/var/list:/bin/sh', 'irc:x:39:39:ircd:/var/run/ircd:/bin/sh', 'gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/bin/sh', 'nobody:x:65534:65534:nobody:/nonexistent:/bin/sh', 'sshd:x:999:999::/var/run/sshd:/bin/false', 'messagebus:x:998:997::/var/lib/dbus:/bin/false', 'rpc:x:997:995::/:/bin/false', 'rpcuser:x:996:994::/var/lib/nfs:/bin/false', 'vagrant:x:1000:1009::/home/vagrant:/bin/sh']</CONTENT>
-      </FILE>
-
-
-    </FILES>
-  </INTEGRITY>
+<?xml version="1.0" encoding="utf-8"?>
+<COMPLIANCE-DUMP xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0.0" xsi:noNamespaceSchemaLocation="compliance.xsd">
+        <GENERAL>
+                <PRODUCT>NCS-5501</PRODUCT>
+                <VENDOR>Cisco</VENDOR>
+                <IPADDR>11.11.11.33/24</IPADDR>
+                <HOST>[]</HOST>
+                <VERSION>6.3.2.36I</VERSION>
+                <DATE>20180422-11:47 UTC</DATE>
+                <OS>IOS-XR</OS>
+        </GENERAL>
+        <INTEGRITY-SET>
+                <INTEGRITY domain="XR-LXC">
+                        <FILES>
+                                <FILE>
+                                        <CONTENT>["#\t$OpenBSD: sshd_config,v 1.80 2008/07/02 02:24:18 djm Exp $", "# This is the sshd server system-wide configuration file.  See", "# sshd_config(5) for more information.", "# This sshd was compiled with PATH=/usr/bin:/bin:/usr/sbin:/sbin", "# The strategy used for options in the default sshd_config shipped with", "# OpenSSH is to specify options with their default value where", "# possible, but leave them commented.  Uncommented options change a", "# default value.", "#Port 22", "AddressFamily inet", "#ListenAddress 0.0.0.0", "#ListenAddress ::", "# Disable legacy (protocol version 1) support in the server for new", "# installations. In future the default will change to require explicit", "# activation of protocol 1", "Protocol 2", "# HostKey for protocol version 1", "#HostKey /etc/ssh/ssh_host_key", "# HostKeys for protocol version 2", "#HostKey /etc/ssh/ssh_host_rsa_key", "#HostKey /etc/ssh/ssh_host_dsa_key", "# Lifetime and size of ephemeral version 1 server key", "#KeyRegenerationInterval 1h", "#ServerKeyBits 1024", "# Logging", "# obsoletes QuietMode and FascistLogging", "#SyslogFacility AUTH", "#LogLevel INFO", "# Authentication:", "#LoginGraceTime 2m", "PermitRootLogin yes", "#StrictModes yes", "#MaxAuthTries 6", "#MaxSessions 10", "#RSAAuthentication yes", "#PubkeyAuthentication yes", "#AuthorizedKeysFile\t.ssh/authorized_keys", "# For this to work you will also need host keys in /etc/ssh/ssh_known_hosts", "#RhostsRSAAuthentication no", "# similar for protocol version 2", "#HostbasedAuthentication no", "# Change to yes if you don't trust ~/.ssh/known_hosts for", "# RhostsRSAAuthentication and HostbasedAuthentication", "#IgnoreUserKnownHosts no", "# Don't read the user's ~/.rhosts and ~/.shosts files", "#IgnoreRhosts yes", "# To disable tunneled clear text passwords, change to no here!", "#PasswordAuthentication yes", "PermitEmptyPasswords yes", "# Change to no to disable s/key passwords", "#ChallengeResponseAuthentication yes", "# Kerberos options", "#KerberosAuthentication no", "#KerberosOrLocalPasswd yes", "#KerberosTicketCleanup yes", "#KerberosGetAFSToken no", "# GSSAPI options", "#GSSAPIAuthentication no", "#GSSAPICleanupCredentials yes", "# Set this to 'yes' to enable PAM authentication, account processing,", "# and session processing. If this is enabled, PAM authentication will", "# be allowed through the ChallengeResponseAuthentication and", "# PasswordAuthentication.  Depending on your PAM configuration,", "# PAM authentication via ChallengeResponseAuthentication may bypass", "# the setting of \"PermitRootLogin without-password\".", "# If you just want the PAM account and session checks to run without", "# PAM authentication, then enable this but set PasswordAuthentication", "# and ChallengeResponseAuthentication to 'no'.", "#UsePAM no", "#AllowAgentForwarding yes", "#AllowTcpForwarding yes", "#GatewayPorts no", "#X11Forwarding no", "#X11DisplayOffset 10", "#X11UseLocalhost yes", "#PrintMotd yes", "#PrintLastLog yes", "#TCPKeepAlive yes", "#UseLogin no", "UsePrivilegeSeparation no", "#PermitUserEnvironment no", "Compression no", "ClientAliveInterval 15", "ClientAliveCountMax 4", "UseDNS no", "#PidFile /var/run/sshd.pid", "#MaxStartups 10", "#PermitTunnel no", "#ChrootDirectory none", "# no default banner path", "#Banner none", "# override default of no subsystems", "Subsystem\tsftp\t/usr/lib64/openssh/sftp-server", "# Example of overriding settings on a per-user basis", "#Match User anoncvs", "#\tX11Forwarding no", "#\tAllowTcpForwarding no", "#\tForceCommand cvs server"]</CONTENT>
+                                        <CHECKSUM>f2fb127f081b5ac6305bea315bf33505</CHECKSUM>
+                                        <CMD-LIST>
+                                                <CMD>
+                                                        <REQUEST>ls -la</REQUEST>
+                                                        <RESPONSE>-rwxr-xr-x 1 root root 3275 Apr 19 07:32 /etc/ssh/sshd_config</RESPONSE>
+                                                </CMD>
+                                                <CMD>
+                                                        <REQUEST>ls -la</REQUEST>
+                                                        <RESPONSE>-rw-r--r-- 1 root root 874 Apr 22 01:36 /etc/passwd</RESPONSE>
+                                                </CMD>
+                                        </CMD-LIST>
+                                        <NAME>/etc/passwd</NAME>
+                                </FILE>
+                                <FILE>
+                                        <CONTENT>["#\t$OpenBSD: sshd_config,v 1.80 2008/07/02 02:24:18 djm Exp $", "# This is the sshd server system-wide configuration file.  See", "# sshd_config(5) for more information.", "# This sshd was compiled with PATH=/usr/bin:/bin:/usr/sbin:/sbin", "# The strategy used for options in the default sshd_config shipped with", "# OpenSSH is to specify options with their default value where", "# possible, but leave them commented.  Uncommented options change a", "# default value.", "#Port 22", "AddressFamily inet", "#ListenAddress 0.0.0.0", "#ListenAddress ::", "# Disable legacy (protocol version 1) support in the server for new", "# installations. In future the default will change to require explicit", "# activation of protocol 1", "Protocol 2", "# HostKey for protocol version 1", "#HostKey /etc/ssh/ssh_host_key", "# HostKeys for protocol version 2", "#HostKey /etc/ssh/ssh_host_rsa_key", "#HostKey /etc/ssh/ssh_host_dsa_key", "# Lifetime and size of ephemeral version 1 server key", "#KeyRegenerationInterval 1h", "#ServerKeyBits 1024", "# Logging", "# obsoletes QuietMode and FascistLogging", "#SyslogFacility AUTH", "#LogLevel INFO", "# Authentication:", "#LoginGraceTime 2m", "PermitRootLogin yes", "#StrictModes yes", "#MaxAuthTries 6", "#MaxSessions 10", "#RSAAuthentication yes", "#PubkeyAuthentication yes", "#AuthorizedKeysFile\t.ssh/authorized_keys", "# For this to work you will also need host keys in /etc/ssh/ssh_known_hosts", "#RhostsRSAAuthentication no", "# similar for protocol version 2", "#HostbasedAuthentication no", "# Change to yes if you don't trust ~/.ssh/known_hosts for", "# RhostsRSAAuthentication and HostbasedAuthentication", "#IgnoreUserKnownHosts no", "# Don't read the user's ~/.rhosts and ~/.shosts files", "#IgnoreRhosts yes", "# To disable tunneled clear text passwords, change to no here!", "#PasswordAuthentication yes", "PermitEmptyPasswords yes", "# Change to no to disable s/key passwords", "#ChallengeResponseAuthentication yes", "# Kerberos options", "#KerberosAuthentication no", "#KerberosOrLocalPasswd yes", "#KerberosTicketCleanup yes", "#KerberosGetAFSToken no", "# GSSAPI options", "#GSSAPIAuthentication no", "#GSSAPICleanupCredentials yes", "# Set this to 'yes' to enable PAM authentication, account processing,", "# and session processing. If this is enabled, PAM authentication will", "# be allowed through the ChallengeResponseAuthentication and", "# PasswordAuthentication.  Depending on your PAM configuration,", "# PAM authentication via ChallengeResponseAuthentication may bypass", "# the setting of \"PermitRootLogin without-password\".", "# If you just want the PAM account and session checks to run without", "# PAM authentication, then enable this but set PasswordAuthentication", "# and ChallengeResponseAuthentication to 'no'.", "#UsePAM no", "#AllowAgentForwarding yes", "#AllowTcpForwarding yes", "#GatewayPorts no", "#X11Forwarding no", "#X11DisplayOffset 10", "#X11UseLocalhost yes", "#PrintMotd yes", "#PrintLastLog yes", "#TCPKeepAlive yes", "#UseLogin no", "UsePrivilegeSeparation no", "#PermitUserEnvironment no", "Compression no", "ClientAliveInterval 15", "ClientAliveCountMax 4", "UseDNS no", "#PidFile /var/run/sshd.pid", "#MaxStartups 10", "#PermitTunnel no", "#ChrootDirectory none", "# no default banner path", "#Banner none", "# override default of no subsystems", "Subsystem\tsftp\t/usr/lib64/openssh/sftp-server", "# Example of overriding settings on a per-user basis", "#Match User anoncvs", "#\tX11Forwarding no", "#\tAllowTcpForwarding no", "#\tForceCommand cvs server"]</CONTENT>
+                                        <CHECKSUM>f2fb127f081b5ac6305bea315bf33505</CHECKSUM>
+                                        <CMD-LIST>
+                                                <CMD>
+                                                        <REQUEST>ls -la</REQUEST>
+                                                        <RESPONSE>-rwxr-xr-x 1 root root 3275 Apr 19 07:32 /etc/ssh/sshd_config</RESPONSE>
+                                                </CMD>
+                                                <CMD>
+                                                        <REQUEST>ls -la</REQUEST>
+                                                        <RESPONSE>-rw-r--r-- 1 root root 874 Apr 22 01:36 /etc/passwd</RESPONSE>
+                                                </CMD>
+                                        </CMD-LIST>
+                                        <NAME>/etc/passwd</NAME>
+                                </FILE>
+                        </FILES>
+                        <DIRECTORIES>
+                                <DIRECTORY>
+                                        <CMD-LIST>
+                                                <CMD>
+                                                        <REQUEST>ls -ld</REQUEST>
+                                                        <RESPONSE>drwxr-xr-x 3 root root 20480 Apr 19 07:33 /usr/bin</RESPONSE>
+                                                </CMD>
+                                                <CMD>
+                                                        <REQUEST>ls -ld</REQUEST>
+                                                        <RESPONSE>drwxr-xr-x 5 root root 4096 Apr 19 07:33 /usr/lib</RESPONSE>
+                                                </CMD>
+                                        </CMD-LIST>
+                                        <NAME>/usr/lib</NAME>
+                                </DIRECTORY>
+                                <DIRECTORY>
+                                        <CMD-LIST>
+                                                <CMD>
+                                                        <REQUEST>ls -ld</REQUEST>
+                                                        <RESPONSE>drwxr-xr-x 3 root root 20480 Apr 19 07:33 /usr/bin</RESPONSE>
+                                                </CMD>
+                                                <CMD>
+                                                        <REQUEST>ls -ld</REQUEST>
+                                                        <RESPONSE>drwxr-xr-x 5 root root 4096 Apr 19 07:33 /usr/lib</RESPONSE>
+                                                </CMD>
+                                        </CMD-LIST>
+                                        <NAME>/usr/lib</NAME>
+                                </DIRECTORY>
+                        </DIRECTORIES>
+                </INTEGRITY>
+                <INTEGRITY domain="ADMIN-LXC">
+                        <FILES>
+                                <FILE>
+                                        <CONTENT>["#\t$OpenBSD: sshd_config,v 1.80 2008/07/02 02:24:18 djm Exp $", "# This is the sshd server system-wide configuration file.  See", "# sshd_config(5) for more information.", "# This sshd was compiled with PATH=/usr/bin:/bin:/usr/sbin:/sbin", "# The strategy used for options in the default sshd_config shipped with", "# OpenSSH is to specify options with their default value where", "# possible, but leave them commented.  Uncommented options change a", "# default value.", "#Port 22", "AddressFamily inet", "#ListenAddress 0.0.0.0", "#ListenAddress ::", "# Disable legacy (protocol version 1) support in the server for new", "# installations. In future the default will change to require explicit", "# activation of protocol 1", "Protocol 2", "# HostKey for protocol version 1", "#HostKey /etc/ssh/ssh_host_key", "# HostKeys for protocol version 2", "#HostKey /etc/ssh/ssh_host_rsa_key", "#HostKey /etc/ssh/ssh_host_dsa_key", "# Lifetime and size of ephemeral version 1 server key", "#KeyRegenerationInterval 1h", "#ServerKeyBits 1024", "# Logging", "# obsoletes QuietMode and FascistLogging", "#SyslogFacility AUTH", "#LogLevel INFO", "# Authentication:", "#LoginGraceTime 2m", "PermitRootLogin yes", "#StrictModes yes", "#MaxAuthTries 6", "#MaxSessions 10", "#RSAAuthentication yes", "#PubkeyAuthentication yes", "#AuthorizedKeysFile\t.ssh/authorized_keys", "# For this to work you will also need host keys in /etc/ssh/ssh_known_hosts", "#RhostsRSAAuthentication no", "# similar for protocol version 2", "#HostbasedAuthentication no", "# Change to yes if you don't trust ~/.ssh/known_hosts for", "# RhostsRSAAuthentication and HostbasedAuthentication", "#IgnoreUserKnownHosts no", "# Don't read the user's ~/.rhosts and ~/.shosts files", "#IgnoreRhosts yes", "# To disable tunneled clear text passwords, change to no here!", "#PasswordAuthentication yes", "PermitEmptyPasswords yes", "# Change to no to disable s/key passwords", "#ChallengeResponseAuthentication yes", "# Kerberos options", "#KerberosAuthentication no", "#KerberosOrLocalPasswd yes", "#KerberosTicketCleanup yes", "#KerberosGetAFSToken no", "# GSSAPI options", "#GSSAPIAuthentication no", "#GSSAPICleanupCredentials yes", "# Set this to 'yes' to enable PAM authentication, account processing,", "# and session processing. If this is enabled, PAM authentication will", "# be allowed through the ChallengeResponseAuthentication and", "# PasswordAuthentication.  Depending on your PAM configuration,", "# PAM authentication via ChallengeResponseAuthentication may bypass", "# the setting of \"PermitRootLogin without-password\".", "# If you just want the PAM account and session checks to run without", "# PAM authentication, then enable this but set PasswordAuthentication", "# and ChallengeResponseAuthentication to 'no'.", "#UsePAM no", "#AllowAgentForwarding yes", "#AllowTcpForwarding yes", "#GatewayPorts no", "#X11Forwarding no", "#X11DisplayOffset 10", "#X11UseLocalhost yes", "#PrintMotd yes", "#PrintLastLog yes", "#TCPKeepAlive yes", "#UseLogin no", "UsePrivilegeSeparation no", "#PermitUserEnvironment no", "Compression no", "ClientAliveInterval 15", "ClientAliveCountMax 4", "UseDNS no", "#PidFile /var/run/sshd.pid", "#MaxStartups 10", "#PermitTunnel no", "#ChrootDirectory none", "# no default banner path", "#Banner none", "# override default of no subsystems", "Subsystem\tsftp\t/usr/lib64/openssh/sftp-server", "# Example of overriding settings on a per-user basis", "#Match User anoncvs", "#\tX11Forwarding no", "#\tAllowTcpForwarding no", "#\tForceCommand cvs server"]</CONTENT>
+                                        <CHECKSUM>f2fb127f081b5ac6305bea315bf33505</CHECKSUM>
+                                        <CMD-LIST>
+                                                <CMD>
+                                                        <REQUEST>ls -la</REQUEST>
+                                                        <RESPONSE>-rwxr-xr-x 1 root root 3275 Apr 19 07:27 /etc/ssh/sshd_config</RESPONSE>
+                                                </CMD>
+                                                <CMD>
+                                                        <REQUEST>ls -la</REQUEST>
+                                                        <RESPONSE>-rw-r--r-- 1 root root 874 Apr 19 07:27 /etc/passwd</RESPONSE>
+                                                </CMD>
+                                        </CMD-LIST>
+                                        <NAME>/etc/passwd</NAME>
+                                </FILE>
+                                <FILE>
+                                        <CONTENT>["#\t$OpenBSD: sshd_config,v 1.80 2008/07/02 02:24:18 djm Exp $", "# This is the sshd server system-wide configuration file.  See", "# sshd_config(5) for more information.", "# This sshd was compiled with PATH=/usr/bin:/bin:/usr/sbin:/sbin", "# The strategy used for options in the default sshd_config shipped with", "# OpenSSH is to specify options with their default value where", "# possible, but leave them commented.  Uncommented options change a", "# default value.", "#Port 22", "AddressFamily inet", "#ListenAddress 0.0.0.0", "#ListenAddress ::", "# Disable legacy (protocol version 1) support in the server for new", "# installations. In future the default will change to require explicit", "# activation of protocol 1", "Protocol 2", "# HostKey for protocol version 1", "#HostKey /etc/ssh/ssh_host_key", "# HostKeys for protocol version 2", "#HostKey /etc/ssh/ssh_host_rsa_key", "#HostKey /etc/ssh/ssh_host_dsa_key", "# Lifetime and size of ephemeral version 1 server key", "#KeyRegenerationInterval 1h", "#ServerKeyBits 1024", "# Logging", "# obsoletes QuietMode and FascistLogging", "#SyslogFacility AUTH", "#LogLevel INFO", "# Authentication:", "#LoginGraceTime 2m", "PermitRootLogin yes", "#StrictModes yes", "#MaxAuthTries 6", "#MaxSessions 10", "#RSAAuthentication yes", "#PubkeyAuthentication yes", "#AuthorizedKeysFile\t.ssh/authorized_keys", "# For this to work you will also need host keys in /etc/ssh/ssh_known_hosts", "#RhostsRSAAuthentication no", "# similar for protocol version 2", "#HostbasedAuthentication no", "# Change to yes if you don't trust ~/.ssh/known_hosts for", "# RhostsRSAAuthentication and HostbasedAuthentication", "#IgnoreUserKnownHosts no", "# Don't read the user's ~/.rhosts and ~/.shosts files", "#IgnoreRhosts yes", "# To disable tunneled clear text passwords, change to no here!", "#PasswordAuthentication yes", "PermitEmptyPasswords yes", "# Change to no to disable s/key passwords", "#ChallengeResponseAuthentication yes", "# Kerberos options", "#KerberosAuthentication no", "#KerberosOrLocalPasswd yes", "#KerberosTicketCleanup yes", "#KerberosGetAFSToken no", "# GSSAPI options", "#GSSAPIAuthentication no", "#GSSAPICleanupCredentials yes", "# Set this to 'yes' to enable PAM authentication, account processing,", "# and session processing. If this is enabled, PAM authentication will", "# be allowed through the ChallengeResponseAuthentication and", "# PasswordAuthentication.  Depending on your PAM configuration,", "# PAM authentication via ChallengeResponseAuthentication may bypass", "# the setting of \"PermitRootLogin without-password\".", "# If you just want the PAM account and session checks to run without", "# PAM authentication, then enable this but set PasswordAuthentication", "# and ChallengeResponseAuthentication to 'no'.", "#UsePAM no", "#AllowAgentForwarding yes", "#AllowTcpForwarding yes", "#GatewayPorts no", "#X11Forwarding no", "#X11DisplayOffset 10", "#X11UseLocalhost yes", "#PrintMotd yes", "#PrintLastLog yes", "#TCPKeepAlive yes", "#UseLogin no", "UsePrivilegeSeparation no", "#PermitUserEnvironment no", "Compression no", "ClientAliveInterval 15", "ClientAliveCountMax 4", "UseDNS no", "#PidFile /var/run/sshd.pid", "#MaxStartups 10", "#PermitTunnel no", "#ChrootDirectory none", "# no default banner path", "#Banner none", "# override default of no subsystems", "Subsystem\tsftp\t/usr/lib64/openssh/sftp-server", "# Example of overriding settings on a per-user basis", "#Match User anoncvs", "#\tX11Forwarding no", "#\tAllowTcpForwarding no", "#\tForceCommand cvs server"]</CONTENT>
+                                        <CHECKSUM>f2fb127f081b5ac6305bea315bf33505</CHECKSUM>
+                                        <CMD-LIST>
+                                                <CMD>
+                                                        <REQUEST>ls -la</REQUEST>
+                                                        <RESPONSE>-rwxr-xr-x 1 root root 3275 Apr 19 07:27 /etc/ssh/sshd_config</RESPONSE>
+                                                </CMD>
+                                                <CMD>
+                                                        <REQUEST>ls -la</REQUEST>
+                                                        <RESPONSE>-rw-r--r-- 1 root root 874 Apr 19 07:27 /etc/passwd</RESPONSE>
+                                                </CMD>
+                                        </CMD-LIST>
+                                        <NAME>/etc/passwd</NAME>
+                                </FILE>
+                        </FILES>
+                        <DIRECTORIES>
+                                <DIRECTORY>
+                                        <CMD-LIST>
+                                                <CMD>
+                                                        <REQUEST>ls -ld</REQUEST>
+                                                        <RESPONSE>drwxr-xr-x 3 root root 20480 Apr 19 07:28 /usr/bin</RESPONSE>
+                                                </CMD>
+                                                <CMD>
+                                                        <REQUEST>ls -ld</REQUEST>
+                                                        <RESPONSE>drwxr-xr-x 5 root root 4096 Apr 19 07:27 /usr/lib</RESPONSE>
+                                                </CMD>
+                                        </CMD-LIST>
+                                        <NAME>/usr/lib</NAME>
+                                </DIRECTORY>
+                                <DIRECTORY>
+                                        <CMD-LIST>
+                                                <CMD>
+                                                        <REQUEST>ls -ld</REQUEST>
+                                                        <RESPONSE>drwxr-xr-x 3 root root 20480 Apr 19 07:28 /usr/bin</RESPONSE>
+                                                </CMD>
+                                                <CMD>
+                                                        <REQUEST>ls -ld</REQUEST>
+                                                        <RESPONSE>drwxr-xr-x 5 root root 4096 Apr 19 07:27 /usr/lib</RESPONSE>
+                                                </CMD>
+                                        </CMD-LIST>
+                                        <NAME>/usr/lib</NAME>
+                                </DIRECTORY>
+                        </DIRECTORIES>
+                </INTEGRITY>
+                <INTEGRITY domain="HOST">
+                        <FILES>
+                                <FILE>
+                                        <CONTENT>["#\t$OpenBSD: sshd_config,v 1.80 2008/07/02 02:24:18 djm Exp $", "# This is the sshd server system-wide configuration file.  See", "# sshd_config(5) for more information.", "# This sshd was compiled with PATH=/usr/bin:/bin:/usr/sbin:/sbin", "# The strategy used for options in the default sshd_config shipped with", "# OpenSSH is to specify options with their default value where", "# possible, but leave them commented.  Uncommented options change a", "# default value.", "#Port 22", "AddressFamily inet", "#ListenAddress 0.0.0.0", "#ListenAddress ::", "# Disable legacy (protocol version 1) support in the server for new", "# installations. In future the default will change to require explicit", "# activation of protocol 1", "Protocol 2", "# HostKey for protocol version 1", "#HostKey /etc/ssh/ssh_host_key", "# HostKeys for protocol version 2", "#HostKey /etc/ssh/ssh_host_rsa_key", "#HostKey /etc/ssh/ssh_host_dsa_key", "# Lifetime and size of ephemeral version 1 server key", "#KeyRegenerationInterval 1h", "#ServerKeyBits 1024", "# Logging", "# obsoletes QuietMode and FascistLogging", "#SyslogFacility AUTH", "#LogLevel INFO", "# Authentication:", "#LoginGraceTime 2m", "PermitRootLogin yes", "#StrictModes yes", "#MaxAuthTries 6", "#MaxSessions 10", "#RSAAuthentication yes", "#PubkeyAuthentication yes", "#AuthorizedKeysFile\t.ssh/authorized_keys", "# For this to work you will also need host keys in /etc/ssh/ssh_known_hosts", "#RhostsRSAAuthentication no", "# similar for protocol version 2", "#HostbasedAuthentication no", "# Change to yes if you don't trust ~/.ssh/known_hosts for", "# RhostsRSAAuthentication and HostbasedAuthentication", "#IgnoreUserKnownHosts no", "# Don't read the user's ~/.rhosts and ~/.shosts files", "#IgnoreRhosts yes", "# To disable tunneled clear text passwords, change to no here!", "#PasswordAuthentication yes", "PermitEmptyPasswords yes", "# Change to no to disable s/key passwords", "#ChallengeResponseAuthentication yes", "# Kerberos options", "#KerberosAuthentication no", "#KerberosOrLocalPasswd yes", "#KerberosTicketCleanup yes", "#KerberosGetAFSToken no", "# GSSAPI options", "#GSSAPIAuthentication no", "#GSSAPICleanupCredentials yes", "# Set this to 'yes' to enable PAM authentication, account processing,", "# and session processing. If this is enabled, PAM authentication will", "# be allowed through the ChallengeResponseAuthentication and", "# PasswordAuthentication.  Depending on your PAM configuration,", "# PAM authentication via ChallengeResponseAuthentication may bypass", "# the setting of \"PermitRootLogin without-password\".", "# If you just want the PAM account and session checks to run without", "# PAM authentication, then enable this but set PasswordAuthentication", "# and ChallengeResponseAuthentication to 'no'.", "#UsePAM no", "#AllowAgentForwarding yes", "#AllowTcpForwarding yes", "#GatewayPorts no", "#X11Forwarding no", "#X11DisplayOffset 10", "#X11UseLocalhost yes", "#PrintMotd yes", "#PrintLastLog yes", "#TCPKeepAlive yes", "#UseLogin no", "UsePrivilegeSeparation no", "#PermitUserEnvironment no", "Compression no", "ClientAliveInterval 15", "ClientAliveCountMax 4", "UseDNS no", "#PidFile /var/run/sshd.pid", "#MaxStartups 10", "#PermitTunnel no", "#ChrootDirectory none", "# no default banner path", "#Banner none", "# override default of no subsystems", "Subsystem\tsftp\t/usr/lib64/openssh/sftp-server", "# Example of overriding settings on a per-user basis", "#Match User anoncvs", "#\tX11Forwarding no", "#\tAllowTcpForwarding no", "#\tForceCommand cvs server"]</CONTENT>
+                                        <CHECKSUM>f2fb127f081b5ac6305bea315bf33505</CHECKSUM>
+                                        <CMD-LIST>
+                                                <CMD>
+                                                        <REQUEST>ls -la</REQUEST>
+                                                        <RESPONSE>-rwxr-xr-x 1 root root 3275 Apr 19 07:26 /etc/ssh/sshd_config</RESPONSE>
+                                                </CMD>
+                                                <CMD>
+                                                        <REQUEST>ls -la</REQUEST>
+                                                        <RESPONSE>-rw-r--r-- 1 root root 874 Apr 19 07:26 /etc/passwd</RESPONSE>
+                                                </CMD>
+                                        </CMD-LIST>
+                                        <NAME>/etc/passwd</NAME>
+                                </FILE>
+                                <FILE>
+                                        <CONTENT>["#\t$OpenBSD: sshd_config,v 1.80 2008/07/02 02:24:18 djm Exp $", "# This is the sshd server system-wide configuration file.  See", "# sshd_config(5) for more information.", "# This sshd was compiled with PATH=/usr/bin:/bin:/usr/sbin:/sbin", "# The strategy used for options in the default sshd_config shipped with", "# OpenSSH is to specify options with their default value where", "# possible, but leave them commented.  Uncommented options change a", "# default value.", "#Port 22", "AddressFamily inet", "#ListenAddress 0.0.0.0", "#ListenAddress ::", "# Disable legacy (protocol version 1) support in the server for new", "# installations. In future the default will change to require explicit", "# activation of protocol 1", "Protocol 2", "# HostKey for protocol version 1", "#HostKey /etc/ssh/ssh_host_key", "# HostKeys for protocol version 2", "#HostKey /etc/ssh/ssh_host_rsa_key", "#HostKey /etc/ssh/ssh_host_dsa_key", "# Lifetime and size of ephemeral version 1 server key", "#KeyRegenerationInterval 1h", "#ServerKeyBits 1024", "# Logging", "# obsoletes QuietMode and FascistLogging", "#SyslogFacility AUTH", "#LogLevel INFO", "# Authentication:", "#LoginGraceTime 2m", "PermitRootLogin yes", "#StrictModes yes", "#MaxAuthTries 6", "#MaxSessions 10", "#RSAAuthentication yes", "#PubkeyAuthentication yes", "#AuthorizedKeysFile\t.ssh/authorized_keys", "# For this to work you will also need host keys in /etc/ssh/ssh_known_hosts", "#RhostsRSAAuthentication no", "# similar for protocol version 2", "#HostbasedAuthentication no", "# Change to yes if you don't trust ~/.ssh/known_hosts for", "# RhostsRSAAuthentication and HostbasedAuthentication", "#IgnoreUserKnownHosts no", "# Don't read the user's ~/.rhosts and ~/.shosts files", "#IgnoreRhosts yes", "# To disable tunneled clear text passwords, change to no here!", "#PasswordAuthentication yes", "PermitEmptyPasswords yes", "# Change to no to disable s/key passwords", "#ChallengeResponseAuthentication yes", "# Kerberos options", "#KerberosAuthentication no", "#KerberosOrLocalPasswd yes", "#KerberosTicketCleanup yes", "#KerberosGetAFSToken no", "# GSSAPI options", "#GSSAPIAuthentication no", "#GSSAPICleanupCredentials yes", "# Set this to 'yes' to enable PAM authentication, account processing,", "# and session processing. If this is enabled, PAM authentication will", "# be allowed through the ChallengeResponseAuthentication and", "# PasswordAuthentication.  Depending on your PAM configuration,", "# PAM authentication via ChallengeResponseAuthentication may bypass", "# the setting of \"PermitRootLogin without-password\".", "# If you just want the PAM account and session checks to run without", "# PAM authentication, then enable this but set PasswordAuthentication", "# and ChallengeResponseAuthentication to 'no'.", "#UsePAM no", "#AllowAgentForwarding yes", "#AllowTcpForwarding yes", "#GatewayPorts no", "#X11Forwarding no", "#X11DisplayOffset 10", "#X11UseLocalhost yes", "#PrintMotd yes", "#PrintLastLog yes", "#TCPKeepAlive yes", "#UseLogin no", "UsePrivilegeSeparation no", "#PermitUserEnvironment no", "Compression no", "ClientAliveInterval 15", "ClientAliveCountMax 4", "UseDNS no", "#PidFile /var/run/sshd.pid", "#MaxStartups 10", "#PermitTunnel no", "#ChrootDirectory none", "# no default banner path", "#Banner none", "# override default of no subsystems", "Subsystem\tsftp\t/usr/lib64/openssh/sftp-server", "# Example of overriding settings on a per-user basis", "#Match User anoncvs", "#\tX11Forwarding no", "#\tAllowTcpForwarding no", "#\tForceCommand cvs server"]</CONTENT>
+                                        <CHECKSUM>f2fb127f081b5ac6305bea315bf33505</CHECKSUM>
+                                        <CMD-LIST>
+                                                <CMD>
+                                                        <REQUEST>ls -la</REQUEST>
+                                                        <RESPONSE>-rwxr-xr-x 1 root root 3275 Apr 19 07:26 /etc/ssh/sshd_config</RESPONSE>
+                                                </CMD>
+                                                <CMD>
+                                                        <REQUEST>ls -la</REQUEST>
+                                                        <RESPONSE>-rw-r--r-- 1 root root 874 Apr 19 07:26 /etc/passwd</RESPONSE>
+                                                </CMD>
+                                        </CMD-LIST>
+                                        <NAME>/etc/passwd</NAME>
+                                </FILE>
+                        </FILES>
+                        <DIRECTORIES>
+                                <DIRECTORY>
+                                        <CMD-LIST>
+                                                <CMD>
+                                                        <REQUEST>ls -ld</REQUEST>
+                                                        <RESPONSE>drwxr-xr-x 3 root root 20480 Apr 19 07:26 /usr/bin</RESPONSE>
+                                                </CMD>
+                                                <CMD>
+                                                        <REQUEST>ls -ld</REQUEST>
+                                                        <RESPONSE>drwxr-xr-x 5 root root 4096 Apr 19 07:26 /usr/lib</RESPONSE>
+                                                </CMD>
+                                        </CMD-LIST>
+                                        <NAME>/usr/lib</NAME>
+                                </DIRECTORY>
+                                <DIRECTORY>
+                                        <CMD-LIST>
+                                                <CMD>
+                                                        <REQUEST>ls -ld</REQUEST>
+                                                        <RESPONSE>drwxr-xr-x 3 root root 20480 Apr 19 07:26 /usr/bin</RESPONSE>
+                                                </CMD>
+                                                <CMD>
+                                                        <REQUEST>ls -ld</REQUEST>
+                                                        <RESPONSE>drwxr-xr-x 5 root root 4096 Apr 19 07:26 /usr/lib</RESPONSE>
+                                                </CMD>
+                                        </CMD-LIST>
+                                        <NAME>/usr/lib</NAME>
+                                </DIRECTORY>
+                        </DIRECTORIES>
+                </INTEGRITY>
+        </INTEGRITY-SET>
 </COMPLIANCE-DUMP>

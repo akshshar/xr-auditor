@@ -406,19 +406,6 @@ class AuditHelpers(ZtpHelpers):
         with open(output_file, 'w') as f:
             f.writelines(xml_dump)
 
-
-        print "I'm here!!!!"
-        # For admin LXC domain, transfer the file to /misc/app_host on the host layer
-
-        if not self.transfer_admin_to_host(
-                         src=output_file,
-                         dest="/misc/app_host/"+domain+".xml"):
-            self.syslogger.info("Successfully transferred output XML"
-                                "file to host /misc/app_host")
-        else:
-            self.syslogger.info("Failed to transfer output XML to host")
-            return 0
-
         # Validate the output XML and return the validation result
         xml_doc = etree.parse(output_file)
 

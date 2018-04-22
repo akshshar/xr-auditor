@@ -285,13 +285,10 @@ if __name__ == "__main__":
     # If nothing is specified, then logging will happen to local log rotated file.
 
 
-    audit_obj = IosxrAuditMain(syslog_file="/root/audit_python.log", syslog_server="11.11.11.2", syslog_port=514,
-                               compliance_xsd=IosxrAuditMain.current_dir()+"/userfiles/compliance.xsd",
-                               compliance_cfg=IosxrAuditMain.current_dir()+"/userfiles/compliance.cfg.yml",
-                               id_rsa_file=IosxrAuditMain.current_dir()+"/userfiles/id_rsa_server",
-                               server_host=IosxrAuditMain.current_dir()+"/userfiles/server_host")
+    audit_obj = IosxrAuditMain(domain="MAIN")
 
-    if audit_obj is None:
+    if audit_obj.exit:
+        audit_obj.syslogger.info("Exit flag is set, aborting")
         sys.exit(1)
 
     audit_obj.toggle_debug(1)
@@ -310,23 +307,6 @@ if __name__ == "__main__":
     audit_obj.setup_host_audit(root_lr_user="root")
 
     audit_obj.setup_collector()
-
-    #print audit_obj.gather_general_data()
-    #print audit_obj.compliance_cfg_dict
-
-    #print audit_obj.gather_integrity_data("XR-LXC")
-
-    #dict_dump = audit_obj.create_xml_dump(domain="XR-LXC")
-
-    #if audit_obj.validate_xml_dump(domain="XR-LXC"):
-    #    print('Valid! :)')
-    #else:
-    #    print('Not valid! :(')
-    #print xd.unparse(dict_dump)
-    #with open(bundle_dir+'/id_rsa_server') as f:
-    #    lines = f.readlines()
-
-    #print lines
 
     #run_bash("cat /misc/scratch/try | ip netns exec global-vrf ssh -i "+bundle_dir+"/id_rsa_server -o StrictHostKeyChecking=no cisco@11.11.11.2 \"cat >> file_sent_by_main_apr8\"")
 

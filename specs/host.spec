@@ -6,7 +6,7 @@ added_files = [
          ( '../userfiles/id_rsa_server', './userfiles' ),
          ( '../userfiles/compliance.cfg.yml', './userfiles' ),
          ( '../userfiles/server_host', './userfiles' ),
-         ( '../userfiles/compliance_integrity.xsd', './userfiles' )
+         ( '../userfiles/compliance.xsd', './userfiles' )
          ]
 
 a = Analysis(['../core/audit_host.py'],

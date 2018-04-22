@@ -115,6 +115,15 @@
 </xs:element>
 
 
+<xs:element name="INTEGRITY-SET">
+  <xs:complexType>
+    <xs:sequence minOccurs="1" maxOccurs="unbounded">
+        <xs:element ref="INTEGRITY"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:element>
+
+
 <xs:element name="GENERAL">
   <xs:complexType>
     <xs:all>
@@ -134,10 +143,10 @@
 
 <xs:element name="COMPLIANCE-DUMP">
   <xs:complexType>
-    <xs:sequence>
-      <xs:element ref="INTEGRITY"/>
-      <xs:element ref="GENERAL"/>
-    </xs:sequence>
+    <xs:all>
+      <xs:element ref="INTEGRITY-SET"/>
+      <xs:element ref="GENERAL" minOccurs="0"/>
+    </xs:all>
     <xs:attribute name="version" type="xs:string" use="required"/>
   </xs:complexType>
 </xs:element>

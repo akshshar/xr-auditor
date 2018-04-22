@@ -14,13 +14,21 @@
 from ztp_helper import ZtpHelpers
 import subprocess, posixpath
 import datetime, os, re
-import glob
+import glob, copy
 import yaml
 from lxml import etree
 import pdb
 import xmltodict as xd
 import ast, json
 from pprint import pprint
+import logging, logging.handlers
+
+VALID_DOMAINS = ["XR-LXC",
+                 "ADMIN-LXC",
+                 "HOST",
+                 "COLLECTOR",
+                 "MAIN"]
+
 
 class AuditHelpers(ZtpHelpers):
 
@@ -28,43 +36,99 @@ class AuditHelpers(ZtpHelpers):
                  syslog_server=None, 
                  syslog_port=None, 
                  syslog_file=None,
+                 domain=None,
                  compliance_xsd=None,
-                 compliance_cfg=None,
-                 id_rsa_file=None,
-                 server_host=None):
+                 compliance_cfg=None):
 
-        super(AuditHelpers, self).__init__(syslog_server, syslog_port, syslog_file)
+        self.exit = False
 
+        if domain is None:
+            self.syslogger.info("No domain specified, aborting.\n"
+                                "Specify one of "+', '.join(VALID_DOMAINS))
+            self.exit = True 
+        else:
+            if domain in VALID_DOMAINS:
+                self.domain = domain
+            else:
+                self.syslogger.info("Domain: "+str(domain)+" specified is invalid, aborting.\n"
+                                    "Specify one of "+', '.join(VALID_DOMAINS))
+                self.exit = True 
+
+        if self.domain == "XR-LXC":
+            super(AuditHelpers, self).__init__(syslog_server, syslog_port, syslog_file)
+        elif self.domain == "MAIN":
+            super(AuditHelpers, self).__init__(syslog_server, syslog_port, syslog_file)
+            self.exit = False
+            return None 
+        else:
+            self.setup_syslog_child()
+            self.setup_debug_logger_child()
+            self.debug = False
+
+            
         if compliance_xsd is None:
             self.syslogger.info("No Compliance xsd file - compliance_xsd provided, aborting")
-            return None
-
+            self.exit = True
+        else:
+            self.compliance_xsd = compliance_xsd
 
         if compliance_cfg is None:
-            self.syslogger.info("No Compliance config file - compliance_cfg provided, aborting")
-            return None
-
-        if id_rsa_file is None:
-            self.syslogger.info("No private key file - id_rsa_file provided, aborting")
-            return None
+            self.syslogger.info("No path to Compliance config yaml file provided, aborting")
+            self.exit = True 
+        else:
+            self.compliance_cfg = compliance_cfg
 
 
-        if server_host is None:
-            self.syslogger.info("No server_host - ip or dns name provided, aborting")
-            return None
- 
-        self.compliance_xsd = compliance_xsd
         self.compliance_xsd_dict = {}
-        self.compliance_cfg = compliance_cfg
         self.compliance_cfg_dict = {}
-        self.id_rsa_file = id_rsa_file 
-        self.server_host = server_host
+
         self.compliance_xsd_dict = self.xsd_to_dict()
-        self.compliance_cfg_dict = self.yaml_to_dict()
+        if not self.compliance_xsd_dict:
+            self.exit = True
+
+        self.compliance_cfg_dict = self.yaml_to_dict(self.compliance_cfg)
+        if not self.compliance_cfg_dict:
+            self.exit = True        
 
         self.calendar_months = {'Jan':'01', 'Feb':'02', 'Mar':'03', 'Apr':'04',
                                 'May':'05', 'Jun':'06', 'Jul':'07', 'Aug':'08',
                                 'Sep':'09', 'Oct':'10', 'Nov':'11', 'Dec':'12'}
+
+
+
+    def setup_debug_logger_child(self):
+        """Setup the debug logger to throw debugs to stdout/stderr 
+        """
+
+        logger = logging.getLogger('DebugZTPLogger')
+        logger.setLevel(logging.DEBUG)
+
+        # create console handler and set level to debug
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.DEBUG)
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        ch.setFormatter(formatter)
+        logger.addHandler(ch)
+
+        self.logger = logger
+
+
+    def setup_syslog_child(self):
+        """Setup up the Syslog logger to log to a logrotated local file 
+        """
+
+        logger = logging.getLogger('ZTPLogger')
+        logger.setLevel(logging.INFO)
+
+        formatter = logging.Formatter('Python: { "loggerName":"%(name)s", "asciTime":"%(asctime)s", "pathName":"%(pathname)s", "logRecordCreationTime":"%(created)f", "functionName":"%(funcName)s", "levelNo":"%(levelno)s", "lineNo":"%(lineno)d", "time":"%(msecs)d", "levelName":"%(levelname)s", "message":"%(message)s"}')
+
+        MAX_SIZE = 1024*1024
+        LOG_PATH = "/tmp/ztp_python.log"
+        handler = logging.handlers.RotatingFileHandler(LOG_PATH, maxBytes=MAX_SIZE, backupCount=1)
+        handler.formatter = formatter
+        logger.addHandler(handler)
+
+        self.syslogger = logger
 
 
     def get_host(self):
@@ -74,10 +138,10 @@ class AuditHelpers(ZtpHelpers):
             if result["status"] == "success":
                 return result["output"][0].split(' ')[1]
             else:
-                return []
+                return ""
         except Exception as e:
             self.syslogger.info("Failed to fetch hostname (Not configured?), Error: %s" %e) 
-            return []
+            return :""
 
 
     def get_product(self):
@@ -714,16 +778,35 @@ class AuditHelpers(ZtpHelpers):
 
         return xsd_dict
 
-    def yaml_to_dict(self):
+
+
+    def xml_to_dict(self, xml_file):
+        xml_dict = {}
+        try:
+            with open(xml_file,'r') as f:
+                xml_dict_raw = xd.parse(f)
+                xml_dict = ast.literal_eval(json.dumps(xml_dict_raw))
+        except Exception as e:
+            self.syslogger.info("Failed to parse compliance xml file")
+            self.syslogger.info("Error is %s" % e)
+            return {}
+
+        if self.debug:
+            self.logger.debug(xml_dict)
+
+        return xml_dict
+
+
+    def yaml_to_dict(self, yaml_file):
         yaml_dict = {}
         try:
-            with open(self.compliance_cfg, 'r') as stream:
+            with open(yaml_file, 'r') as stream:
                 try:
                     yaml_dict = yaml.load(stream)
                 except yaml.YAMLError as e:
                     self.syslogger.info("Failed to parse YAML file, Error: %s" % e)
         except Exception as e:
-            self.syslogger.info("Failed to open compliance config YAML file")
+            self.syslogger.info("Failed to open YAML file")
             self.syslogger.info("Error is %s" % e)
             
         if self.debug:
@@ -732,8 +815,8 @@ class AuditHelpers(ZtpHelpers):
         return yaml_dict
 
 
+
     def gather_general_data(self):
-        general_fields= []
         general_fields_dict = {}
 
         for element in self.compliance_xsd_dict["xs:schema"]["xs:element"]:
@@ -741,17 +824,15 @@ class AuditHelpers(ZtpHelpers):
                 if "xs:complexType" in element.keys():
                     if element["@name"] == "GENERAL":
                         general_fields_dict = element["xs:complexType"]["xs:all"]["xs:element"]
-                for field in general_fields_dict:
-                   general_fields.append(field["@ref"])
             except Exception as e:
                 self.syslogger.info("Failed to gather General fields from the compliance file")
                 self.syslogger.info("Error is: "+e)
 
         general_data_dict = {}
 
-        for field in general_fields:
-            value = self.get_general_field(field)
-            general_data_dict[field] = value
+        for field in general_fields_dict:
+            value = self.get_general_field(field["@ref"])
+            general_data_dict[field["@ref"]] = str(value)
        
         return general_data_dict 
 
@@ -812,26 +893,26 @@ class AuditHelpers(ZtpHelpers):
         if src is None:
             self.syslogger.info("No source on admin LXC specified, bailing out")
             return 1
-       
+
         if dest is None:
             self.syslogger.info("No destination on host specified, bailing out")
             return 1
+
 
         try:
             result = self.run_bash(cmd="scp "+src+" root@10.0.2.16:"+dest)
             return result["status"]
         except Exception as e:
-            self.syslogger.info("Failed to md5 checksum of file "+filename)
+            self.syslogger.info("Failed to transfer file to host")
             self.syslogger.info("Error is: "+e)
             return 1
 
-   
 
-    def gather_integrity_data(self, domain):
+    def gather_integrity_data(self):
         
         integrity_data = {}
 
-        integrity_data["@domain"] = domain
+        integrity_data["@domain"] = self.domain
         integrity_data["DIRECTORIES"] = {} 
         integrity_data["FILES"] = {}
 
@@ -921,13 +1002,14 @@ class AuditHelpers(ZtpHelpers):
         return integrity_data
 
 
-    def create_xml_dump(self, domain):
+    def create_xml_dump(self):
 
         dict_dump = {}
 
-        dict_dump["INTEGRITY"] = self.gather_integrity_data(domain)
-
-        if domain == "XR-LXC":
+        dict_dump["INTEGRITY-SET"] = {}
+        dict_dump["INTEGRITY-SET"]["INTEGRITY"] = self.gather_integrity_data()
+ 
+        if self.domain == "XR-LXC":
             dict_dump["GENERAL"] = self.gather_general_data()
 
 
@@ -938,40 +1020,40 @@ class AuditHelpers(ZtpHelpers):
 
         final_dict = {'COMPLIANCE-DUMP' : dict_dump}
 
-        return xd.unparse(final_dict, pretty=True)
-       
+        xml_dump = xd.unparse(final_dict, pretty=True)
 
-    def validate_xml_dump(self, domain):
-        
-        xmlschema_doc = etree.parse(self.compliance_xsd)
-        xmlschema = etree.XMLSchema(xmlschema_doc)
+        self.logger.info(xml_dump)
 
-        xml_dump = self.create_xml_dump(domain)
-
-        if domain == "ADMIN-LXC":
-            output_file = "/misc/scratch/"+domain+".xml"
+        if self.domain == "ADMIN-LXC":
+            output_file = "/misc/scratch/"+self.domain+".xml"
         else:
-            output_file = "/misc/app_host/"+domain+".xml"
+            output_file = "/misc/app_host/"+self.domain+".xml"
 
         with open(output_file, 'w') as f:
             f.writelines(xml_dump)
+          
+        return output_file
 
 
-        # For admin LXC domain, transfer the file to /misc/app_host on the host layer
 
-        if not self.transfer_admin_to_host(
-                         src=output_file,
-                         dest="/misc/app_host"+domain+".xml"):
-            self.syslogger.info("Successfully transferred output XML"
-                                "file to host /misc/app_host")
-        else:
-            self.syslogger.info("Failed to transfer output XML to host")
-            return 0
+    def validate_xml_dump(self, xml_file):
+        
+        xmlschema_doc = etree.parse(self.compliance_xsd)
+
+        print "\n\n######################################\n\n"
+        print etree.tostring(xmlschema_doc.getroot(), encoding='utf8',method='xml')
+
+        xmlschema = etree.XMLSchema(xmlschema_doc)
 
         # Validate the output XML and return the validation result
-        xml_doc = etree.parse(output_file)
+        xml_doc = etree.parse(xml_file)
 
-        self.logger.info(xml_dump)
+        print "\n\n######################################\n\n"
+
+        print etree.tostring(xml_doc.getroot(), encoding='utf8',method='xml')
+
+        print "\n\n######################################\n\n"
+
         result = xmlschema.validate(xml_doc)
 
 

@@ -29,13 +29,12 @@ if __name__ == "__main__":
     # If nothing is specified, then logging will happen to local log rotated file.
 
 
-    audit_obj = IosxrAuditMain(syslog_file="/root/audit_python.log", syslog_server="11.11.11.2", syslog_port=514,
-                               compliance_xsd=IosxrAuditMain.current_dir()+"/userfiles/compliance_integrity.xsd",
-                               compliance_cfg=IosxrAuditMain.current_dir()+"/userfiles/compliance.cfg.yml",
-                               id_rsa_file=IosxrAuditMain.current_dir()+"/userfiles/id_rsa_server",
-                               server_host=IosxrAuditMain.current_dir()+"/userfiles/server_host")
+    audit_obj = IosxrAuditMain(domain="HOST",
+                               compliance_xsd=IosxrAuditMain.current_dir()+"/userfiles/compliance.xsd",
+                               compliance_cfg=IosxrAuditMain.current_dir()+"/userfiles/compliance.cfg.yml")
 
-    if audit_obj is None:
+    if audit_obj.exit:
+        audit_obj.syslogger.info("Exit flag is set, aborting")
         sys.exit(1)
 
     audit_obj.toggle_debug(1)
@@ -48,8 +47,12 @@ if __name__ == "__main__":
 
     audit_obj.toggle_debug(0)
 
-    if audit_obj.validate_xml_dump(domain="HOST"):
-        print('Valid! :)')
-    else:
-        print('Not valid! :(')
+    xml_file = audit_obj.create_xml_dump()
 
+    if audit_obj.validate_xml_dump(xml_file):
+        audit_obj.syslogger.info('Valid XML! :)')
+        audit_obj.syslogger.info('Successfully created output XML: '+str(xml_file))
+        sys.exit(0)
+    else:
+        audit_obj.syslogger.info('Output XML Not valid! :(')
+        sys.exit(1)
