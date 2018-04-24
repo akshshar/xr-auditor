@@ -207,11 +207,25 @@ if __name__ == "__main__":
     if audit_obj.validate_xml_dump(xml_file):
         audit_obj.syslogger.info('Valid XML! :)')
         audit_obj.syslogger.info('Successfully created output XML: '+str(xml_file))
-        if not audit_obj.send_to_server(xml_file):
-            audit_obj.syslogger.info("Successfully transferred audit result to Remote Server, over SSH")
-            sys.exit(0)
+
+        # Attempt to send to remote server only on the active RP
+
+        # Am I the active RP?
+        check_active_rp = audit_obj.is_active_rp()
+
+        if check_active_rp["status"] == "success":
+            if check_active_rp["output"]:
+                if not audit_obj.send_to_server(xml_file):
+                    audit_obj.syslogger.info("Successfully transferred audit result to Remote Server, over SSH")
+                    sys.exit(0)
+                else:
+                    audit_obj.syslogger.info("Failed to send audit result to Remote Server")
+                    sys.exit(1)
+            else:
+                audit_obj.syslogger.info("Not running on active RP, bailing out")
+                sys.exit(0)
         else:
-            audit_obj.syslogger.info("Failed to send audit result to Remote Server")
+            audit_obj.syslogger.info("Failed to check current RP node's state")
             sys.exit(1)
     else:
         audit_obj.syslogger.info('Output XML Not valid! :(')

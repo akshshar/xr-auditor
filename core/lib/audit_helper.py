@@ -22,12 +22,16 @@ import xmltodict as xd
 import json
 from pprint import pprint
 import logging, logging.handlers
+from ctypes import cdll
+libc = cdll.LoadLibrary('libc.so.6')
+_setns = libc.setns
+CLONE_NEWNET = 0x40000000
 
 VALID_DOMAINS = ["XR-LXC",
                  "ADMIN-LXC",
                  "HOST",
                  "COLLECTOR",
-                 "MAIN"]
+                 "INSTALLER"]
 
 
 class AuditHelpers(ZtpHelpers):
@@ -57,7 +61,7 @@ class AuditHelpers(ZtpHelpers):
         if ( self.domain == "XR-LXC" or
              self.domain == "COLLECTOR" ):
             super(AuditHelpers, self).__init__(syslog_server, syslog_port, syslog_file)
-        elif self.domain == "MAIN":
+        elif self.domain == "INSTALLER":
             super(AuditHelpers, self).__init__(syslog_server, syslog_port, syslog_file)
             self.exit = False
             return None 
@@ -147,17 +151,11 @@ class AuditHelpers(ZtpHelpers):
 
     def get_product(self):
         try:
-            result = self.xrcmd({"exec_cmd" : "show inventory details"})
-            if result["status"] == "success":
-                index = 0
-                for line in result["output"]:
-                    if '0/RP0' in line:
-                        match = result["output"][index+1]
-                    index=index+1
-
-                product = match.split(',')[0].split(':')[1].strip()
-                return product
+            result = self.run_bash("source /pkg/etc/ztp.config && get_ztp_product_id")
+            if not result["status"]:
+                return result["output"]
             else:
+                self.syslogger.info("Failed to fetch product name, output:" + result["output"]+ ", error:"+result["error"])
                 return ""
         except Exception as e:
             self.syslogger.info("Failed to fetch product name, Error: %s" % e) 
@@ -176,7 +174,7 @@ class AuditHelpers(ZtpHelpers):
             if self.compliance_xsd_dict["xs:schema"]["xs:attribute"]['@name'] == 'DATE':
                 pattern = self.compliance_xsd_dict["xs:schema"]["xs:attribute"]['xs:simpleType']['xs:restriction']['xs:pattern']['@value']
         except Exception as e:
-            sys.syslogger.info("Failed to fetch pattern for DATE from compliance xsd, Error:"+e)
+            sys.syslogger.info("Failed to fetch pattern for DATE from compliance xsd, Error:"+str(e))
             sys.syslogger.info("Using default pattern: CCYYMMDD-HH:MI TZ")
  
         try:
@@ -241,6 +239,48 @@ class AuditHelpers(ZtpHelpers):
                 'IPADDR' : self.get_mgmt_ip
                 }
         return field_dict[field]()
+
+
+    def is_active_rp(self):
+        '''method to check if the node executing this script is the active RP
+        '''
+
+        try:
+            # Get the current active RP node-name
+            exec_cmd = "show redundancy summary"
+            show_red_summary = self.xrcmd({"exec_cmd" : exec_cmd})
+
+            if show_red_summary["status"] == "error":
+                self.syslogger.info("Failed to get show redundancy summary output from XR")
+                return {"status" : "error", "output" : "", "warning" : "Failed to get show redundancy summary output"}
+
+            else:
+                try:
+                    current_active_rp = show_red_summary["output"][2].split()[0]
+                except Exception as e:
+                    self.syslogger.info("Failed to get Active RP from show redundancy summary output")
+                    return {"status" : "error", "output" : "", "warning" : "Failed to get Active RP, error: " + str(e)}
+
+
+            # get the name of the current node
+            cmd = "/sbin/ip netns exec xrnns /pkg/bin/node_list_generation -f MY"
+
+            result = self.run_bash(cmd)
+
+            if not result["status"]:
+                my_node_name = result["output"]
+            else:
+                self.syslogger.info("Failed to get current node name, output: "+result["output"]+", error: "+result["error"])
+                return {"status" : "error", "output" : "", "warning" : "Failed to get current node name"}
+
+            if current_active_rp == my_node_name:
+                return {"status" : "success", "output" : True, "warning" : ""}    
+            else:
+                return {"status" : "success", "output" : False, "warning" : ""} 
+        except Exception as e:
+            self.syslogger.info("Failed to check if current node is Active RP")
+            return {"status" : "error", "output" : "", "warning" : "Failed to check if current node is Active RP, error: " + str(e)}
+
 
 
     def admincmd(self, root_lr_user=None, cmd=None):
@@ -317,23 +357,48 @@ class AuditHelpers(ZtpHelpers):
         if dest is None:
             return {"status" : "error", "output" : "dest file path in admin shell not specified"}
 
-        status = "success"
-
 
         if self.debug:
             self.logger.debug("Received scp request to transfer file from XR LXC to admin LXC")
 
 
-        # First determine the currently allocated ip address for IOS-XR lxc in xrnns namespace
-        # This IP is used in the admin shell to scp from XR LXC.
+        try:
+            # First determine the currently allocated ip address for IOS-XR lxc in xrnns namespace
+            # This IP is used in the admin shell to scp from XR LXC.
 
-        # Show commands using Parent class helper method: xrcmd
+            # Show commands using Parent class helper method: xrcmd
 
-        show_plat_vm = self.xrcmd({"exec_cmd" : "show platform vm"})
+            result = self.xrcmd({"exec_cmd" : "show platform vm"})
 
-        for line in show_plat_vm["output"]:
-            if '0/RP' in line:
-                xr_lxc_ip = line.split(' ')[-1]
+            # We first extract the XR-LXC IP from active and standby(if available) RPs:
+
+            for line in result["output"][2:]:
+                row = filter(None, line.split(" "))
+                if row[1] == "RP":
+                    if "ACTIVE" in row[2]:
+                        active_ip = row[6]
+                    if "STANDBY" in row[2]:
+                        standby_ip = row[6]
+            
+
+            # Am I the active RP?
+            check_active_rp = self.is_active_rp() 
+
+            if check_active_rp["status"] == "success":
+                if check_active_rp["output"]:
+                    xr_lxc_ip = active_ip
+                else:
+                    self.syslogger.info("Not running on active RP, bailing out")
+                    return {"status" : "error", "output" : "Not running on active RP, bailing out"}
+            else:
+                self.syslogger.info("Failed to check current RP node's state")
+                return {"status" : "error", "output" : "Failed to check current RP node's state"}
+
+        except Exception as e:
+            self.syslogger.info("Failed to extract XR LXC IP for active RP")
+            self.syslogger.info("Error is: "+str(e))
+            return {"status" : "error", "output" : e}
+
 
         result = self.admincmd(root_lr_user="root", cmd="run scp root@"+xr_lxc_ip+":"+src+" "+dest)
 
@@ -357,8 +422,6 @@ class AuditHelpers(ZtpHelpers):
 
         if root_lr_user is None:
             return {"status" : "error", "output" : "root-lr user not specified"}
-
-        status = "success"
 
 
         if self.debug:
@@ -394,7 +457,7 @@ class AuditHelpers(ZtpHelpers):
 
 
         if dest is None:
-            return {"status" : "error", "output" : "dest file path in admin shell not specified"}
+            return {"status" : "error", "output" : "dest file path in host shell not specified"}
 
 
         if self.debug:
@@ -423,8 +486,345 @@ class AuditHelpers(ZtpHelpers):
             return {"status" : result["status"], "output" : result["output"]}
 
 
+    def get_xr_ip(self):
 
-    def run_bash(self, cmd=None):
+        # Check if standby RP is present
+        standby_status = self.is_ha_setup()
+
+        if standby_status["status"] == "success":
+            if not standby_status["output"]:
+                self.syslogger.info("Standby RP not present, bailing out")
+                return {"status" : "error", "output" : "Standby RP not present, bailing out"}
+        else:
+            self.syslogger.info("Failed to get standby status, bailing out")
+            return {"status" : "error", "output" : "Failed to get standby status, bailing out"}
+
+
+        # Am I the active RP?
+        check_active_rp = self.is_active_rp()
+
+        if check_active_rp["status"] == "success":
+            try:
+                # First determine the currently allocated ip address for IOS-XR lxc in xrnns namespace
+                # Show commands using Parent class helper method: xrcmd
+
+                result = self.xrcmd({"exec_cmd" : "show platform vm"})
+
+                # We first extract the XR-LXC IP from active and standby(if available) RPs:
+
+                active_ip = ""
+                standby_ip = ""
+
+                for line in result["output"][2:]:
+                    row = filter(None, line.split(" "))
+                    if row[1] == "RP":
+                        if "ACTIVE" in row[2]:
+                            active_ip = row[6]
+                        if "STANDBY" in row[2]:
+                            standby_ip = row[6]
+
+                return {"status" : "success",
+                        "output" : {"active_xr_ip" : active_ip,
+                                    "standby_xr_ip" : standby_ip}
+                       }
+
+            except Exception as e:
+                self.syslogger.info("Failed to fetch the  xr xrnns ips, Error:" +str(e))
+                return {"status" : "error", "output" : str(e)}
+        else:
+            self.syslogger.info("Failed to check if script is running on active RP, bailing out")
+            return {"status" : "error", "output" : check_active_rp["warning"]}
+
+
+    def get_admin_ip(self):
+        active_admin_ip = ""
+        standby_admin_ip = ""
+
+        # First fetch the XR LXC xrnns ips for active and standby
+ 
+        result = self.get_xr_ip()
+
+        if result["status"] == "success":
+            split_active_ip = result["output"]["active_xr_ip"].split('.')
+            split_active_ip[3] = '1'
+            active_admin_ip = '.'.join(split_active_ip)
+ 
+            if result["output"]["standby_xr_ip"] is not "":
+                split_standby_ip = result["output"]["standby_xr_ip"].split('.') 
+                split_standby_ip[3] = '1'
+                standby_admin_ip = '.'.join(split_standby_ip)
+
+
+            return {"status" : "success",
+                    "output" : {"active_admin_ip" : active_admin_ip,
+                                "standby_admin_ip" : standby_admin_ip}
+                   }
+        else:
+            self.syslogger.info("Failed to fetch the  xr xrnns ips")
+            return {"status" : "error", "output" : result["output"]}
+
+
+    def standby_adminruncmd(self, root_lr_user=None, cmd=None):
+
+        if root_lr_user is None:
+            return {"status" : "error", "output" : "root-lr user not specified"}
+
+
+        if cmd is None:
+            return {"status" : "error", "output" : "linux cmd not specified"}
+
+
+        if self.debug:
+            self.logger.debug("Received bash cmd: %s to run in shell of standby RP's admin LXC" % cmd)
+
+
+       # Get the standby RP's admin LXC's xrnns ip:
+    
+        result = self.get_admin_ip()
+
+        if result["status"] == "success":
+            standby_admin_ip = result["output"]["standby_admin_ip"]
+            if standby_admin_ip == "":
+               self.syslogger.info("Did not receive a standby admin IP (no standby RP?), bailing out")
+               return {"status" : "error", "output" : ""}
+        else:
+            self.syslogger.info("Failed to get the standby admin xrnns ip")
+            return {"status" : "error", "output" : ""}
+
+
+        # Now try to run this command via the admin LXC of the active RP
+
+        result = self.admincmd(root_lr_user="root", cmd="run ssh root@"+standby_admin_ip+" "+cmd)
+
+        return {"status" : result["status"], "output" : result["output"]}
+
+
+
+
+
+    def standby_adminscp(self, root_lr_user=None, src=None, dest=None):
+        if root_lr_user is None:
+            return {"status" : "error", "output" : "root-lr user not specified"}
+
+
+        if src is None:
+            return {"status" : "error", "output" : "src file path in XR not specified"}
+
+
+        if dest is None:
+            return {"status" : "error", "output" : "dest file path in standby admin shell not specified"}
+
+
+        if self.debug:
+            self.logger.debug("Received scp request to transfer file from XR LXC to standby admin shell")
+
+
+       # Get the standby RP's admin LXC's xrnns ip:
+
+        result = self.get_admin_ip()
+
+        if result["status"] == "success":
+            standby_admin_ip = result["output"]["standby_admin_ip"]
+            if standby_admin_ip == "":
+               self.syslogger.info("Did not receive a standby admin IP (no standby RP?), bailing out")
+               return {"status" : "error", "output" : ""}
+        else:
+            self.syslogger.info("Failed to get the standby admin xrnns ip")
+            return {"status" : "error", "output" : ""}
+
+
+        # First transfer the file to temp location in active Admin LXC 
+
+        filename = posixpath.basename(src)
+
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        tempfile = "audit_"+filename+"_"+timestamp
+
+        result = self.adminscp(root_lr_user="root", src=src, dest="/misc/scratch/"+tempfile)
+
+
+        if result["status"] == "error":
+            return {"status" : result["status"], "output" : result["output"]}
+        else:
+            result = self.admincmd(root_lr_user="root",
+                                   cmd="run scp /misc/scratch/"+tempfile+" root@"+standby_admin_ip+":"+dest)
+
+            # Remove tempfile from Admin shell
+
+            self.admincmd(root_lr_user="root", cmd="run rm -f /misc/scratch/"+tempfile)
+            return {"status" : result["status"], "output" : result["output"]}
+
+
+
+    def standby_xrruncmd(self, cmd=None):
+        """Issue a cmd in the standby xr linux shell and obtain the output
+           :param cmd: String representing the linux cmd to run
+           :type cmd: string 
+           :return: Return a dictionary with status and output
+                    { 'status': 'error/success', 'output': '' }
+           :rtype: string
+        """
+
+        if cmd is None:
+            return {"status" : "error", "output" : "No command specified"}
+
+
+        if self.debug:
+            self.logger.debug("Received standby xr run command request: \"%s\"" % cmd)
+
+
+        # First fetch the XR LXC xrnns ips for active and standby
+
+        result = self.get_xr_ip()
+
+        if result["status"] == "success":
+            if result["output"]["standby_xr_ip"] is not "":
+                cmd_run = self.run_bash("ssh root@"+result["output"]["standby_xr_ip"]+" "+cmd)
+
+                print cmd_run 
+                if not cmd_run["status"]:
+                    return {"status" : "success", "output" : cmd_run["output"]}
+                else:
+                    self.syslogger.info("Failed to run command on standby XR LXC shell")
+                    return {"status" : "error", "output" : cmd_run["output"]}
+            else:
+                self.syslogger.info("No standby xr ip, (no standby RP?)")
+                return {"status" : "error", "output" : result["output"]}
+
+        else:
+            self.syslogger.info("Failed to fetch the  xr xrnns ips")
+            return {"status" : "error", "output" : result["output"]}
+
+
+    def standby_xrscp(self, src=None, dest=None):
+        """Transfer a file from XR LXC to underlying host shell
+           :param root_lr_user: username in root-lr group in XR
+           :type root_lr_user: string
+           :param src: Path of src file in XR to be 
+                       transferred to host shell
+           :type src: string
+           :param src: Path of destination file in host shell of standby RP 
+           :type src: string
+           :return: Return a dictionary with status and output
+                    { 'status': 'error/success', 'output': '' }
+           :rtype: string
+        """
+
+        if src is None:
+            return {"status" : "error", "output" : "src file path in XR not specified"}
+
+        if dest is None:
+            return {"status" : "error", "output" : "dest file path in standby RP XR LXC shell not specified"}
+
+
+        if self.debug:
+            self.logger.debug("Received scp request to transfer file from XR LXC in active to XR LXC on standby")
+
+        # First fetch the XR LXC xrnns ips for active and standby
+
+        result = self.get_xr_ip()
+
+        if result["status"] == "success":
+            if result["output"]["standby_xr_ip"] is not "":
+                cmd_run = self.run_bash("scp "+src+" root@"+result["output"]["standby_xr_ip"]+":"+dest)
+                if not cmd_run["status"]:
+                    return {"status" : "success", "output" : cmd_run["output"]}
+                else:
+                    self.syslogger.info("Failed to transfer file to standby XR LXC, output:"+cmd_run["output"]+", error:"+cmd_run["error"])
+                    return {"status" : "error", "output" : cmd_run["error"]}
+            else:
+                self.syslogger.info("No standby xr ip, (no standby RP?)")
+                return {"status" : "error", "output" : result["output"]}
+
+        else:
+            self.syslogger.info("Failed to fetch the  xr xrnns ips")
+            return {"status" : "error", "output" : result["output"]}
+
+
+    def standby_hostcmd(self, root_lr_user=None, cmd=None):
+        """Issue a cmd in the host linux shell and obtain the output
+           :param cmd: Dictionary representing the XR exec cmd
+                       and response to potential prompts
+                       { 'exec_cmd': '', 'prompt_response': '' }
+           :type cmd: string 
+           :return: Return a dictionary with status and output
+                    { 'status': 'error/success', 'output': '' }
+           :rtype: string
+        """
+
+        if cmd is None:
+            return {"status" : "error", "output" : "No command specified"}
+
+        if root_lr_user is None:
+            return {"status" : "error", "output" : "root-lr user not specified"}
+
+
+        if self.debug:
+            self.logger.debug("Received host command request: \"%s\"" % cmd)
+
+
+        result = self.standby_adminruncmd(root_lr_user="root", cmd="ssh root@10.0.2.16 "+cmd)
+
+        return {"status" : result["status"], "output" : result["output"]}
+
+
+
+    def standby_hostscp(self, root_lr_user=None, src=None, dest=None):
+        """Transfer a file from XR LXC to underlying host shell
+           :param root_lr_user: username in root-lr group in XR
+           :type root_lr_user: string
+           :param src: Path of src file in XR to be 
+                       transferred to host shell
+           :type src: string
+           :param src: Path of destination file in host shell of standby RP 
+           :type src: string
+           :return: Return a dictionary with status and output
+                    { 'status': 'error/success', 'output': '' }
+           :rtype: string
+        """
+
+        if root_lr_user is None:
+            return {"status" : "error", "output" : "root-lr user not specified"}
+
+
+        if src is None:
+            return {"status" : "error", "output" : "src file path in XR not specified"}
+
+
+        if dest is None:
+            return {"status" : "error", "output" : "dest file path in host shell not specified"}
+
+
+        if self.debug:
+            self.logger.debug("Received scp request to transfer file from XR LXC to host shell")
+
+
+        # First transfer the file to temp location in standby Admin LXC 
+
+        filename = posixpath.basename(src)
+
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        tempfile = "audit_"+filename+"_"+timestamp
+
+        result = self.standby_adminscp(root_lr_user="root", src=src, dest="/misc/scratch/"+tempfile)
+
+
+        if result["status"] == "error":
+            return {"status" : result["status"], "output" : result["output"]}
+        else:
+            result = self.standby_adminruncmd(root_lr_user="root",
+                                       cmd="scp /misc/scratch/"+tempfile+" root@10.0.2.16:"+dest)
+
+            # Remove tempfile from Standby Admin shell
+
+            self.standby_adminruncmd(root_lr_user="root", cmd="rm -f /misc/scratch/"+tempfile)
+            return {"status" : result["status"], "output" : result["output"]}
+
+
+
+
+
+    def run_bash(self, cmd=None, vrf="xrnns", pid=1):
         """User defined method in Child Class
            Wrapper method for basic subprocess.Popen to execute 
            bash commands on IOS-XR.
@@ -436,17 +836,22 @@ class AuditHelpers(ZtpHelpers):
                       'output': 'output from bash cmd' }
            :rtype: dict
         """
-        ## In XR the default shell is bash, hence the name
-        if cmd is not None:
-            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
-            out, err = process.communicate()
-        else:
-            self.syslogger.info("No bash command provided")
 
+        print cmd
+        with open(self.get_netns_path(nsname=vrf,nspid=pid)) as fd:
+            self.setns(fd, CLONE_NEWNET)
 
-        status = process.returncode
+            ## In XR the default shell is bash, hence the name
+            if cmd is not None:
+                process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+                out, err = process.communicate()
+            else:
+                self.syslogger.info("No bash command provided")
+                return {"status" : 1, "output" : "", "error" : "No bash command provided"}
 
-        return {"status" : status, "output" : out}
+            status = process.returncode
+
+            return {"status" : status, "output" : out, "error" : err}
 
 
 
@@ -586,35 +991,27 @@ class AuditHelpers(ZtpHelpers):
 
 
     def is_ha_setup(self):
-        rp_count = 0
-        show_platform = self.xrcmd({"exec_cmd" : "show platform"})
 
-        if show_platform["status"] == "success":
-            try:
-                for line in show_platform["output"]:
-                    if '/CPU' in line.split()[0]:
-                        node_info =  line.split()
-                        node_name = node_info[0]
-                        if 'RP' in node_name:
-                            rp_count = rp_count + 1
+        try:
+            # Get the current active RP node-name
+            exec_cmd = "show redundancy summary"
+            show_red_summary = self.xrcmd({"exec_cmd" : exec_cmd})
 
-
-                if rp_count in (1,2):
-                    return {"status": "success", "rp_count": rp_count}
-                else:
-                    return {"status": "error", "rp_count": rp_count, "error": "Invalid RP count"}
-
-            except Exception as e:
-                if self.debug:
-                    self.logger.debug("Error while fetching the RP count")
-                    self.logger.debug(e)
-                    return {"status": "error", "error": e }
-
-        else:
-            if self.debug:
-                self.logger.debug("Failed to get the output of show platform")
-            return {"status": "error", "output": "Failed to get the output of show platform"}
-
+            if show_red_summary["status"] == "error":
+                self.syslogger.info("Failed to get show redundancy summary output from XR")
+                return {"status" : "error", "output" : "", "warning" : "Failed to get show redundancy summary output"}
+            else:
+                try:
+                    if "N/A" in show_red_summary["output"][2].split()[1]:
+                        return {"status" : "success", "output": False} 
+                    else:
+                        return {"status" : "success", "output": True} 
+                except Exception as e:
+                    self.syslogger.info("Failed to extract standby status from show redundancy summary output")
+                    return {"status" : "error", "output" : "Failed to get Active RP, error: " + str(e)}
+        except Exception as e:
+            self.syslogger.info("Failed to extract standby status from show redundancy summary output")
+            return {"status" : "error", "output" : "Failed to get Active RP, error: " + str(e)}
 
 
     def cron_job(self, standby=False, folder="/etc/cron.d", croncmd=None, croncmd_fname=None, cronfile=None, action="add"):
@@ -827,7 +1224,7 @@ class AuditHelpers(ZtpHelpers):
                         general_fields_dict = element["xs:complexType"]["xs:all"]["xs:element"]
             except Exception as e:
                 self.syslogger.info("Failed to gather General fields from the compliance file")
-                self.syslogger.info("Error is: "+e)
+                self.syslogger.info("Error is: "+str(e))
 
         general_data_dict = {}
 
@@ -847,7 +1244,7 @@ class AuditHelpers(ZtpHelpers):
                 return ""
         except Exception as e:
             self.syslogger.info("Failed to md5 checksum of file "+filename)
-            self.syslogger.info("Error is: "+e) 
+            self.syslogger.info("Error is: "+str(e)) 
             return "" 
 
     def get_file_content(self, filename):
@@ -858,7 +1255,7 @@ class AuditHelpers(ZtpHelpers):
             return json.dumps(file_content)
         except Exception as e:
             self.syslogger.info("Failed to md5 checksum of file "+filename)                
-            self.syslogger.info("Error is: "+e) 
+            self.syslogger.info("Error is: "+str(e)) 
             return []
 
 
@@ -876,7 +1273,7 @@ class AuditHelpers(ZtpHelpers):
                 return ""
         except Exception as e:
             self.syslogger.info("Failed to run cmd: "+cmd+" on "+element_type+" "+element_name)                
-            self.syslogger.info("Error is: "+e) 
+            self.syslogger.info("Error is: "+str(e)) 
             return "" 
 
 
@@ -901,11 +1298,11 @@ class AuditHelpers(ZtpHelpers):
 
 
         try:
-            result = self.run_bash(cmd="scp "+src+" root@10.0.2.16:"+dest)
+            result = self.run_bash(cmd="scp "+src+" root@10.0.2.16:"+dest, vrf="", pid=1)
             return result["status"]
         except Exception as e:
             self.syslogger.info("Failed to transfer file to host")
-            self.syslogger.info("Error is: "+e)
+            self.syslogger.info("Error is: "+str(e))
             return 1
 
 
