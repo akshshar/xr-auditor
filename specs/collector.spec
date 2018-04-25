@@ -6,7 +6,8 @@ added_files = [
          ( '../userfiles/id_rsa_server', './userfiles' ),
          ( '../userfiles/compliance.cfg.yml', './userfiles' ),
          ( '../userfiles/server.cfg.yml', './userfiles' ),
-         ( '../userfiles/compliance.xsd', './userfiles' ),
+         ( '../userfiles/installer.cfg.yml', './userfiles' ),
+         ( '../userfiles/compliance.xsd', './userfiles' )
          ]
 a = Analysis(['../core/audit_collector.py'],
              pathex=['/home/cisco/audit_xr_linux/specs'],

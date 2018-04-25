@@ -13,7 +13,7 @@ added_files = [
          ( '../collector/audit_collector.cron', './collector/' ),
          ( '../userfiles/id_rsa_server', './userfiles' ),
          ( '../userfiles/compliance.cfg.yml', './userfiles' ),
-         ( '../userfiles/server_host', './userfiles' ),
+         ( '../userfiles/installer.cfg.yml', './userfiles' ),
          ( '../userfiles/compliance.xsd', './userfiles' )
          ]
 a = Analysis(['../core/installer.py'],

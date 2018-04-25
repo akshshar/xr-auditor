@@ -106,17 +106,26 @@ class IosxrAuditMain(AuditHelpers):
             return ('_'.join(mgmt_ip.split('.'))).split('/')[0]
 
         
-    def collate_xml(self, domain_list, xml_directory="/misc/app_host"):
+    def collate_xml(self, domain_dict=None, output_xml_dir=None):
+
+        if domain_dict is None:
+            self.syslogger.info("Input dictionary with details on output_xml_dir/domain not provided, bailing out")
+            return {}
+
+        if output_xml_dir is None:
+            self.syslogger.info("output_xml_dir for collector not provided, bailing out")
+            return {}
+
         collated_xml_dict = {}
         xml_dict = {}
         integrity_list = []
 
-        for domain in domain_list:
-            if domain in VALID_DOMAINS:
-                xml_file = xml_directory+"/"+domain+".xml"
+        for element in domain_dict:
+            if domain_dict[element]["domain"] in VALID_DOMAINS:
+                xml_file = domain_dict[element]["input_xml_dir"]+"/"+domain_dict[element]["domain"]+".xml"
                 xml_dict = self.xml_to_dict(xml_file)
                 integrity_list.append(xml_dict["COMPLIANCE-DUMP"]["INTEGRITY-SET"]["INTEGRITY"])
-                if domain == "XR-LXC":
+                if domain_dict[element]["domain"] == "XR-LXC":
                     collated_xml_dict = copy.deepcopy(xml_dict)
             else:
                 self.syslogger.info("Invalid domain specified: "+str(domain))
@@ -127,9 +136,10 @@ class IosxrAuditMain(AuditHelpers):
 
         collated_xml_dump = xd.unparse(collated_xml_dict, pretty=True)
 
-        self.logger.info(collated_xml_dump)
+        if self.debug:
+            self.logger.debug(collated_xml_dump)
 
-        output_file = xml_directory+"/"+ self.compliance_xmlname
+        output_file = output_xml_dir+"/"+ self.compliance_xmlname
 
         with open(output_file, 'w') as f:
             f.writelines(collated_xml_dump)
@@ -137,7 +147,7 @@ class IosxrAuditMain(AuditHelpers):
         return output_file
 
 
-    def send_to_server(self, filename):
+    def send_to_server(self, filename, vrf="global-vrf"):
         with open(self.get_netns_path(nsname=self.vrf)) as fd:
             self.setns(fd, CLONE_NEWNET)
             if filename is None:
@@ -151,14 +161,12 @@ class IosxrAuditMain(AuditHelpers):
             cmd =  cmd + self.remote_user+"@"+self.server_connection
             cmd =  cmd + " \"cat > "+self.remote_directory+"/"+fname+"\""
 
-            print cmd
-
             try:
-                result = self.run_bash(cmd)
+                result = self.run_bash(cmd, vrf=vrf)
                 return result["status"]
             except Exception as e:
                 self.syslogger.info("Failed to transfer file to remote host")
-                self.syslogger.info("Error is: "+e)
+                self.syslogger.info("Error is: "+str(e))
                 return False
     
 
@@ -182,6 +190,7 @@ if __name__ == "__main__":
 
 
     audit_obj = IosxrAuditMain(server_cfg=IosxrAuditMain.current_dir()+"/userfiles/server.cfg.yml",
+                               syslog_server="11.11.11.2", syslog_port=514,
                                domain = "COLLECTOR",
                                compliance_xsd=IosxrAuditMain.current_dir()+"/userfiles/compliance.xsd",
                                compliance_cfg=IosxrAuditMain.current_dir()+"/userfiles/compliance.cfg.yml")
@@ -198,10 +207,54 @@ if __name__ == "__main__":
             for filename in filenames:
                 audit_obj.logger.debug(os.path.join(root,filename))
 
-    #audit_obj.toggle_debug(0)
+    audit_obj.toggle_debug(0)
 
-    domain_list = ["XR-LXC", "ADMIN-LXC", "HOST"]
-    xml_file = audit_obj.collate_xml(domain_list)
+    try:
+        installer_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/installer.cfg.yml")
+        output_xml_dir = installer_cfg["COLLECTOR"]["output_xml_dir"]
+    except Exception as e:
+        audit_obj.syslogger.info("Failed to extract output_xml_dir for the COLLECTOR domain,"
+                                 "defaulting to /misc/app_host")
+        output_xml_dir = "/misc/app_host"
+
+
+    try:
+        installer_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/installer.cfg.yml")
+        input_xml_dir_xr = installer_cfg["XR"]["output_xml_dir"]
+    except Exception as e:
+        audit_obj.syslogger.info("Failed to extract output_xml_dir for the XR domain,"
+                                 "defaulting to /misc/app_host")
+        input_xml_dir_xr = "/misc/app_host"
+
+
+    try:
+        installer_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/installer.cfg.yml")
+        input_xml_dir_admin = installer_cfg["ADMIN"]["output_xml_dir_xr"]
+    except Exception as e:
+        audit_obj.syslogger.info("Failed to extract output_xml_dir for the ADMIN domain,"
+                                 "defaulting to /misc/app_host")
+        input_xml_dir_admin = "/misc/app_host"
+
+    try:
+        installer_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/installer.cfg.yml")
+        input_xml_dir_host = installer_cfg["HOST"]["output_xml_dir"]
+    except Exception as e:
+        audit_obj.syslogger.info("Failed to extract output_xml_dir for the HOST domain,"
+                                 "defaulting to /misc/app_host")
+        input_xml_dir_host = "/misc/app_host"
+
+
+
+
+    domain_dict = {"xr" : { "domain": "XR-LXC", 
+                            "input_xml_dir": input_xml_dir_xr}, 
+                   "admin": {"domain": "ADMIN-LXC",
+                             "input_xml_dir": input_xml_dir_admin}, 
+                   "host" : {"domain": "HOST", 
+                             "input_xml_dir": input_xml_dir_host}
+                  }
+
+    xml_file = audit_obj.collate_xml(domain_dict, output_xml_dir)
 
 
     if audit_obj.validate_xml_dump(xml_file):
@@ -215,7 +268,7 @@ if __name__ == "__main__":
 
         if check_active_rp["status"] == "success":
             if check_active_rp["output"]:
-                if not audit_obj.send_to_server(xml_file):
+                if not audit_obj.send_to_server(xml_file, vrf="global-vrf"):
                     audit_obj.syslogger.info("Successfully transferred audit result to Remote Server, over SSH")
                     sys.exit(0)
                 else:

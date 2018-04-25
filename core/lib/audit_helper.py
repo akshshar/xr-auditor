@@ -63,6 +63,45 @@ class AuditHelpers(ZtpHelpers):
             super(AuditHelpers, self).__init__(syslog_server, syslog_port, syslog_file)
         elif self.domain == "INSTALLER":
             super(AuditHelpers, self).__init__(syslog_server, syslog_port, syslog_file)
+
+            standby_status = self.is_ha_setup()
+            if standby_status["status"] == "success":
+                if not standby_status["output"]:
+                    self.syslogger.info("Standby RP not present")
+                    self.ha_setup = False
+                else:
+                    self.syslogger.info("Standby RP is present")
+                    self.ha_setup = True
+            else:
+                self.syslogger.info("Failed to get standby status, bailing out")
+                self.exit = True
+
+
+            # Am I the active RP?
+            check_active_rp = self.is_active_rp()
+
+            if check_active_rp["status"] == "success":
+                if check_active_rp["output"]:
+                    self.active_rp = True
+                    self.syslogger.info("Running on active RP")
+                else:
+                    self.active_rp = False
+                    self.syslogger.info("Not running on active RP")
+            else:
+                self.syslogger.info("Failed to check current RP node's state")
+                self.exit =  True
+
+
+            # Fetch and store the xrnns ip addresses of XR LXC on active and standby
+            xrnns_ips = self.get_xr_ip()
+
+            if xrnns_ips["status"] == "success":
+                self.active_xr_ip = xrnns_ips["output"]["active_xr_ip"]
+                self.standby_xr_ip = xrnns_ips["output"]["standby_xr_ip"]
+            else:
+                self.syslogger.info("Failed to fetch the xrnns ips of the XR LXCs on active/standby RPs")
+                self.exit =  True
+
             self.exit = False
             return None 
         else:
@@ -101,6 +140,8 @@ class AuditHelpers(ZtpHelpers):
 
 
 
+
+       
     def setup_debug_logger_child(self):
         """Setup the debug logger to throw debugs to stdout/stderr 
         """
@@ -217,7 +258,18 @@ class AuditHelpers(ZtpHelpers):
 
     def get_mgmt_ip(self):
         try:
-            result = self.xrcmd({"exec_cmd" : "show interface MgmtEth0/RP0/CPU0/0"})
+            # Get the name of the current node
+            cmd = "/sbin/ip netns exec xrnns /pkg/bin/node_list_generation -f MY"
+
+            result = self.run_bash(cmd)
+
+            if not result["status"]:
+                my_node_name = result["output"]
+            else:
+                self.syslogger.info("Failed to get current node name, output: "+result["output"]+", error: "+result["error"])
+                return ""
+
+            result = self.xrcmd({"exec_cmd" : "show interface MgmtEth"+my_node_name+"/0"})
 
             if result["status"] == "success":
                 return result["output"][3].split(' ')[-1]
@@ -381,18 +433,11 @@ class AuditHelpers(ZtpHelpers):
                         standby_ip = row[6]
             
 
-            # Am I the active RP?
-            check_active_rp = self.is_active_rp() 
-
-            if check_active_rp["status"] == "success":
-                if check_active_rp["output"]:
+            if self.active_rp:
                     xr_lxc_ip = active_ip
-                else:
-                    self.syslogger.info("Not running on active RP, bailing out")
-                    return {"status" : "error", "output" : "Not running on active RP, bailing out"}
             else:
-                self.syslogger.info("Failed to check current RP node's state")
-                return {"status" : "error", "output" : "Failed to check current RP node's state"}
+                self.syslogger.info("Not running on active RP, bailing out")
+                return {"status" : "error", "output" : "Not running on active RP, bailing out"}
 
         except Exception as e:
             self.syslogger.info("Failed to extract XR LXC IP for active RP")
@@ -489,51 +534,53 @@ class AuditHelpers(ZtpHelpers):
     def get_xr_ip(self):
 
         # Check if standby RP is present
-        standby_status = self.is_ha_setup()
+        #standby_status = self.is_ha_setup()
 
-        if standby_status["status"] == "success":
-            if not standby_status["output"]:
-                self.syslogger.info("Standby RP not present, bailing out")
-                return {"status" : "error", "output" : "Standby RP not present, bailing out"}
-        else:
-            self.syslogger.info("Failed to get standby status, bailing out")
-            return {"status" : "error", "output" : "Failed to get standby status, bailing out"}
+        #if standby_status["status"] == "success":
+        #    if not standby_status["output"]:
+        #        self.syslogger.info("Standby RP not present, bailing out")
+        #        return {"status" : "error", "output" : "Standby RP not present, bailing out"}
+        #else:
+        #    self.syslogger.info("Failed to get standby status, bailing out")
+        #    return {"status" : "error", "output" : "Failed to get standby status, bailing out"}
 
 
         # Am I the active RP?
-        check_active_rp = self.is_active_rp()
+        #check_active_rp = self.is_active_rp()
 
-        if check_active_rp["status"] == "success":
-            try:
-                # First determine the currently allocated ip address for IOS-XR lxc in xrnns namespace
-                # Show commands using Parent class helper method: xrcmd
+        #if check_active_rp["status"] == "success":
+        try:
+            # First determine the currently allocated ip address for IOS-XR lxc in xrnns namespace
+            # Show commands using Parent class helper method: xrcmd
 
-                result = self.xrcmd({"exec_cmd" : "show platform vm"})
+            result = self.xrcmd({"exec_cmd" : "show platform vm"})
 
-                # We first extract the XR-LXC IP from active and standby(if available) RPs:
+            # We first extract the XR-LXC IP from active and standby(if available) RPs:
 
-                active_ip = ""
-                standby_ip = ""
+            active_ip = ""
+            standby_ip = ""
 
-                for line in result["output"][2:]:
-                    row = filter(None, line.split(" "))
-                    if row[1] == "RP":
-                        if "ACTIVE" in row[2]:
-                            active_ip = row[6]
-                        if "STANDBY" in row[2]:
-                            standby_ip = row[6]
+            for line in result["output"][2:]:
+                row = filter(None, line.split(" "))
+                if row[1] == "RP":
+                    if "ACTIVE" in row[2]:
+                        active_ip = row[6]
+                    if "STANDBY" in row[2]:
+                        standby_ip = row[6]
 
-                return {"status" : "success",
-                        "output" : {"active_xr_ip" : active_ip,
-                                    "standby_xr_ip" : standby_ip}
-                       }
+            return {"status" : "success",
+                    "output" : {"active_xr_ip" : active_ip,
+                                "standby_xr_ip" : standby_ip}
+                   }
 
-            except Exception as e:
-                self.syslogger.info("Failed to fetch the  xr xrnns ips, Error:" +str(e))
-                return {"status" : "error", "output" : str(e)}
-        else:
-            self.syslogger.info("Failed to check if script is running on active RP, bailing out")
-            return {"status" : "error", "output" : check_active_rp["warning"]}
+        except Exception as e:
+            self.syslogger.info("Failed to fetch the  xr xrnns ips, Error:" +str(e))
+            return {"status" : "error", "output" : str(e)}
+        #else:
+        #    self.syslogger.info("Failed to check if script is running on active RP, bailing out")
+        #    return {"status" : "error", "output" : check_active_rp["warning"]}
+
+
 
 
     def get_admin_ip(self):
@@ -542,26 +589,28 @@ class AuditHelpers(ZtpHelpers):
 
         # First fetch the XR LXC xrnns ips for active and standby
  
-        result = self.get_xr_ip()
+        #result = self.get_xr_ip()
 
-        if result["status"] == "success":
-            split_active_ip = result["output"]["active_xr_ip"].split('.')
-            split_active_ip[3] = '1'
-            active_admin_ip = '.'.join(split_active_ip)
+        #if result["status"] == "success":
+
+        #split_active_ip = result["output"]["active_xr_ip"].split('.')
+        split_active_ip = self.active_xr_ip.split('.')
+        split_active_ip[3] = '1'
+        active_admin_ip = '.'.join(split_active_ip)
  
-            if result["output"]["standby_xr_ip"] is not "":
-                split_standby_ip = result["output"]["standby_xr_ip"].split('.') 
-                split_standby_ip[3] = '1'
-                standby_admin_ip = '.'.join(split_standby_ip)
+        # if result["output"]["standby_xr_ip"] is not "":
+        if self.standby_xr_ip is not "":
+            #split_standby_ip = result["output"]["standby_xr_ip"].split('.') 
+            split_standby_ip = self.standby_xr_ip.split('.')
+            split_standby_ip[3] = '1'
+            standby_admin_ip = '.'.join(split_standby_ip)
 
 
-            return {"status" : "success",
-                    "output" : {"active_admin_ip" : active_admin_ip,
-                                "standby_admin_ip" : standby_admin_ip}
-                   }
-        else:
-            self.syslogger.info("Failed to fetch the  xr xrnns ips")
-            return {"status" : "error", "output" : result["output"]}
+        return {"status" : "success",
+                "output" : {"active_admin_ip" : active_admin_ip,
+                            "standby_admin_ip" : standby_admin_ip}
+               }
+
 
 
     def standby_adminruncmd(self, root_lr_user=None, cmd=None):
@@ -675,13 +724,14 @@ class AuditHelpers(ZtpHelpers):
 
         # First fetch the XR LXC xrnns ips for active and standby
 
-        result = self.get_xr_ip()
+        #result = self.get_xr_ip()
 
-        if result["status"] == "success":
-            if result["output"]["standby_xr_ip"] is not "":
-                cmd_run = self.run_bash("ssh root@"+result["output"]["standby_xr_ip"]+" "+cmd)
-
-                print cmd_run 
+        if self.ha_setup:
+        #if result["status"] == "success":
+        #    if result["output"]["standby_xr_ip"] is not "":
+            if self.standby_xr_ip is not "":
+                #cmd_run = self.run_bash("ssh root@"+result["output"]["standby_xr_ip"]+" "+cmd)
+                cmd_run = self.run_bash("ssh root@"+self.standby_xr_ip+" "+cmd)
                 if not cmd_run["status"]:
                     return {"status" : "success", "output" : cmd_run["output"]}
                 else:
@@ -722,11 +772,15 @@ class AuditHelpers(ZtpHelpers):
 
         # First fetch the XR LXC xrnns ips for active and standby
 
-        result = self.get_xr_ip()
+        #result = self.get_xr_ip()
 
-        if result["status"] == "success":
-            if result["output"]["standby_xr_ip"] is not "":
-                cmd_run = self.run_bash("scp "+src+" root@"+result["output"]["standby_xr_ip"]+":"+dest)
+        #if result["status"] == "success":
+        #    if result["output"]["standby_xr_ip"] is not "":
+
+        if self.ha_setup:
+            if self.standby_xr_ip is not "":
+                #cmd_run = self.run_bash("scp "+src+" root@"+result["output"]["standby_xr_ip"]+":"+dest)
+                cmd_run = self.run_bash("scp "+src+" root@"+self.standby_xr_ip+":"+dest)
                 if not cmd_run["status"]:
                     return {"status" : "success", "output" : cmd_run["output"]}
                 else:
@@ -837,7 +891,6 @@ class AuditHelpers(ZtpHelpers):
            :rtype: dict
         """
 
-        print cmd
         with open(self.get_netns_path(nsname=vrf,nspid=pid)) as fd:
             self.setns(fd, CLONE_NEWNET)
 
@@ -1400,7 +1453,11 @@ class AuditHelpers(ZtpHelpers):
         return integrity_data
 
 
-    def create_xml_dump(self):
+    def create_xml_dump(self, output_xml_dir=None):
+
+        if output_xml_dir is None:
+            self.syslogger.info("No output directory specified, bailing out")
+            return ""
 
         dict_dump = {}
 
@@ -1420,13 +1477,8 @@ class AuditHelpers(ZtpHelpers):
 
         xml_dump = xd.unparse(final_dict, pretty=True)
 
-        #self.logger.info(xml_dump)
 
-        if self.domain == "ADMIN-LXC":
-            output_file = "/misc/scratch/"+self.domain+".xml"
-        else:
-            output_file = "/misc/app_host/"+self.domain+".xml"
-
+        output_file = output_xml_dir + "/"+ self.domain+".xml"
         with open(output_file, 'w') as f:
             f.writelines(xml_dump)
           

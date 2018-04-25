@@ -47,7 +47,16 @@ if __name__ == "__main__":
 
     audit_obj.toggle_debug(0)
 
-    xml_file = audit_obj.create_xml_dump()
+    try:
+        installer_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/installer.cfg.yml")
+        output_xml_dir = installer_cfg["XR"]["output_xml_dir"]
+    except Exception as e:
+        audit_obj.syslogger.info("Failed to extract output_xml_dir for the XR domain,"
+                                 "defaulting to /misc/app_host")
+        output_xml_dir = "/misc/app_host"
+
+
+    xml_file = audit_obj.create_xml_dump(output_xml_dir)
  
     if audit_obj.validate_xml_dump(xml_file):
         audit_obj.syslogger.info('Valid XML! :)')

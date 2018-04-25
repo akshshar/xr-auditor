@@ -1,0 +1,35 @@
+---
+XR:
+    srcDir: "./xr"
+    appName: "audit_xr.bin"
+    appDir: "/misc/scratch"
+    cronName: "audit_xr.cron"
+    cronPrefix: "audit_cron_xr_" 
+    output_xml_dir: "/misc/app_host"
+
+
+ADMIN:
+    srcDir: "./admin"
+    appName: "audit_admin.bin"
+    appDir: "/misc/scratch"
+    cronName: "audit_admin.cron"
+    cronPrefix: "audit_cron_admin_"
+    output_xml_dir: "/misc/scratch"
+    output_xml_dir_xr: "/misc/app_host"
+
+HOST:
+    srcDir: "./host/"
+    appName: "audit_host.bin"
+    appDir: "/misc/scratch"
+    cronName: "audit_host.cron"
+    cronPrefix: "audit_cron_host_"
+    output_xml_dir: "/misc/app_host"
+
+COLLECTOR:
+    srcDir: "./collector/"
+    appName: "collector.bin"
+    appDir: "/misc/scratch"
+    cronName: "audit_collector.cron"
+    cronPrefix: "audit_cron_collector_"
+    vrf: "global-vrf"
+    output_xml_dir: "/misc/app_host"

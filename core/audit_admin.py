@@ -47,16 +47,37 @@ if __name__ == "__main__":
 
 
 
-    xml_file = audit_obj.create_xml_dump()
+    audit_obj.toggle_debug(0)
 
+    try:
+        installer_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/installer.cfg.yml")
+        output_xml_dir = installer_cfg["ADMIN"]["output_xml_dir"]
+    except Exception as e:
+        audit_obj.syslogger.info("Failed to extract output_xml_dir for the ADMIN domain,"
+                                 "defaulting to /misc/scratch")
+        output_xml_dir = "/misc/scratch"
+
+
+    try:
+        installer_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/installer.cfg.yml")
+        output_xml_dir_xr = installer_cfg["ADMIN"]["output_xml_dir_xr"]
+    except Exception as e:
+        audit_obj.syslogger.info("Failed to extract output_xml_dir_xr for the ADMIN domain,"
+                                 "defaulting to /misc/app_host")
+        output_xml_dir_xr = "/misc/app_host"
+
+
+
+    xml_file = audit_obj.create_xml_dump(output_xml_dir)
+    
     if audit_obj.validate_xml_dump(xml_file):
         audit_obj.syslogger.info('Valid XML! :)')
         audit_obj.syslogger.info('Successfully created output XML: '+str(xml_file))
         if not audit_obj.transfer_admin_to_host(
                          src=xml_file,
-                         dest="/misc/app_host/ADMIN-LXC.xml"):
+                         dest=output_xml_dir_xr+"/ADMIN-LXC.xml"):
             audit_obj.syslogger.info("Successfully transferred output XML"
-                                "file to host /misc/app_host")
+                                "file to host "+output_xml_dir_xr)
             sys.exit(0)
         else:
             audit_obj.syslogger.info("Failed to transfer output XML to host")
