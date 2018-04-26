@@ -147,38 +147,59 @@ class IosxrAuditMain(AuditHelpers):
         wait_count = 0
         action_success = False
 
-        while(wait_count < 5):
-            clean_up_filename = self.run_bash(cmd="lsof "+dstfolder+"/"+appName)
-            if clean_up_filename["output"] is not "":
-                # Process currently running, Sleep 5 seconds before attempting again
-                self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
-                time.sleep(5)
+
+        file_exists = self.run_bash(cmd="ls "+dstfolder+"/")
+        if not file_exists["status"]:
+            if appName in file_exists["output"]:
+                app_exists = True
             else:
-                if uninstall:
-                    result = self.run_bash(cmd="rm -f "+dstfolder+"/"+appName)
-                    if result["status"]:
-                        self.syslogger.info("Failed to remove xr audit app from XR LXC: "+appName)
-                        self.syslogger.info("Retrying") 
-                        time.sleep(5)
-                    else:
-                        self.syslogger.info("Removed xr audit app from XR LXC: "+appName)
-                        self.logger.info("Removed xr audit app from XR LXC: "+appName)
-                        action_success = True
-                        break
-                else: 
-                    if self._copy_file(srcfolder+"/"+appName, dstfolder+"/"+appName):
-                        self.logger.info("XR LXC audit app successfully copied")
-                        self.syslogger.info("XR LXC audit app successfully copied")
-                        action_success = True
-                        break
-                    else:
-                        self.syslogger.info("Retrying")
-                        time.sleep(5)
-            wait_count = wait_count + 1
+                app_exists = False
+        else:
+            self.syslogger.info("Failed to check if app exists already")
+            app_exists = False
+     
+        if app_exists:
+            while(wait_count < 5):
+                clean_up_filename = self.run_bash(cmd="lsof "+dstfolder+"/"+appName)
+                print clean_up_filename
+                if clean_up_filename["output"] is not "" :
+                    # Process currently running, Sleep 5 seconds before attempting again
+                    self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
+                    time.sleep(5)
+                else:
+                    if uninstall:
+                        result = self.run_bash(cmd="rm -f "+dstfolder+"/"+appName)
+                        if result["status"]:
+                            self.syslogger.info("Failed to remove xr audit app from XR LXC: "+appName)
+                            self.syslogger.info("Retrying") 
+                            time.sleep(5)
+                        else:
+                            self.syslogger.info("Removed xr audit app from XR LXC: "+appName)
+                            self.logger.info("Removed xr audit app from XR LXC: "+appName)
+                            action_success = True
+                            break
+                    else: 
+                        if self._copy_file(srcfolder+"/"+appName, dstfolder+"/"+appName):
+                            self.logger.info("XR LXC audit app successfully copied")
+                            self.syslogger.info("XR LXC audit app successfully copied")
+                            action_success = True
+                            break
+                        else:
+                            self.syslogger.info("Retrying")
+                            time.sleep(5)
+                wait_count = wait_count + 1
 
-        if not action_success:
-            return False
-
+            if not action_success:
+                return False
+        else:
+            if not uninstall:
+                if self._copy_file(srcfolder+"/"+appName, dstfolder+"/"+appName):
+                    self.logger.info("XR LXC audit app successfully copied")
+                    self.syslogger.info("XR LXC audit app successfully copied")
+                else:
+                    self.logger.info("Failed to copy the XR LXC audit app")
+                    self.syslogger.info("Failed to copy the XR LXC audit app")
+                    return False
 
 
         # Now Create the cron job in XR to periodically execute the XR LXC audit app
@@ -258,56 +279,83 @@ class IosxrAuditMain(AuditHelpers):
                self.syslogger.info("Error is"+str(e))
                cronPrefix = "audit_cron_admin_"
 
+
+        file_exists = self.active_adminruncmd(root_lr_user=self.root_lr_user, cmd="ls "+dstfolder)
+        if file_exists["status"] == "success":
+            cmd_out = file_exists["output"][3:-1]
+            if appName in cmd_out:
+                app_exists = True
+            else:
+                app_exists = False
+        else:
+            self.syslogger.info("Failed to check if app exists already")
+            app_exists = False
+
         wait_count = 0
         action_success = False
-        while(wait_count < 5):
-            clean_up_filename = self.admincmd(root_lr_user=self.root_lr_user, cmd="run lsof "+dstfolder+"/"+appName)
-            cmd_out = clean_up_filename["output"][3:-1]
-            if cmd_out:
-                self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
-                time.sleep(5)
-            else:
-                if uninstall:
-                    remove_from_admin = self.admincmd(root_lr_user=self.root_lr_user, cmd="run rm -f "+dstfolder+"/"+appName)
-                    if remove_from_admin["status"] == "success":
-                        check_removal = self.admincmd(root_lr_user=self.root_lr_user, cmd="run ls "+dstfolder+"/"+appName)
 
-                        if check_removal["status"] == "success":
-                            if appName in check_removal["output"][3:-1]:
-                                self.syslogger.info("Failed to remove audit app from Admin LXC: "+appName)
-                                self.logger.info("Failed to remove audit app from Admin LXC: "+appName)
-                                time.sleep(5) 
-                            else:
-                                self.syslogger.info("Successfully removed audit app from Admin LXC: "+appName)
-                                self.logger.info("Successfully removed audit app from Admin LXC: "+appName)
-                                action_success = True
-                                break
-                        else:
-                            self.syslogger.info("Failed to initiate check of removal of audit app from Admin LXC: "+appName)
-                            self.logger.info("Failed to initiate check of removal of audit app from Admin LXC: "+appName)
-                            return False
-                    else:
-                        self.syslogger.info("Failed to initiate removal of audit app from Admin LXC: "+appName)
-                        self.logger.info("Failed to initiate removal of audit app from Admin LXC: "+appName)
-                        return False 
+        if app_exists:
+            while(wait_count < 5):
+                clean_up_filename = self.active_adminruncmd(root_lr_user=self.root_lr_user, cmd="lsof "+dstfolder+"/"+appName)
+                cmd_out = clean_up_filename["output"][3:-1]
+                if cmd_out:
+                    self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
+                    time.sleep(5)
                 else:
-                    transfer_to_admin = self.adminscp(root_lr_user=self.root_lr_user, src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
-                    if transfer_to_admin["status"] == "success":
-                        self.logger.info("Admin LXC audit app successfully copied")
-                        self.syslogger.info("Admin LXC audit app successfully copied")
-                        action_success = True
-                        if self.debug:
-                            self.logger.debug(transfer_to_admin["output"])
-                        break
+                    if uninstall:
+                        remove_from_admin = self.active_adminruncmd(root_lr_user=self.root_lr_user, cmd="rm -f "+dstfolder+"/"+appName)
+                        if remove_from_admin["status"] == "success":
+                            check_removal = self.active_adminruncmd(root_lr_user=self.root_lr_user, cmd="ls "+dstfolder)
+
+                            if check_removal["status"] == "success":
+                                if appName in check_removal["output"][3:-1]:
+                                    self.syslogger.info("Failed to remove audit app from Admin LXC: "+appName)
+                                    self.logger.info("Failed to remove audit app from Admin LXC: "+appName)
+                                    time.sleep(5) 
+                                else:
+                                    self.syslogger.info("Successfully removed audit app from Admin LXC: "+appName)
+                                    self.logger.info("Successfully removed audit app from Admin LXC: "+appName)
+                                    action_success = True
+                                    break
+                            else:
+                                self.syslogger.info("Failed to initiate check of removal of audit app from Admin LXC: "+appName)
+                                self.logger.info("Failed to initiate check of removal of audit app from Admin LXC: "+appName)
+                                return False
+                        else:
+                            self.syslogger.info("Failed to initiate removal of audit app from Admin LXC: "+appName)
+                            self.logger.info("Failed to initiate removal of audit app from Admin LXC: "+appName)
+                            return False 
                     else:
-                        self.syslogger.info("Failed to copy Admin LXC audit app, Error:")
-                        self.syslogger.info(transfer_to_admin["output"])
-                        time.sleep(5)
-            wait_count = wait_count + 1
+                        transfer_to_admin = self.active_adminscp(root_lr_user=self.root_lr_user, src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
+                        if transfer_to_admin["status"] == "success":
+                            self.logger.info("Admin LXC audit app successfully copied")
+                            self.syslogger.info("Admin LXC audit app successfully copied")
+                            action_success = True
+                            if self.debug:
+                                self.logger.debug(transfer_to_admin["output"])
+                            break
+                        else:
+                            self.syslogger.info("Failed to copy Admin LXC audit app, Error:")
+                            self.syslogger.info(transfer_to_admin["output"])
+                            time.sleep(5)
+                wait_count = wait_count + 1
 
-        if not action_success:
-            return False     
+            if not action_success:
+                return False     
+        else:
+            if not uninstall:
+                transfer_to_admin = self.active_adminscp(root_lr_user=self.root_lr_user, src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
+                if transfer_to_admin["status"] == "success":
+                    self.logger.info("Admin LXC audit app successfully copied")
+                    self.syslogger.info("Admin LXC audit app successfully copied")
+                    if self.debug:
+                        self.logger.debug(transfer_to_admin["output"])
+                else:
+                    self.syslogger.info("Failed to copy Admin LXC audit app, Error:")
+                    self.syslogger.info(transfer_to_admin["output"])
 
+
+             
         # Now Create the cron job in Admin LXC to periodically execute the Admin LXC audit app
        
 
@@ -325,10 +373,10 @@ class IosxrAuditMain(AuditHelpers):
 
             # Clean up stale cron jobs in the admin /etc/cron.d
 
-            admin_cron_cleanup = self.admincmd(root_lr_user=self.root_lr_user, cmd="run rm -f /etc/cron.d/"+cronPrefix+"*")
+            admin_cron_cleanup = self.active_adminruncmd(root_lr_user=self.root_lr_user, cmd="rm -f /etc/cron.d/"+cronPrefix+"*")
 
             if admin_cron_cleanup["status"] == "success":
-                check_admin_cron_cleanup = self.admincmd(root_lr_user=self.root_lr_user, cmd="run ls /etc/cron.d/")
+                check_admin_cron_cleanup = self.active_adminruncmd(root_lr_user=self.root_lr_user, cmd="ls /etc/cron.d/")
 
                 if cronPrefix in check_admin_cron_cleanup["output"]:
                     self.syslogger.info("Failed to clean up stale cron jobs in admin shell under /etc/cron.d")
@@ -357,7 +405,7 @@ class IosxrAuditMain(AuditHelpers):
 
         # Finally copy the created cron file into admin LXC /etc/cron.d to activate it
 
-        transfer_to_admin = self.adminscp(root_lr_user=self.root_lr_user, src="/misc/app_host/"+cron_fname, dest="/etc/cron.d/"+cron_fname)
+        transfer_to_admin = self.active_adminscp(root_lr_user=self.root_lr_user, src="/misc/app_host/"+cron_fname, dest="/etc/cron.d/"+cron_fname)
 
         if transfer_to_admin["status"] == "success":
             self.logger.info("Admin LXC audit cron file successfully copied and activated")
@@ -424,55 +472,80 @@ class IosxrAuditMain(AuditHelpers):
                cronPrefix = "audit_cron_host_"
 
 
+        file_exists = self.active_hostcmd(root_lr_user=self.root_lr_user, cmd="ls "+dstfolder)
+        if file_exists["status"] == "success":
+            cmd_out = file_exists["output"][3:-1]
+            if appName in cmd_out:
+                app_exists = True
+            else:
+                app_exists = False
+        else:
+            self.syslogger.info("Failed to check if app exists already")
+            app_exists = False
+
         wait_count = 0
         action_success = False
-        while(wait_count < 5):
-            clean_up_filename = self.hostcmd(root_lr_user=self.root_lr_user, cmd="lsof "+dstfolder+"/"+appName)
-            cmd_out = clean_up_filename["output"][3:-1]
-            if cmd_out:
-                self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
-                time.sleep(5)
-            else:
-                if uninstall:
-                    remove_from_host = self.hostcmd(root_lr_user=self.root_lr_user, cmd="rm -f "+dstfolder+"/"+appName)
-                    if remove_from_host["status"] == "success":
-                        check_removal = self.hostcmd(root_lr_user=self.root_lr_user, cmd="ls "+dstfolder+"/"+appName)
 
-                        if check_removal["status"] == "success":
-                            if appName in check_removal["output"][3:-1]:
-                                self.syslogger.info("Failed to remove audit app from Host: "+appName)
-                                self.logger.info("Failed to remove audit app from Host: "+appName)
-                                time.sleep(5)
+        if app_exists:
+            while(wait_count < 5):
+                clean_up_filename = self.active_hostcmd(root_lr_user=self.root_lr_user, cmd="lsof "+dstfolder+"/"+appName)
+                cmd_out = clean_up_filename["output"][3:-1]
+                if cmd_out:
+                    self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
+                    time.sleep(5)
+                else:
+                    if uninstall:
+                        remove_from_host = self.active_hostcmd(root_lr_user=self.root_lr_user, cmd="rm -f "+dstfolder+"/"+appName)
+                        if remove_from_host["status"] == "success":
+                            check_removal = self.active_hostcmd(root_lr_user=self.root_lr_user, cmd="ls "+dstfolder)
+
+                            if check_removal["status"] == "success":
+                                if appName in check_removal["output"][3:-1]:
+                                    self.syslogger.info("Failed to remove audit app from HOST: "+appName)
+                                    self.logger.info("Failed to remove audit app from HOST: "+appName)
+                                    time.sleep(5)
+                                else:
+                                    self.syslogger.info("Successfully removed audit app from HOST: "+appName)
+                                    self.logger.info("Successfully removed audit app from HOST: "+appName)
+                                    action_success = True
+                                    break
                             else:
-                                self.syslogger.info("Successfully removed audit app from Host: "+appName)
-                                self.logger.info("Successfully removed audit app from Host: "+appName)
-                                action_success = True
-                                break
+                                self.syslogger.info("Failed to initiate check of removal of audit app from HOST: "+appName)
+                                self.logger.info("Failed to initiate check of removal of audit app from HOST: "+appName)
+                                return False
                         else:
-                            self.syslogger.info("Failed to initiate check of removal of audit app from Host: "+appName)
-                            self.logger.info("Failed to initiate check of removal of audit app from Host: "+appName)
+                            self.syslogger.info("Failed to initiate removal of audit app from HOST: "+appName)
+                            self.logger.info("Failed to initiate removal of audit app from Admin HOST: "+appName)
                             return False
                     else:
-                        self.syslogger.info("Failed to initiate removal of audit app from Host: "+appName)
-                        self.logger.info("Failed to initiate removal of audit app from Host: "+appName)
-                        return False  
-                else:
-                    transfer_to_host = self.hostscp(root_lr_user=self.root_lr_user, src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
-                    if transfer_to_host["status"] == "success":
-                        self.logger.info("host audit app successfully copied")
-                        self.syslogger.info("host audit app successfully copied")
-                        action_success = True
-                        if self.debug:
-                            self.logger.debug(transfer_to_host["output"])
-                        break
-                    else:
-                        self.syslogger.info("Failed to copy host audit app, Error:")
-                        self.syslogger.info(transfer_to_host["output"])
-                        time.sleep(5)
-            wait_count = wait_count + 1
+                        transfer_to_host = self.active_hostscp(root_lr_user=self.root_lr_user, src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
+                        if transfer_to_host["status"] == "success":
+                            self.logger.info("HOST audit app successfully copied")
+                            self.syslogger.info("HOST LXC audit app successfully copied")
+                            action_success = True
+                            if self.debug:
+                                self.logger.debug(transfer_to_host["output"])
+                            break
+                        else:
+                            self.syslogger.info("Failed to copy HOST audit app, Error:")
+                            self.syslogger.info(transfer_to_host["output"])
+                            time.sleep(5)
+                wait_count = wait_count + 1
 
-        if not action_success:
-            return False
+            if not action_success:
+                return False
+        else:
+            if not uninstall:
+                transfer_to_host = self.active_hostscp(root_lr_user=self.root_lr_user, src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
+                if transfer_to_host["status"] == "success":
+                    self.logger.info("HOST audit app successfully copied")
+                    self.syslogger.info("HOST audit app successfully copied")
+                    if self.debug:
+                        self.logger.debug(transfer_to_host["output"])
+                else:
+                    self.syslogger.info("Failed to copy Admin LXC audit app, Error:")
+                    self.syslogger.info(transfer_to_host["output"])
+
 
 
         # Now Create the cron job in host layer to periodically execute the host audit app
@@ -492,10 +565,10 @@ class IosxrAuditMain(AuditHelpers):
 
             # Clean up stale cron jobs in the host /etc/cron.d
 
-            host_cron_cleanup = self.hostcmd(root_lr_user=self.root_lr_user, cmd="rm -f /etc/cron.d/"+cronPrefix+"*")
+            host_cron_cleanup = self.active_hostcmd(root_lr_user=self.root_lr_user, cmd="rm -f /etc/cron.d/"+cronPrefix+"*")
 
             if host_cron_cleanup["status"] == "success":
-                check_host_cron_cleanup = self.hostcmd(root_lr_user=self.root_lr_user, cmd="ls /etc/cron.d/")
+                check_host_cron_cleanup = self.active_hostcmd(root_lr_user=self.root_lr_user, cmd="ls /etc/cron.d/")
 
                 if cronPrefix in check_host_cron_cleanup["output"]:
                     self.syslogger.info("Failed to clean up stale cron jobs in host shell under /etc/cron.d")
@@ -522,7 +595,7 @@ class IosxrAuditMain(AuditHelpers):
 
         # Finally copy the created cron file into host's /etc/cron.d to activate it
 
-        transfer_to_host = self.hostscp(root_lr_user=self.root_lr_user, src="/misc/app_host/"+cron_fname, dest="/etc/cron.d/"+cron_fname)
+        transfer_to_host = self.active_hostscp(root_lr_user=self.root_lr_user, src="/misc/app_host/"+cron_fname, dest="/etc/cron.d/"+cron_fname)
 
         if transfer_to_host["status"] == "success":
             self.logger.info("Host audit cron file successfully copied and activated")
@@ -593,57 +666,81 @@ class IosxrAuditMain(AuditHelpers):
                cronPrefix = "audit_cron_xr_"
 
 
+
+        file_exists = self.standby_xrruncmd(cmd="ls "+dstfolder)
+        if file_exists["status"] == "success":
+            cmd_out = file_exists["output"]
+            if appName in cmd_out:
+                app_exists = True
+            else:
+                app_exists = False
+        else:
+            self.syslogger.info("Failed to check if app exists already")
+            app_exists = False
+
         wait_count = 0
         action_success = False
 
-        while(wait_count < 5):
-            clean_up_filename = self.standby_xrruncmd(cmd="lsof "+dstfolder+"/"+appName)
-            if clean_up_filename["output"] is not "":
-                # Process currently running, Sleep 5 seconds before attempting again
-                self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
-                time.sleep(5)
-            else:
-                if uninstall:
-                    remove_from_standby_xr = self.standby_xrruncmd(cmd="rm -f "+dstfolder+"/"+appName)
-                    if remove_from_standby_xr["status"] == "success":
-                        check_removal = self.standby_xrruncmd(cmd="ls "+dstfolder+"/"+appName)
+        if app_exists:
+            while(wait_count < 5):
+                clean_up_filename = self.standby_xrruncmd(cmd="lsof "+dstfolder+"/"+appName)
+                cmd_out = clean_up_filename["output"]
+                if cmd_out:
+                    self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
+                    time.sleep(5)
+                else:
+                    if uninstall:
+                        remove_from_standby_xr = self.standby_xrruncmd(cmd="rm -f "+dstfolder+"/"+appName)
+                        if remove_from_standby_xr["status"] == "success":
+                            check_removal = self.standby_xrruncmd(cmd="ls "+dstfolder)
 
-                        if check_removal["status"] == "success":
-                            if appName in check_removal["output"][3:-1]:
-                                self.syslogger.info("Failed to remove audit app from standby RP XR LXC: "+appName)
-                                self.logger.info("Failed to remove audit app from standby RP XR LXC: "+appName)
-                                time.sleep(5)
+                            if check_removal["status"] == "success":
+                                if appName in check_removal["output"]:
+                                    self.syslogger.info("Failed to remove audit app from Standby XR LXC: "+appName)
+                                    self.logger.info("Failed to remove audit app from Standby XR LXCT: "+appName)
+                                    time.sleep(5)
+                                else:
+                                    self.syslogger.info("Successfully removed audit app from Standby XR LXC: "+appName)
+                                    self.logger.info("Successfully removed audit app from Standby XR LXC "+appName)
+                                    action_success = True
+                                    break
                             else:
-                                self.syslogger.info("Successfully removed audit app from standby RP XR LXC: "+appName)
-                                self.logger.info("Successfully removed audit app from standby RP XR LXC: "+appName)
-                                action_success = True
-                                break
+                                self.syslogger.info("Failed to initiate check of removal of audit app from Standby XR LXC: "+appName)
+                                self.logger.info("Failed to initiate check of removal of audit app from Standby XR LXC: "+appName)
+                                return False
                         else:
-                            self.syslogger.info("Failed to initiate check of removal of audit app on standby RP XR LXC: "+appName)
-                            self.logger.info("Failed to initiate check of removal of audit app on standby RP XR LXC:: "+appName)
+                            self.syslogger.info("Failed to initiate removal of audit app from Standby XR LXC: "+appName)
+                            self.logger.info("Failed to initiate removal of audit app from Standby XR LXC: "+appName)
                             return False
                     else:
-                        self.syslogger.info("Failed to initiate removal of audit app from standby RP XR LXC: "+appName)
-                        self.logger.info("Failed to initiate removal of audit app from standby RP XR LXC: "+appName)
-                        return False  
+                        transfer_to_standby_xr = self.standby_xrscp(src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
+                        if transfer_to_standby_xr["status"] == "success":
+                            self.logger.info("Standby XR LXC audit app successfully copied")
+                            self.syslogger.info("Standby LXC audit app successfully copied")
+                            action_success = True
+                            if self.debug:
+                                self.logger.debug(transfer_to_standby_xr["output"])
+                            break
+                        else:
+                            self.syslogger.info("Failed to copy XR LXC audit app to standby, Error:")
+                            self.syslogger.info(transfer_to_standby_xr["output"])
+                            time.sleep(5)
+                wait_count = wait_count + 1
+
+            if not action_success:
+                return False
+        else:
+            if not uninstall:
+                transfer_to_standby_xr = self.standby_xrscp(src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
+                if transfer_to_standby_xr["status"] == "success":
+                    self.logger.info("Standby XR LXC  audit app successfully copied")
+                    self.syslogger.info("Standby XR LXC  audit app successfully copied")
+                    if self.debug:
+                        self.logger.debug(transfer_to_standby_xr["output"])
                 else:
-                    transfer_to_standby_xr = self.standby_xrscp(src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
+                    self.syslogger.info("Failed to copy Standby XR LXC audit app, Error:")
+                    self.syslogger.info(transfer_to_standby_xr["output"])
 
-                    if transfer_to_standby_xr["status"] == "success":
-                        self.logger.info("XR LXC audit app successfully copied to standby XR LXC")
-                        self.syslogger.info("XR LXC audit app successfully copied to standby XR LXC")
-                        action_success = True
-                        if self.debug:
-                            self.logger.debug(transfer_to_standby_xr["output"])
-                        break
-                    else:
-                        self.syslogger.info("Failed to copy to XR LXC audit app to Standby XR LXC, Error:")
-                        self.syslogger.info(transfer_to_standby_xr["output"])
-                        time.sleep(5)
-            wait_count = wait_count + 1
-
-        if not action_success:
-            return False
 
         # Now Create the cron job in Standby XR LXC to periodically execute the XR LXC audit app
 
@@ -767,58 +864,81 @@ class IosxrAuditMain(AuditHelpers):
                cronPrefix = "audit_cron_admin_"
 
 
+
+        file_exists = self.standby_adminruncmd(root_lr_user=self.root_lr_user, cmd="ls "+dstfolder)
+        if file_exists["status"] == "success":
+            cmd_out = file_exists["output"][3:-1]
+            if appName in cmd_out:
+                app_exists = True
+            else:
+                app_exists = False
+        else:
+            self.syslogger.info("Failed to check if app exists already")
+            app_exists = False
+
         wait_count = 0
         action_success = False
 
-        while(wait_count < 5):
-            clean_up_filename = self.standby_adminruncmd(root_lr_user=self.root_lr_user,cmd="lsof "+dstfolder+"/"+appName)
-            cmd_out = clean_up_filename["output"][3:-1]
-            if cmd_out:
-                # Process currently running, Sleep 5 seconds before attempting again
-                self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
-                time.sleep(5)
-            else:
-                if uninstall:
-                    remove_from_standby_admin = self.standby_adminruncmd(root_lr_user=self.root_lr_user, cmd="rm -f "+dstfolder+"/"+appName)
-                    if remove_from_standbyadmin["status"] == "success":
-                        check_removal = self.standby_adminruncmd(root_lr_user=self.root_lr_user, cmd="ls "+dstfolder+"/"+appName)
+        if app_exists:
+            while(wait_count < 5):
+                clean_up_filename = self.standby_adminruncmd(root_lr_user=self.root_lr_user, cmd="lsof "+dstfolder+"/"+appName)
+                cmd_out = clean_up_filename["output"][3:-1]
+                if cmd_out:
+                    self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
+                    time.sleep(5)
+                else:
+                    if uninstall:
+                        remove_from_standby_admin = self.standby_adminruncmd(root_lr_user=self.root_lr_user, cmd="rm -f "+dstfolder+"/"+appName)
+                        if remove_from_standby_admin["status"] == "success":
+                            check_removal = self.standby_adminruncmd(root_lr_user=self.root_lr_user, cmd="ls "+dstfolder)
 
-                        if check_removal["status"] == "success":
-                            if appName in check_removal["output"][3:-1]:
-                                self.syslogger.info("Failed to remove audit app from Admin LXC: "+appName)
-                                self.logger.info("Failed to remove audit app from Admin LXC: "+appName)
-                                time.sleep(5)
+                            if check_removal["status"] == "success":
+                                if appName in check_removal["output"][3:-1]:
+                                    self.syslogger.info("Failed to remove audit app from Standby RP's Admin LXC: "+appName)
+                                    self.logger.info("Failed to remove audit app from Standby RP's Admin LXC: "+appName)
+                                    time.sleep(5)
+                                else:
+                                    self.syslogger.info("Successfully removed audit app from Standby RP's Admin LXC: "+appName)
+                                    self.logger.info("Successfully removed audit app from Standby RP's Admin LXC: "+appName)
+                                    action_success = True
+                                    break
                             else:
-                                self.syslogger.info("Successfully removed audit app from Admin LXC: "+appName)
-                                self.logger.info("Successfully removed audit app from Admin LXC: "+appName)
-                                action_success = True
-                                break
+                                self.syslogger.info("Failed to initiate check of removal of audit app from Standby RP's Admin LXC: "+appName)
+                                self.logger.info("Failed to initiate check of removal of audit app from Standby RP's Admin LXC: "+appName)
+                                return False
                         else:
-                            self.syslogger.info("Failed to initiate check of removal of audit app from Admin LXC: "+appName)
-                            self.logger.info("Failed to initiate check of removal of audit app from Admin LXC: "+appName)
+                            self.syslogger.info("Failed to initiate removal of audit app from Standby RP's Admin LXC: "+appName)
+                            self.logger.info("Failed to initiate removal of audit app from Standby RP's Admin LXC: "+appName)
                             return False
                     else:
-                        self.syslogger.info("Failed to initiate removal of audit app from Admin LXC: "+appName)
-                        self.logger.info("Failed to initiate removal of audit app from Admin LXC: "+appName)
-                        return False  
+                        transfer_to_standby_admin = self.standby_adminscp(root_lr_user=self.root_lr_user, src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
+                        if transfer_to_standby_admin["status"] == "success":
+                            self.logger.info("Standby RP Admin LXC audit app successfully copied")
+                            self.syslogger.info("Standby RP Admin LXC audit app successfully copied")
+                            action_success = True
+                            if self.debug:
+                                self.logger.debug(transfer_to_standby_admin["output"])
+                            break
+                        else:
+                            self.syslogger.info("Failed to copy Standby RP Admin LXC audit app, Error:")
+                            self.syslogger.info(transfer_to_standby_admin["output"])
+                            time.sleep(5)
+                wait_count = wait_count + 1
+
+            if not action_success:
+                return False
+        else:
+            if not uninstall:
+                transfer_to_standby_admin = self.standby_adminscp(root_lr_user=self.root_lr_user, src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
+                if transfer_to_standby_admin["status"] == "success":
+                    self.logger.info("Standby Admin LXC audit app successfully copied")
+                    self.syslogger.info("Standby Admin LXC audit app successfully copied")
+                    if self.debug:
+                        self.logger.debug(transfer_to_standby_admin["output"])
                 else:
-                    transfer_to_standby_admin = self.standby_adminscp(root_lr_user=self.root_lr_user, src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
+                    self.syslogger.info("Failed to copy Standby RP Admin LXC audit app, Error:")
+                    self.syslogger.info(transfer_to_standby_admin["output"])
 
-                    if transfer_to_standby_admin["status"] == "success":
-                        self.logger.info("Admin LXC audit app successfully copied to Standby Admin LXC")
-                        self.syslogger.info("Admin LXC audit app successfully copied to Standby Admin LXC")
-                        action_success = True
-                        if self.debug:
-                            self.logger.debug(transfer_to_standby_admin["output"])
-                        break
-                    else:
-                        self.syslogger.info("Failed to copy Admin LXC audit app to standby Admin LXC, Error:")
-                        self.syslogger.info(transfer_to_standby_admin["output"])
-                        time.sleep(5)
-            wait_count = wait_count + 1
-
-        if not action_success:
-            return False
 
         # Now Create the cron job in standby Admin LXC to periodically execute the Admin LXC audit app
 
@@ -940,58 +1060,81 @@ class IosxrAuditMain(AuditHelpers):
                cronPrefix = "audit_cron_host_"
 
 
+
+        file_exists = self.standby_hostcmd(root_lr_user=self.root_lr_user, cmd="ls "+dstfolder)
+        if file_exists["status"] == "success":
+            cmd_out = file_exists["output"][3:-1]
+            if appName in cmd_out:
+                app_exists = True
+            else:
+                app_exists = False
+        else:
+            self.syslogger.info("Failed to check if app exists already")
+            app_exists = False
+
         wait_count = 0
         action_success = False
 
-        while(wait_count < 5):
-            clean_up_filename = self.standby_hostcmd(root_lr_user=self.root_lr_user,cmd="lsof "+dstfolder+"/"+appName)
-            cmd_out = clean_up_filename["output"][3:-1]
-            if cmd_out:
-                self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
-                time.sleep(5)
-            else:
-                if uninstall:
-                    remove_from_standby_host = self.standby_hostcmd(root_lr_user=self.root_lr_user, cmd="rm -f "+dstfolder+"/"+appName)
-                    if remove_from_standby_host["status"] == "success":
-                        check_removal = self.standby_hostcmd(root_lr_user=self.root_lr_user, cmd="ls "+dstfolder+"/"+appName)
+        if app_exists:
+            while(wait_count < 5):
+                clean_up_filename = self.standby_hostcmd(root_lr_user=self.root_lr_user, cmd="lsof "+dstfolder+"/"+appName)
+                cmd_out = clean_up_filename["output"][3:-1]
+                if cmd_out:
+                    self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
+                    time.sleep(5)
+                else:
+                    if uninstall:
+                        remove_from_standby_host = self.standby_hostcmd(root_lr_user=self.root_lr_user, cmd="rm -f "+dstfolder+"/"+appName)
+                        if remove_from_standby_host["status"] == "success":
+                            check_removal = self.standby_hostcmd(root_lr_user=self.root_lr_user, cmd="ls "+dstfolder)
 
-                        if check_removal["status"] == "success":
-                            if appName in check_removal["output"][3:-1]:
-                                self.syslogger.info("Failed to remove audit app from standby RP host: "+appName)
-                                self.logger.info("Failed to remove audit app from standby RP host "+appName)
-                                time.sleep(5)
+                            if check_removal["status"] == "success":
+                                if appName in check_removal["output"][3:-1]:
+                                    self.syslogger.info("Failed to remove audit app from Standby RP's HOST shell: "+appName)
+                                    self.logger.info("Failed to remove audit app from Standby RP's HOST shell: "+appName)
+                                    time.sleep(5)
+                                else:
+                                    self.syslogger.info("Successfully removed audit app from Standby RP's HOST shell: "+appName)
+                                    self.logger.info("Successfully removed audit app from Standby RP's HOST shell: "+appName)
+                                    action_success = True
+                                    break
                             else:
-                                self.syslogger.info("Successfully removed audit app from standby RP host: "+appName)
-                                self.logger.info("Successfully removed audit app from standby RP host: "+appName)
-                                action_success = True
-                                break
+                                self.syslogger.info("Failed to initiate check of removal of audit app from Standby RP's HOST shell: "+appName)
+                                self.logger.info("Failed to initiate check of removal of audit app from Standby RP's HOST shell: "+appName)
+                                return False
                         else:
-                            self.syslogger.info("Failed to initiate check of removal of audit app from standby RP host: "+appName)
-                            self.logger.info("Failed to initiate check of removal of audit app from standby RP host: "+appName)
+                            self.syslogger.info("Failed to initiate removal of audit app from Standby RP's HOST shell: "+appName)
+                            self.logger.info("Failed to initiate removal of audit app from Standby RP's HOST shell: "+appName)
                             return False
                     else:
-                        self.syslogger.info("Failed to initiate removal of audit app from Standby RP host: "+appName)
-                        self.logger.info("Failed to initiate removal of audit app from standby RP to host: "+appName)
-                        return False  
+                        transfer_to_standby_host = self.standby_hostscp(root_lr_user=self.root_lr_user, src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
+                        if transfer_to_standby_host["status"] == "success":
+                            self.logger.info("Standby RP HOST audit app successfully copied")
+                            self.syslogger.info("Standby RP HOST audit app successfully copied")
+                            action_success = True
+                            if self.debug:
+                                self.logger.debug(transfer_to_standby_host["output"])
+                            break
+                        else:
+                            self.syslogger.info("Failed to copy Standby RP HOST audit app, Error:")
+                            self.syslogger.info(transfer_to_standby_host["output"])
+                            time.sleep(5)
+                wait_count = wait_count + 1
 
+            if not action_success:
+                return False
+        else:
+            if not uninstall:
+                transfer_to_standby_host = self.standby_hostscp(root_lr_user=self.root_lr_user, src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
+                if transfer_to_standby_host["status"] == "success":
+                    self.logger.info("Standby HOST audit app successfully copied")
+                    self.syslogger.info("Standby HOST audit app successfully copied")
+                    if self.debug:
+                        self.logger.debug(transfer_to_standby_host["output"])
                 else:
-                    transfer_to_standby_host = self.standby_hostscp(root_lr_user=self.root_lr_user, src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
+                    self.syslogger.info("Failed to copy Standby HOST audit app, Error:")
+                    self.syslogger.info(transfer_to_standby_host["output"])
 
-                    if transfer_to_standby_host["status"] == "success":
-                        self.logger.info("Host audit app successfully copied to Standby host shell")
-                        self.syslogger.info("Host audit app successfully copied to Standby host shell")
-                        action_success = True
-                        if self.debug:
-                            self.logger.debug(transfer_to_standby_host["output"])
-                        break
-                    else:
-                        self.syslogger.info("Failed to copy host audit app to standby host shell, Error:")
-                        self.syslogger.info(transfer_to_standby_host["output"])
-                        time.sleep(5)
-            wait_count = wait_count + 1
-
-        if not action_success:
-            return False
 
         # Now Create the cron job in standby host to periodically execute the host audit app
 
@@ -1019,7 +1162,7 @@ class IosxrAuditMain(AuditHelpers):
                     self.syslogger.info("Failed to clean up stale cron jobs in standby host shell under /etc/cron.d")
                     return False
                 else:
-                    self.syslogger.info("Successfully cleaned up old host audit cron jobs")
+                    self.syslogger.info("Successfully cleaned up old Standby host audit cron jobs")
                     # If uninstall is set, then just return from here
                     if uninstall:
                         return True
@@ -1053,7 +1196,7 @@ class IosxrAuditMain(AuditHelpers):
             post_activation_cleanup = self.cron_job(folder="/misc/app_host", action="delete")
 
             if post_activation_cleanup["status"] == "success":
-                self.syslogger.info("Successfully cleaned up temp admin audit cron jobs post activation")
+                self.syslogger.info("Successfully cleaned up temp standby host  audit cron jobs post activation")
             else:
                 self.syslogger.info("Failed to clean up temp admin audit cron jobs post activation,logging but not bailing out")
 
@@ -1103,44 +1246,68 @@ class IosxrAuditMain(AuditHelpers):
             try:
                cronPrefix = self.installer_cfg["COLLECTOR"]["cronPrefix"]
             except Exception as e:
-               self.syslogger.info("Failed to extract cronPrefix for HOST audit cronjob, defaulting to audit_cron_collector_")
+               self.syslogger.info("Failed to extract cronPrefix for COLLECTOR audit cronjob, defaulting to audit_cron_collector_")
                self.syslogger.info("Error is"+str(e))
                cronPrefix = "audit_cron_collector_"
 
 
         wait_count = 0
         action_success = False
- 
-        while(wait_count < 5):
-            clean_up_filename = self.run_bash(cmd="lsof "+dstfolder+"/"+appName)
-            if clean_up_filename["output"] is not "":
-                self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
-                time.sleep(5)
-            else:
-                if uninstall:
-                    result = self.run_bash(cmd="rm -f "+dstfolder+"/"+appName)
-                    if result["status"]:
-                        self.syslogger.info("Failed to remove collector app from XR LXC: "+appName)
-                        self.syslogger.info("Retrying")
-                        time.sleep(5)
-                    else:
-                        self.syslogger.info("Removed collector app from XR LXC: "+appName)
-                        self.logger.info("Removed collector app from XR LXC: "+appName)
-                        action_success = True
-                        break
-                else:
-                    if self._copy_file(srcfolder+"/"+appName, dstfolder+"/"+appName):
-                        self.logger.info("Collector app successfully copied")
-                        self.syslogger.info("Collector app successfully copied")
-                        action_success = True
-                        break
-                    else:
-                        self.syslogger.info("Failed to copy collector app")
-                        time.sleep(5)
-            wait_count = wait_count + 1
 
-        if not action_success:
-            return False
+
+        file_exists = self.run_bash(cmd="ls "+dstfolder)
+        if not file_exists["status"]:
+            if appName in file_exists["output"]:
+                app_exists = True
+            else:
+                app_exists = False
+        else:
+            self.syslogger.info("Failed to check if app exists already")
+            app_exists = False
+
+        if app_exists:
+            while(wait_count < 5):
+                clean_up_filename = self.run_bash(cmd="lsof "+dstfolder+"/"+appName)
+                print clean_up_filename
+                if clean_up_filename["output"] is not "" :
+                    # Process currently running, Sleep 5 seconds before attempting again
+                    self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
+                    time.sleep(5)
+                else:
+                    if uninstall:
+                        result = self.run_bash(cmd="rm -f "+dstfolder+"/"+appName)
+                        if result["status"]:
+                            self.syslogger.info("Failed to remove Collector audit app from XR LXC: "+appName)
+                            self.syslogger.info("Retrying")
+                            time.sleep(5)
+                        else:
+                            self.syslogger.info("Removed Collector audit app from XR LXC: "+appName)
+                            self.logger.info("Removed Collector audit app from XR LXC: "+appName)
+                            action_success = True
+                            break
+                    else:
+                        if self._copy_file(srcfolder+"/"+appName, dstfolder+"/"+appName):
+                            self.logger.info("XR LXC Collector app successfully copied")
+                            self.syslogger.info("XR LXC Collector  app successfully copied")
+                            action_success = True
+                            break
+                        else:
+                            self.syslogger.info("Retrying")
+                            time.sleep(5)
+                wait_count = wait_count + 1
+
+            if not action_success:
+                return False
+        else:
+            if not uninstall:
+                if self._copy_file(srcfolder+"/"+appName, dstfolder+"/"+appName):
+                    self.logger.info("XR LXC Collector app successfully copied")
+                    self.syslogger.info("XR LXC Collector app successfully copied")
+                else:
+                    self.logger.info("Failed to copy the XR LXC Collector app")
+                    self.syslogger.info("Failed to copy the XR LXC Collector app")
+                    return False
+
 
 
         # Create the cron job in XR to periodically collect the combined logs from XR LXC, Admin LXC and host 
@@ -1220,63 +1387,84 @@ class IosxrAuditMain(AuditHelpers):
             try:
                cronPrefix = self.installer_cfg["COLLECTOR"]["cronPrefix"]
             except Exception as e:
-               self.syslogger.info("Failed to extract cronPrefix for HOST audit cronjob, defaulting to audit_cron_collector_")
+               self.syslogger.info("Failed to extract cronPrefix for COLLECTOR audit cronjob, defaulting to audit_cron_collector_")
                self.syslogger.info("Error is"+str(e))
                cronPrefix = "audit_cron_collector_"
 
 
+        file_exists = self.standby_xrruncmd(cmd="ls "+dstfolder)
+        if file_exists["status"] == "success":
+            cmd_out = file_exists["output"]
+            if appName in cmd_out:
+                app_exists = True
+            else:
+                app_exists = False
+        else:
+            self.syslogger.info("Failed to check if app exists already")
+            app_exists = False
+
         wait_count = 0
         action_success = False
 
-        while(wait_count < 5):
-            clean_up_filename = self.standby_xrruncmd(cmd="lsof "+dstfolder+"/"+appName)
-            if clean_up_filename["output"] is not "":
-                self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
-                time.sleep(5)
-            else:
-                if uninstall:
-                    remove_from_standby_xr = self.standby_xrruncmd(cmd="rm -f "+dstfolder+"/"+appName)
-                    if remove_from_standby_xr["status"] == "success":
-                        check_removal = self.standby_xrruncmd(cmd="ls "+dstfolder+"/"+appName)
+        if app_exists:
+            while(wait_count < 5):
+                clean_up_filename = self.standby_xrruncmd(cmd="lsof "+dstfolder+"/"+appName)
+                cmd_out = clean_up_filename["output"]
+                if cmd_out:
+                    self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
+                    time.sleep(5)
+                else:
+                    if uninstall:
+                        remove_from_standby_xr = self.standby_xrruncmd(cmd="rm -f "+dstfolder+"/"+appName)
+                        if remove_from_standby_xr["status"] == "success":
+                            check_removal = self.standby_xrruncmd(cmd="ls "+dstfolder)
 
-                        if check_removal["status"] == "success":
-                            if appName in check_removal["output"][3:-1]:
-                                self.syslogger.info("Failed to remove collector app from standby RP XR LXC: "+appName)
-                                self.logger.info("Failed to remove collector app from standby RP XR LXC: "+appName)
-                                time.sleep(5)
+                            if check_removal["status"] == "success":
+                                if appName in check_removal["output"]:
+                                    self.syslogger.info("Failed to remove Collector app from Standby XR LXC: "+appName)
+                                    self.logger.info("Failed to remove Collector app from Standby XR LXCT: "+appName)
+                                    time.sleep(5)
+                                else:
+                                    self.syslogger.info("Successfully removed Collector app from Standby XR LXC: "+appName)
+                                    self.logger.info("Successfully removed Collector app from Standby XR LXC "+appName)
+                                    action_success = True
+                                    break
                             else:
-                                self.syslogger.info("Successfully removed collector app from standby RP XR LXC: "+appName)
-                                self.logger.info("Successfully removed collector app from standby RP XR LXC: "+appName)
-                                action_success = True
-                                break
+                                self.syslogger.info("Failed to initiate check of removal of Collector app from Standby XR LXC: "+appName)
+                                self.logger.info("Failed to initiate check of removal of Collector app from Standby XR LXC: "+appName)
+                                return False
                         else:
-                            self.syslogger.info("Failed to initiate check of removal of collector app on standby RP XR LXC: "+appName)
-                            self.logger.info("Failed to initiate check of removal of collector app on standby RP XR LXC:: "+appName)
+                            self.syslogger.info("Failed to initiate removal of Collector app from Standby XR LXC: "+appName)
+                            self.logger.info("Failed to initiate removal of Collector app from Standby XR LXC: "+appName)
                             return False
                     else:
-                        self.syslogger.info("Failed to initiate removal of collector app from standby RP XR LXC: "+appName)
-                        self.logger.info("Failed to initiate removal of collector app from standby RP XR LXC: "+appName)
-                        return False
+                        transfer_to_standby_xr = self.standby_xrscp(src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
+                        if transfer_to_standby_xr["status"] == "success":
+                            self.logger.info("Standby XR LXC Collector app successfully copied")
+                            self.syslogger.info("Standby XR LXC Collector app successfully copied")
+                            action_success = True
+                            if self.debug:
+                                self.logger.debug(transfer_to_standby_xr["output"])
+                            break
+                        else:
+                            self.syslogger.info("Failed to copy Standby XR LXC  audit app, Error:")
+                            self.syslogger.info(transfer_to_standby_xr["output"])
+                            time.sleep(5)
+                wait_count = wait_count + 1
+
+            if not action_success:
+                return False
+        else:
+            if not uninstall:
+                transfer_to_standby_xr = self.standby_xrscp(src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
+                if transfer_to_standby_xr["status"] == "success":
+                    self.logger.info("Standby XR LXC Collector app successfully copied")
+                    self.syslogger.info("Standby XR LXC Collector audit app successfully copied")
+                    if self.debug:
+                        self.logger.debug(transfer_to_standby_xr["output"])
                 else:
-                    transfer_to_standby_xr = self.standby_xrscp(src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
-
-                    if transfer_to_standby_xr["status"] == "success":
-                        self.logger.info("collector successfully copied to standby XR LXC")
-                        self.syslogger.info("collector successfully copied to standby XR LXC")
-                        action_success = True
-                        if self.debug:
-                            self.logger.debug(transfer_to_standby_xr["output"])
-                        break
-                    else:
-                        self.syslogger.info("Failed to copy to collector app to Standby XR LXC, Error:")
-                        self.syslogger.info(transfer_to_standby_xr["output"])
-                        time.sleep(5)
-
-            wait_count = wait_count + 1
-
-
-        if not action_success:
-            return False
+                    self.syslogger.info("Failed to copy Standby XR LXC Collector app, Error:")
+                    self.syslogger.info(transfer_to_standby_xr["output"])
 
 
 
@@ -1341,9 +1529,9 @@ class IosxrAuditMain(AuditHelpers):
             post_activation_cleanup = self.cron_job(folder="/misc/app_host", action="delete")
 
             if post_activation_cleanup["status"] == "success":
-                self.syslogger.info("Successfully cleaned up temp admin audit cron jobs post activation")
+                self.syslogger.info("Successfully cleaned up temp Standby XR LXC collector cron jobs post activation")
             else:
-                self.syslogger.info("Failed to clean up temp admin audit cron jobs post activation,logging but not bailing out")
+                self.syslogger.info("Failed to clean up temp Standby XR LXC collector cron jobs post activation,logging but not bailing out")
 
         else:
             self.syslogger.info("Failed to copy standby XR LXC collector cron file, Error: %s" % transfer_to_standby_xr["output"])
@@ -1455,6 +1643,7 @@ if __name__ == "__main__":
             audit_obj.logger.info("Failed to remove Standby Admin LXC audit artifacts")
         sys.exit(1)
 
+
     if not audit_obj.setup_standby_host_audit(uninstall=uninstall_flag):
         if not uninstall_flag:
             audit_obj.syslogger.info("Failed to setup Standby HOST audit artifacts")
@@ -1463,6 +1652,7 @@ if __name__ == "__main__":
             audit_obj.syslogger.info("Failed to remove Standby HOST audit artifacts")
             audit_obj.logger.info("Failed to remove Standby HOST audit artifacts")
         sys.exit(1)
+
 
     if not audit_obj.setup_standby_collector(uninstall=uninstall_flag):
         if not uninstall_flag:
