@@ -11,6 +11,8 @@ import xmltodict as xd
 import time
 import itertools
 import argparse
+from lib.audit_helper import XML_PREFIX_DOMAINS
+from lib.audit_helper import COMPLIANCE_PREFIX
 
 class IosxrAuditMain(AuditHelpers):
 
@@ -30,6 +32,8 @@ class IosxrAuditMain(AuditHelpers):
 
         if "root_lr_user" in self.installer_cfg:
             self.root_lr_user = self.installer_cfg["root_lr_user"]
+            self.syslogger.info("Using root-lr user specified in installer.cfg.yml, Username: "+ self.root_lr_user)
+            self.logger.info("Using root-lr user specified in installer.cfg.yml, Username: "+ self.root_lr_user)   
         else:
             # Since user does not provide a root_lr_user,
             # determine it from the current running config
@@ -60,7 +64,7 @@ class IosxrAuditMain(AuditHelpers):
                 self.exit = True
             else:
                 self.syslogger.info("root-lr user discovered, Username: "+ self.root_lr_user)
-                
+                self.logger.info("root-lr user discovered, Username: "+ self.root_lr_user) 
  
     @classmethod
     def current_dir(self):
@@ -102,7 +106,7 @@ class IosxrAuditMain(AuditHelpers):
 
                
 
-    def setup_xr_audit(self, srcfolder=None, dstfolder=None,appName=None, cronName=None, cronPrefix=None, uninstall=False):
+    def setup_xr_audit(self, srcfolder=None, dstfolder=None,appName=None, cronName=None, cronPrefix=None, outputXMLDir=None, uninstall=False):
                 
         if srcfolder is None:
             try:
@@ -143,6 +147,40 @@ class IosxrAuditMain(AuditHelpers):
                self.syslogger.info("Failed to extract cronPrefix for XR audit cronjob, defaulting to audit_cron_xr_")
                self.syslogger.info("Error is"+str(e))
                cronPrefix = "audit_cron_xr_"
+
+        if outputXMLDir is None:
+            try:
+               outputXMLDir = self.installer_cfg["XR"]["output_xml_dir"]
+            except Exception as e:
+               self.syslogger.info("Failed to extract output xml directory for XR audit, defaulting to /misc/app_host")
+               self.syslogger.info("Error is"+str(e))
+               outputXMLDir = "/misc/app_host"
+
+        if uninstall:
+            # Remove any accumulated xml files
+            for xml_prefix in XML_PREFIX_DOMAINS+[COMPLIANCE_PREFIX]:
+                result = self.run_bash("rm -f "+outputXMLDir+"/"+xml_prefix+"*")
+                if not result["status"]:
+                    check_removal = self.run_bash(cmd="ls "+outputXMLDir+"/")
+                    if not check_removal["status"]: 
+                        if xml_prefix in check_removal["output"]:
+                            self.syslogger.info("Failed to remove existing XML file with prefix: "+xml_prefix+" in "+outputXMLDir)
+                            if self.debug:
+                                self.logger.debug("Failed to remove existing XML file with prefix: "+xml_prefix+" in "+outputXMLDir) 
+                        else:
+                            self.syslogger.info("Removed existing XML file with prefix: "+xml_prefix+" in "+outputXMLDir)
+                            if self.debug:
+                                self.logger.debug("Removed existing XML file with prefix: "+xml_prefix+" in "+outputXMLDir)  
+                    else:
+                        self.syslogger.info("Failed to check removal of XML file with prefix: "+xml_prefix+" in  "+outputXMLDir)
+                        if self.debug:
+                            self.logger.debug("Failed to check removal of XML files in "+outputXMLDir)         
+                else:
+                    self.syslogger.info("Failed to remove XML file with prefix: "+xml_prefix+"in "+outputXMLDir)
+                    if self.debug:
+                        self.logger.debug("Failed to remove XML file with prefix: "+xml_prefix+"in "+outputXMLDir)      
+
+
 
         wait_count = 0
         action_success = False
@@ -280,7 +318,7 @@ class IosxrAuditMain(AuditHelpers):
                cronPrefix = "audit_cron_admin_"
 
 
-        file_exists = self.active_adminruncmd(root_lr_user=self.root_lr_user, cmd="ls "+dstfolder)
+        file_exists = self.active_adminruncmd(cmd="ls "+dstfolder)
         if file_exists["status"] == "success":
             cmd_out = file_exists["output"][3:-1]
             if appName in cmd_out:
@@ -296,16 +334,16 @@ class IosxrAuditMain(AuditHelpers):
 
         if app_exists:
             while(wait_count < 5):
-                clean_up_filename = self.active_adminruncmd(root_lr_user=self.root_lr_user, cmd="lsof "+dstfolder+"/"+appName)
+                clean_up_filename = self.active_adminruncmd(cmd="lsof "+dstfolder+"/"+appName)
                 cmd_out = clean_up_filename["output"][3:-1]
                 if cmd_out:
                     self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
                     time.sleep(5)
                 else:
                     if uninstall:
-                        remove_from_admin = self.active_adminruncmd(root_lr_user=self.root_lr_user, cmd="rm -f "+dstfolder+"/"+appName)
+                        remove_from_admin = self.active_adminruncmd(cmd="rm -f "+dstfolder+"/"+appName)
                         if remove_from_admin["status"] == "success":
-                            check_removal = self.active_adminruncmd(root_lr_user=self.root_lr_user, cmd="ls "+dstfolder)
+                            check_removal = self.active_adminruncmd(cmd="ls "+dstfolder)
 
                             if check_removal["status"] == "success":
                                 if appName in check_removal["output"][3:-1]:
@@ -326,7 +364,7 @@ class IosxrAuditMain(AuditHelpers):
                             self.logger.info("Failed to initiate removal of audit app from Admin LXC: "+appName)
                             return False 
                     else:
-                        transfer_to_admin = self.active_adminscp(root_lr_user=self.root_lr_user, src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
+                        transfer_to_admin = self.active_adminscp(src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
                         if transfer_to_admin["status"] == "success":
                             self.logger.info("Admin LXC audit app successfully copied")
                             self.syslogger.info("Admin LXC audit app successfully copied")
@@ -344,7 +382,7 @@ class IosxrAuditMain(AuditHelpers):
                 return False     
         else:
             if not uninstall:
-                transfer_to_admin = self.active_adminscp(root_lr_user=self.root_lr_user, src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
+                transfer_to_admin = self.active_adminscp(src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
                 if transfer_to_admin["status"] == "success":
                     self.logger.info("Admin LXC audit app successfully copied")
                     self.syslogger.info("Admin LXC audit app successfully copied")
@@ -373,10 +411,10 @@ class IosxrAuditMain(AuditHelpers):
 
             # Clean up stale cron jobs in the admin /etc/cron.d
 
-            admin_cron_cleanup = self.active_adminruncmd(root_lr_user=self.root_lr_user, cmd="rm -f /etc/cron.d/"+cronPrefix+"*")
+            admin_cron_cleanup = self.active_adminruncmd(cmd="rm -f /etc/cron.d/"+cronPrefix+"*")
 
             if admin_cron_cleanup["status"] == "success":
-                check_admin_cron_cleanup = self.active_adminruncmd(root_lr_user=self.root_lr_user, cmd="ls /etc/cron.d/")
+                check_admin_cron_cleanup = self.active_adminruncmd(cmd="ls /etc/cron.d/")
 
                 if cronPrefix in check_admin_cron_cleanup["output"]:
                     self.syslogger.info("Failed to clean up stale cron jobs in admin shell under /etc/cron.d")
@@ -405,7 +443,7 @@ class IosxrAuditMain(AuditHelpers):
 
         # Finally copy the created cron file into admin LXC /etc/cron.d to activate it
 
-        transfer_to_admin = self.active_adminscp(root_lr_user=self.root_lr_user, src="/misc/app_host/"+cron_fname, dest="/etc/cron.d/"+cron_fname)
+        transfer_to_admin = self.active_adminscp(src="/misc/app_host/"+cron_fname, dest="/etc/cron.d/"+cron_fname)
 
         if transfer_to_admin["status"] == "success":
             self.logger.info("Admin LXC audit cron file successfully copied and activated")
@@ -472,7 +510,7 @@ class IosxrAuditMain(AuditHelpers):
                cronPrefix = "audit_cron_host_"
 
 
-        file_exists = self.active_hostcmd(root_lr_user=self.root_lr_user, cmd="ls "+dstfolder)
+        file_exists = self.active_hostcmd(cmd="ls "+dstfolder)
         if file_exists["status"] == "success":
             cmd_out = file_exists["output"][3:-1]
             if appName in cmd_out:
@@ -488,16 +526,16 @@ class IosxrAuditMain(AuditHelpers):
 
         if app_exists:
             while(wait_count < 5):
-                clean_up_filename = self.active_hostcmd(root_lr_user=self.root_lr_user, cmd="lsof "+dstfolder+"/"+appName)
+                clean_up_filename = self.active_hostcmd(cmd="lsof "+dstfolder+"/"+appName)
                 cmd_out = clean_up_filename["output"][3:-1]
                 if cmd_out:
                     self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
                     time.sleep(5)
                 else:
                     if uninstall:
-                        remove_from_host = self.active_hostcmd(root_lr_user=self.root_lr_user, cmd="rm -f "+dstfolder+"/"+appName)
+                        remove_from_host = self.active_hostcmd(cmd="rm -f "+dstfolder+"/"+appName)
                         if remove_from_host["status"] == "success":
-                            check_removal = self.active_hostcmd(root_lr_user=self.root_lr_user, cmd="ls "+dstfolder)
+                            check_removal = self.active_hostcmd(cmd="ls "+dstfolder)
 
                             if check_removal["status"] == "success":
                                 if appName in check_removal["output"][3:-1]:
@@ -518,7 +556,7 @@ class IosxrAuditMain(AuditHelpers):
                             self.logger.info("Failed to initiate removal of audit app from Admin HOST: "+appName)
                             return False
                     else:
-                        transfer_to_host = self.active_hostscp(root_lr_user=self.root_lr_user, src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
+                        transfer_to_host = self.active_hostscp(src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
                         if transfer_to_host["status"] == "success":
                             self.logger.info("HOST audit app successfully copied")
                             self.syslogger.info("HOST LXC audit app successfully copied")
@@ -536,7 +574,7 @@ class IosxrAuditMain(AuditHelpers):
                 return False
         else:
             if not uninstall:
-                transfer_to_host = self.active_hostscp(root_lr_user=self.root_lr_user, src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
+                transfer_to_host = self.active_hostscp(src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
                 if transfer_to_host["status"] == "success":
                     self.logger.info("HOST audit app successfully copied")
                     self.syslogger.info("HOST audit app successfully copied")
@@ -565,10 +603,10 @@ class IosxrAuditMain(AuditHelpers):
 
             # Clean up stale cron jobs in the host /etc/cron.d
 
-            host_cron_cleanup = self.active_hostcmd(root_lr_user=self.root_lr_user, cmd="rm -f /etc/cron.d/"+cronPrefix+"*")
+            host_cron_cleanup = self.active_hostcmd(cmd="rm -f /etc/cron.d/"+cronPrefix+"*")
 
             if host_cron_cleanup["status"] == "success":
-                check_host_cron_cleanup = self.active_hostcmd(root_lr_user=self.root_lr_user, cmd="ls /etc/cron.d/")
+                check_host_cron_cleanup = self.active_hostcmd(cmd="ls /etc/cron.d/")
 
                 if cronPrefix in check_host_cron_cleanup["output"]:
                     self.syslogger.info("Failed to clean up stale cron jobs in host shell under /etc/cron.d")
@@ -595,7 +633,7 @@ class IosxrAuditMain(AuditHelpers):
 
         # Finally copy the created cron file into host's /etc/cron.d to activate it
 
-        transfer_to_host = self.active_hostscp(root_lr_user=self.root_lr_user, src="/misc/app_host/"+cron_fname, dest="/etc/cron.d/"+cron_fname)
+        transfer_to_host = self.active_hostscp(src="/misc/app_host/"+cron_fname, dest="/etc/cron.d/"+cron_fname)
 
         if transfer_to_host["status"] == "success":
             self.logger.info("Host audit cron file successfully copied and activated")
@@ -619,7 +657,7 @@ class IosxrAuditMain(AuditHelpers):
 
 
 
-    def setup_standby_xr_audit(self, srcfolder=None, dstfolder=None, appName=None, cronName=None, cronPrefix=None, uninstall=False):
+    def setup_standby_xr_audit(self, srcfolder=None, dstfolder=None, appName=None, cronName=None, cronPrefix=None, outputXMLDir = None, uninstall=False):
 
         if not self.ha_setup:
             self.syslogger.info("Standby RP not present, bailing out")
@@ -665,6 +703,38 @@ class IosxrAuditMain(AuditHelpers):
                self.syslogger.info("Error is"+str(e))
                cronPrefix = "audit_cron_xr_"
 
+
+        if outputXMLDir is None:
+            try:
+               outputXMLDir = self.installer_cfg["XR"]["output_xml_dir"]
+            except Exception as e:
+               self.syslogger.info("Failed to extract output xml directory for XR audit, defaulting to /misc/app_host")
+               self.syslogger.info("Error is"+str(e))
+               outputXMLDir = "/misc/app_host"
+
+        if uninstall:
+            # Remove any accumulated xml files
+            for xml_prefix in XML_PREFIX_DOMAINS+[COMPLIANCE_PREFIX]:
+                result = self.standby_xrruncmd("rm -f "+outputXMLDir+"/"+xml_prefix+"*")
+                if result["status"] == "success":
+                    check_removal = self.standby_xrruncmd(cmd="ls "+outputXMLDir+"/")
+                    if check_removal["status"] == "success":
+                        if xml_prefix in check_removal["output"]:
+                            self.syslogger.info("Failed to remove existing XML file with prefix: "+xml_prefix+" in "+outputXMLDir)
+                            if self.debug:
+                                self.logger.debug("Failed to remove existing XML file with prefix: "+xml_prefix+" in "+outputXMLDir)
+                        else:
+                            self.syslogger.info("Removed existing XML file with prefix: "+xml_prefix+" in "+outputXMLDir)
+                            if self.debug:
+                                self.logger.debug("Removed existing XML file with prefix: "+xml_prefix+" in "+outputXMLDir)
+                    else:
+                        self.syslogger.info("Failed to check removal of XML file with prefix: "+xml_prefix+" in  "+outputXMLDir)
+                        if self.debug:
+                            self.logger.debug("Failed to check removal of XML files in "+outputXMLDir)
+                else:
+                    self.syslogger.info("Failed to remove XML file with prefix: "+xml_prefix+"in "+outputXMLDir)
+                    if self.debug:
+                        self.logger.debug("Failed to remove XML file with prefix: "+xml_prefix+"in "+outputXMLDir)
 
 
         file_exists = self.standby_xrruncmd(cmd="ls "+dstfolder)
@@ -865,7 +935,7 @@ class IosxrAuditMain(AuditHelpers):
 
 
 
-        file_exists = self.standby_adminruncmd(root_lr_user=self.root_lr_user, cmd="ls "+dstfolder)
+        file_exists = self.standby_adminruncmd(cmd="ls "+dstfolder)
         if file_exists["status"] == "success":
             cmd_out = file_exists["output"][3:-1]
             if appName in cmd_out:
@@ -881,16 +951,16 @@ class IosxrAuditMain(AuditHelpers):
 
         if app_exists:
             while(wait_count < 5):
-                clean_up_filename = self.standby_adminruncmd(root_lr_user=self.root_lr_user, cmd="lsof "+dstfolder+"/"+appName)
+                clean_up_filename = self.standby_adminruncmd(cmd="lsof "+dstfolder+"/"+appName)
                 cmd_out = clean_up_filename["output"][3:-1]
                 if cmd_out:
                     self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
                     time.sleep(5)
                 else:
                     if uninstall:
-                        remove_from_standby_admin = self.standby_adminruncmd(root_lr_user=self.root_lr_user, cmd="rm -f "+dstfolder+"/"+appName)
+                        remove_from_standby_admin = self.standby_adminruncmd(cmd="rm -f "+dstfolder+"/"+appName)
                         if remove_from_standby_admin["status"] == "success":
-                            check_removal = self.standby_adminruncmd(root_lr_user=self.root_lr_user, cmd="ls "+dstfolder)
+                            check_removal = self.standby_adminruncmd(cmd="ls "+dstfolder)
 
                             if check_removal["status"] == "success":
                                 if appName in check_removal["output"][3:-1]:
@@ -911,7 +981,7 @@ class IosxrAuditMain(AuditHelpers):
                             self.logger.info("Failed to initiate removal of audit app from Standby RP's Admin LXC: "+appName)
                             return False
                     else:
-                        transfer_to_standby_admin = self.standby_adminscp(root_lr_user=self.root_lr_user, src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
+                        transfer_to_standby_admin = self.standby_adminscp(src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
                         if transfer_to_standby_admin["status"] == "success":
                             self.logger.info("Standby RP Admin LXC audit app successfully copied")
                             self.syslogger.info("Standby RP Admin LXC audit app successfully copied")
@@ -929,7 +999,7 @@ class IosxrAuditMain(AuditHelpers):
                 return False
         else:
             if not uninstall:
-                transfer_to_standby_admin = self.standby_adminscp(root_lr_user=self.root_lr_user, src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
+                transfer_to_standby_admin = self.standby_adminscp(src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
                 if transfer_to_standby_admin["status"] == "success":
                     self.logger.info("Standby Admin LXC audit app successfully copied")
                     self.syslogger.info("Standby Admin LXC audit app successfully copied")
@@ -957,10 +1027,10 @@ class IosxrAuditMain(AuditHelpers):
 
             # Clean up stale cron jobs in the standby admin /etc/cron.d
 
-            standby_admin_cron_cleanup = self.standby_adminruncmd(root_lr_user=self.root_lr_user, cmd="rm -f /etc/cron.d/"+cronPrefix+"\*")
+            standby_admin_cron_cleanup = self.standby_adminruncmd(cmd="rm -f /etc/cron.d/"+cronPrefix+"\*")
 
             if standby_admin_cron_cleanup["status"] == "success":
-                check_standby_admin_cron_cleanup = self.standby_adminruncmd(root_lr_user=self.root_lr_user, cmd="ls /etc/cron.d/")
+                check_standby_admin_cron_cleanup = self.standby_adminruncmd(cmd="ls /etc/cron.d/")
 
                 if cronPrefix in check_standby_admin_cron_cleanup["output"]:
                     self.syslogger.info("Failed to clean up stale cron jobs in standby admin LXC shell under /etc/cron.d")
@@ -988,7 +1058,7 @@ class IosxrAuditMain(AuditHelpers):
 
         # Finally copy the created cron file into admin LXC /etc/cron.d to activate it
 
-        transfer_to_standby_admin = self.standby_adminscp(root_lr_user=self.root_lr_user, src="/misc/app_host/"+cron_fname, dest="/etc/cron.d/"+cron_fname)
+        transfer_to_standby_admin = self.standby_adminscp(src="/misc/app_host/"+cron_fname, dest="/etc/cron.d/"+cron_fname)
 
         if transfer_to_standby_admin["status"] == "success":
             self.logger.info("Standby Admin LXC audit cron file successfully copied and activated")
@@ -1061,7 +1131,7 @@ class IosxrAuditMain(AuditHelpers):
 
 
 
-        file_exists = self.standby_hostcmd(root_lr_user=self.root_lr_user, cmd="ls "+dstfolder)
+        file_exists = self.standby_hostcmd(cmd="ls "+dstfolder)
         if file_exists["status"] == "success":
             cmd_out = file_exists["output"][3:-1]
             if appName in cmd_out:
@@ -1077,16 +1147,16 @@ class IosxrAuditMain(AuditHelpers):
 
         if app_exists:
             while(wait_count < 5):
-                clean_up_filename = self.standby_hostcmd(root_lr_user=self.root_lr_user, cmd="lsof "+dstfolder+"/"+appName)
+                clean_up_filename = self.standby_hostcmd(cmd="lsof "+dstfolder+"/"+appName)
                 cmd_out = clean_up_filename["output"][3:-1]
                 if cmd_out:
                     self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
                     time.sleep(5)
                 else:
                     if uninstall:
-                        remove_from_standby_host = self.standby_hostcmd(root_lr_user=self.root_lr_user, cmd="rm -f "+dstfolder+"/"+appName)
+                        remove_from_standby_host = self.standby_hostcmd(cmd="rm -f "+dstfolder+"/"+appName)
                         if remove_from_standby_host["status"] == "success":
-                            check_removal = self.standby_hostcmd(root_lr_user=self.root_lr_user, cmd="ls "+dstfolder)
+                            check_removal = self.standby_hostcmd(cmd="ls "+dstfolder)
 
                             if check_removal["status"] == "success":
                                 if appName in check_removal["output"][3:-1]:
@@ -1107,7 +1177,7 @@ class IosxrAuditMain(AuditHelpers):
                             self.logger.info("Failed to initiate removal of audit app from Standby RP's HOST shell: "+appName)
                             return False
                     else:
-                        transfer_to_standby_host = self.standby_hostscp(root_lr_user=self.root_lr_user, src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
+                        transfer_to_standby_host = self.standby_hostscp(src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
                         if transfer_to_standby_host["status"] == "success":
                             self.logger.info("Standby RP HOST audit app successfully copied")
                             self.syslogger.info("Standby RP HOST audit app successfully copied")
@@ -1125,7 +1195,7 @@ class IosxrAuditMain(AuditHelpers):
                 return False
         else:
             if not uninstall:
-                transfer_to_standby_host = self.standby_hostscp(root_lr_user=self.root_lr_user, src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
+                transfer_to_standby_host = self.standby_hostscp(src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
                 if transfer_to_standby_host["status"] == "success":
                     self.logger.info("Standby HOST audit app successfully copied")
                     self.syslogger.info("Standby HOST audit app successfully copied")
@@ -1153,10 +1223,10 @@ class IosxrAuditMain(AuditHelpers):
 
             # Clean up stale cron jobs in the standby host /etc/cron.d
 
-            standby_host_cron_cleanup = self.standby_hostcmd(root_lr_user=self.root_lr_user, cmd="rm -f /etc/cron.d/"+cronPrefix+"\*")
+            standby_host_cron_cleanup = self.standby_hostcmd(cmd="rm -f /etc/cron.d/"+cronPrefix+"\*")
 
             if standby_host_cron_cleanup["status"] == "success":
-                check_standby_host_cron_cleanup = self.standby_hostcmd(root_lr_user=self.root_lr_user, cmd="ls /etc/cron.d/")
+                check_standby_host_cron_cleanup = self.standby_hostcmd(cmd="ls /etc/cron.d/")
 
                 if cronPrefix in check_standby_host_cron_cleanup["output"]:
                     self.syslogger.info("Failed to clean up stale cron jobs in standby host shell under /etc/cron.d")
@@ -1184,7 +1254,7 @@ class IosxrAuditMain(AuditHelpers):
 
         # Finally copy the created cron file into standby host /etc/cron.d to activate it
 
-        transfer_to_standby_host = self.standby_hostscp(root_lr_user=self.root_lr_user, src="/misc/app_host/"+cron_fname, dest="/etc/cron.d/"+cron_fname)
+        transfer_to_standby_host = self.standby_hostscp(src="/misc/app_host/"+cron_fname, dest="/etc/cron.d/"+cron_fname)
 
         if transfer_to_standby_host["status"] == "success":
             self.logger.info("Standby host audit cron file successfully copied and activated")

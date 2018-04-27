@@ -3,6 +3,7 @@
 
 from lib.audit_helper import AuditHelpers
 from lib.audit_helper import VALID_DOMAINS
+from lib.audit_helper import COMPLIANCE_PREFIX
 from pprint import pprint
 import pdb
 import subprocess
@@ -84,7 +85,7 @@ class IosxrAuditMain(AuditHelpers):
                     self.syslogger.info("Specified Parameter for Compliance XML filename: "+param+" is not supported")
                     self.exit = True
                 
-            self.compliance_xmlname = "compliance_audit"+xmlname_string+".xml"
+            self.compliance_xmlname = COMPLIANCE_PREFIX+xmlname_string+".xml"
         except Exception as e:
             self.syslogger.info("Failed to extract server configuration parameters from supplied server config file")
             self.syslogger.info("Error is: "+str(e))
@@ -123,7 +124,27 @@ class IosxrAuditMain(AuditHelpers):
         for element in domain_dict:
             if domain_dict[element]["domain"] in VALID_DOMAINS:
                 xml_file = domain_dict[element]["input_xml_dir"]+"/"+domain_dict[element]["domain"]+".xml"
-                xml_dict = self.xml_to_dict(xml_file)
+
+                wait_counter = 0
+                file_found = False
+                while(wait_counter < 5):
+                    self.syslogger.info("Check to see if xml_file: "+xml_file+" exists before collating")
+                    if self.debug:
+                        self.logger.debug("Check to see if xml_file: "+xml_file+" exists before collating")
+                    if os.path.isfile(xml_file):
+                        file_found = True
+                        self.syslogger.info("File "+xml_file+" found")
+                        if self.debug:
+                            self.logger.debug("File: "+xml_file+" found")
+                        xml_dict = self.xml_to_dict(xml_file)
+                    else:
+                        # Wait 5 seconds before trying again
+                        self.syslogger.info("File "+xml_file+" not found, retrying")
+                        if self.debug:
+                            self.logger.debug("File: "+xml_file+" found, retrying")
+                        time.sleep(5)
+                    wait_counter = wait_counter + 1
+
                 integrity_list.append(xml_dict["COMPLIANCE-DUMP"]["INTEGRITY-SET"]["INTEGRITY"])
                 if domain_dict[element]["domain"] == "XR-LXC":
                     collated_xml_dict = copy.deepcopy(xml_dict)
