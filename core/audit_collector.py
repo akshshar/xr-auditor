@@ -9,7 +9,7 @@ import pdb
 import subprocess
 import sys, os
 import shutil, copy
-import datetime
+import datetime, time
 import xmltodict as xd
 import json
 from ctypes import cdll
@@ -137,6 +137,7 @@ class IosxrAuditMain(AuditHelpers):
                         if self.debug:
                             self.logger.debug("File: "+xml_file+" found")
                         xml_dict = self.xml_to_dict(xml_file)
+                        break
                     else:
                         # Wait 5 seconds before trying again
                         self.syslogger.info("File "+xml_file+" not found, retrying")

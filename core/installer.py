@@ -1694,44 +1694,45 @@ if __name__ == "__main__":
         sys.exit(1)
 
 
-    if not audit_obj.setup_standby_xr_audit(uninstall=uninstall_flag):
-        if not uninstall_flag:
-            audit_obj.syslogger.info("Failed to setup Standby XR LXC audit artifacts")
-            audit_obj.logger.info("Failed to setup Standby XR LXC audit artifacts")
-        else:
-            audit_obj.syslogger.info("Failed to remove Standby XR LXC audit artifacts")
-            audit_obj.logger.info("Failed to remove Standby XR LXC audit artifacts")
-        sys.exit(1)
+    if audit_obj.ha_setup:
+        if not audit_obj.setup_standby_xr_audit(uninstall=uninstall_flag):
+            if not uninstall_flag:
+                audit_obj.syslogger.info("Failed to setup Standby XR LXC audit artifacts")
+                audit_obj.logger.info("Failed to setup Standby XR LXC audit artifacts")
+            else:
+               audit_obj.syslogger.info("Failed to remove Standby XR LXC audit artifacts")
+               audit_obj.logger.info("Failed to remove Standby XR LXC audit artifacts")
+            sys.exit(1)
 
 
-    if not audit_obj.setup_standby_admin_audit(uninstall=uninstall_flag):
-        if not uninstall_flag:
-            audit_obj.syslogger.info("Failed to setup Standby Admin LXC audit artifacts")
-            audit_obj.logger.info("Failed to setup Standby Admin LXC audit artifacts")
-        else:
-            audit_obj.syslogger.info("Failed to remove Standby Admin LXC audit artifacts")
-            audit_obj.logger.info("Failed to remove Standby Admin LXC audit artifacts")
-        sys.exit(1)
+        if not audit_obj.setup_standby_admin_audit(uninstall=uninstall_flag):
+            if not uninstall_flag:
+                audit_obj.syslogger.info("Failed to setup Standby Admin LXC audit artifacts")
+                audit_obj.logger.info("Failed to setup Standby Admin LXC audit artifacts")
+            else:
+                audit_obj.syslogger.info("Failed to remove Standby Admin LXC audit artifacts")
+                audit_obj.logger.info("Failed to remove Standby Admin LXC audit artifacts")
+            sys.exit(1)
 
 
-    if not audit_obj.setup_standby_host_audit(uninstall=uninstall_flag):
-        if not uninstall_flag:
-            audit_obj.syslogger.info("Failed to setup Standby HOST audit artifacts")
-            audit_obj.logger.info("Failed to setup Standby HOST audit artifacts")
-        else:
-            audit_obj.syslogger.info("Failed to remove Standby HOST audit artifacts")
-            audit_obj.logger.info("Failed to remove Standby HOST audit artifacts")
-        sys.exit(1)
+        if not audit_obj.setup_standby_host_audit(uninstall=uninstall_flag):
+            if not uninstall_flag:
+                audit_obj.syslogger.info("Failed to setup Standby HOST audit artifacts")
+                audit_obj.logger.info("Failed to setup Standby HOST audit artifacts")
+            else:
+                audit_obj.syslogger.info("Failed to remove Standby HOST audit artifacts")
+                audit_obj.logger.info("Failed to remove Standby HOST audit artifacts")
+            sys.exit(1)
 
 
-    if not audit_obj.setup_standby_collector(uninstall=uninstall_flag):
-        if not uninstall_flag:
-            audit_obj.syslogger.info("Failed to setup Standby RP COLLECTOR artifacts")
-            audit_obj.logger.info("Failed to setup Standby RP COLLECTOR artifacts")
-        else:
-            audit_obj.syslogger.info("Failed to remove Standby RP COLLECTOR artifacts")
-            audit_obj.logger.info("Failed to remove Standby RP COLLECTOR artifacts")
-        sys.exit(1)
+        if not audit_obj.setup_standby_collector(uninstall=uninstall_flag):
+            if not uninstall_flag:
+                audit_obj.syslogger.info("Failed to setup Standby RP COLLECTOR artifacts")
+                audit_obj.logger.info("Failed to setup Standby RP COLLECTOR artifacts")
+            else:
+                audit_obj.syslogger.info("Failed to remove Standby RP COLLECTOR artifacts")
+                audit_obj.logger.info("Failed to remove Standby RP COLLECTOR artifacts")
+            sys.exit(1)
 
 
     if not uninstall_flag:
