@@ -9,7 +9,7 @@ added_files = [
          ( '../userfiles/auditor.cfg.yml', './userfiles' ),
          ( '../userfiles/compliance.xsd', './userfiles' )
          ]
-a = Analysis(['../core/audit_collector.py'],
+a = Analysis(['../core/collector.py'],
              pathex=['/home/cisco/audit_xr_linux/specs'],
              binaries=[],
              datas=added_files,

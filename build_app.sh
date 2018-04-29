@@ -5,10 +5,9 @@ SCRIPT_PATH=$(dirname `which $0`)
 
 cd $SCRIPT_PATH
 
-#Clean up
-#rm -r build/
-#rm -r dist/
-
+apt-get install -y git python-pip
+pip install --upgrade pip
+pip install -U -r requirements.txt
 
 # First build the individual cron scripts
 pyinstaller specs/xr.spec

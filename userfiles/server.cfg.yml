@@ -1,7 +1,7 @@
 ---
 USER: "cisco"
 
-# Specify Path relative to packaged collector.bin
+# Specify Path relative to packaged collector.bin in collector.spec
 ID_RSA_FILE_PATH: "./userfiles/id_rsa_server" 
 
 # SERVER_HOST is either the Domain name or IP address of server
