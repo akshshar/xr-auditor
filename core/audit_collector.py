@@ -17,6 +17,10 @@ libc = cdll.LoadLibrary('libc.so.6')
 _setns = libc.setns
 CLONE_NEWNET = 0x40000000
 
+DOMAIN_XML_CREATION_WAIT_INTERVAL = 5 
+DOMAIN_XML_CREATION_WAIT_COUNT = 5
+
+
 class IosxrAuditMain(AuditHelpers):
     def __init__(self,
                  server_cfg=None,
@@ -127,7 +131,7 @@ class IosxrAuditMain(AuditHelpers):
 
                 wait_counter = 0
                 file_found = False
-                while(wait_counter < 5):
+                while(wait_counter < DOMAIN_XML_CREATION_WAIT_COUNT):
                     self.syslogger.info("Check to see if xml_file: "+xml_file+" exists before collating")
                     if self.debug:
                         self.logger.debug("Check to see if xml_file: "+xml_file+" exists before collating")
@@ -139,11 +143,11 @@ class IosxrAuditMain(AuditHelpers):
                         xml_dict = self.xml_to_dict(xml_file)
                         break
                     else:
-                        # Wait 5 seconds before trying again
+                        # Wait DOMAIN_XML_CREATION_WAIT_INTERVAL seconds before trying again
                         self.syslogger.info("File "+xml_file+" not found, retrying")
                         if self.debug:
                             self.logger.debug("File: "+xml_file+" found, retrying")
-                        time.sleep(5)
+                        time.sleep(DOMAIN_XML_CREATION_WAIT_INTERVAL)
                     wait_counter = wait_counter + 1
 
                 integrity_list.append(xml_dict["COMPLIANCE-DUMP"]["INTEGRITY-SET"]["INTEGRITY"])
@@ -232,8 +236,8 @@ if __name__ == "__main__":
     audit_obj.toggle_debug(0)
 
     try:
-        installer_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/installer.cfg.yml")
-        output_xml_dir = installer_cfg["COLLECTOR"]["output_xml_dir"]
+        auditor_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/auditor.cfg.yml")
+        output_xml_dir = auditor_cfg["COLLECTOR"]["output_xml_dir"]
     except Exception as e:
         audit_obj.syslogger.info("Failed to extract output_xml_dir for the COLLECTOR domain,"
                                  "defaulting to /misc/app_host")
@@ -241,8 +245,8 @@ if __name__ == "__main__":
 
 
     try:
-        installer_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/installer.cfg.yml")
-        input_xml_dir_xr = installer_cfg["XR"]["output_xml_dir"]
+        auditor_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/auditor.cfg.yml")
+        input_xml_dir_xr = auditor_cfg["XR"]["output_xml_dir"]
     except Exception as e:
         audit_obj.syslogger.info("Failed to extract output_xml_dir for the XR domain,"
                                  "defaulting to /misc/app_host")
@@ -250,16 +254,16 @@ if __name__ == "__main__":
 
 
     try:
-        installer_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/installer.cfg.yml")
-        input_xml_dir_admin = installer_cfg["ADMIN"]["output_xml_dir_xr"]
+        auditor_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/auditor.cfg.yml")
+        input_xml_dir_admin = auditor_cfg["ADMIN"]["output_xml_dir_xr"]
     except Exception as e:
         audit_obj.syslogger.info("Failed to extract output_xml_dir for the ADMIN domain,"
                                  "defaulting to /misc/app_host")
         input_xml_dir_admin = "/misc/app_host"
 
     try:
-        installer_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/installer.cfg.yml")
-        input_xml_dir_host = installer_cfg["HOST"]["output_xml_dir"]
+        auditor_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/auditor.cfg.yml")
+        input_xml_dir_host = auditor_cfg["HOST"]["output_xml_dir"]
     except Exception as e:
         audit_obj.syslogger.info("Failed to extract output_xml_dir for the HOST domain,"
                                  "defaulting to /misc/app_host")

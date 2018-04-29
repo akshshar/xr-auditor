@@ -50,8 +50,8 @@ if __name__ == "__main__":
     audit_obj.toggle_debug(0)
 
     try:
-        installer_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/installer.cfg.yml")
-        output_xml_dir = installer_cfg["ADMIN"]["output_xml_dir"]
+        auditor_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/auditor.cfg.yml")
+        output_xml_dir = auditor_cfg["ADMIN"]["output_xml_dir"]
     except Exception as e:
         audit_obj.syslogger.info("Failed to extract output_xml_dir for the ADMIN domain,"
                                  "defaulting to /misc/scratch")
@@ -59,8 +59,8 @@ if __name__ == "__main__":
 
 
     try:
-        installer_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/installer.cfg.yml")
-        output_xml_dir_xr = installer_cfg["ADMIN"]["output_xml_dir_xr"]
+        auditor_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/auditor.cfg.yml")
+        output_xml_dir_xr = auditor_cfg["ADMIN"]["output_xml_dir_xr"]
     except Exception as e:
         audit_obj.syslogger.info("Failed to extract output_xml_dir_xr for the ADMIN domain,"
                                  "defaulting to /misc/app_host")

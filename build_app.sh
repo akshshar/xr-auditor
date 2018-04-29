@@ -18,4 +18,4 @@ pyinstaller specs/collector.spec
 
 # Now build the higher level binary
 
-pyinstaller specs/installer.spec
+pyinstaller specs/auditor.spec

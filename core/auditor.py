@@ -14,26 +14,30 @@ import argparse
 from lib.audit_helper import XML_PREFIX_DOMAINS
 from lib.audit_helper import COMPLIANCE_PREFIX
 
+OPEN_FILE_WAIT_COUNT = 10
+OPEN_FILE_WAIT_INTERVAL = 5
+
+
 class IosxrAuditMain(AuditHelpers):
 
     def __init__(self,
-                 installer_cfgfile=None,
+                 auditor_cfgfile=None,
                  *args, **kwargs):
 
         super(IosxrAuditMain, self).__init__(*args, **kwargs)
-        if installer_cfgfile is None:
+        if auditor_cfgfile is None:
             self.syslogger.info("Installer config file not provided, Bailing out")
             self.exit = True
 
-        self.installer_cfg = self.yaml_to_dict(installer_cfgfile)
-        if not self.installer_cfg:
-            self.syslogger.info("Could not extract installer config data")
+        self.auditor_cfg = self.yaml_to_dict(auditor_cfgfile)
+        if not self.auditor_cfg:
+            self.syslogger.info("Could not extract auditor config data")
             self.exit = True
 
-        if "root_lr_user" in self.installer_cfg:
-            self.root_lr_user = self.installer_cfg["root_lr_user"]
-            self.syslogger.info("Using root-lr user specified in installer.cfg.yml, Username: "+ self.root_lr_user)
-            self.logger.info("Using root-lr user specified in installer.cfg.yml, Username: "+ self.root_lr_user)   
+        if "root_lr_user" in self.auditor_cfg:
+            self.root_lr_user = self.auditor_cfg["root_lr_user"]
+            self.syslogger.info("Using root-lr user specified in auditor.cfg.yml, Username: "+ self.root_lr_user)
+            self.logger.info("Using root-lr user specified in auditor.cfg.yml, Username: "+ self.root_lr_user)   
         else:
             # Since user does not provide a root_lr_user,
             # determine it from the current running config
@@ -110,7 +114,7 @@ class IosxrAuditMain(AuditHelpers):
                 
         if srcfolder is None:
             try:
-               srcfolder = IosxrAuditMain.current_dir()+"/"+self.installer_cfg["XR"]["srcDir"]
+               srcfolder = IosxrAuditMain.current_dir()+"/"+self.auditor_cfg["XR"]["srcDir"]
             except Exception as e:
                self.syslogger.info("Failed to extract src directory for XR audit app, defaulting to current_dir/xr/")
                self.syslogger.info("Error is"+str(e))
@@ -118,7 +122,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if dstfolder is None:
             try:
-               dstfolder = self.installer_cfg["XR"]["appDir"]
+               dstfolder = self.auditor_cfg["XR"]["appDir"]
             except Exception as e:
                self.syslogger.info("Failed to extract app directory for XR audit app, defaulting to /misc/scratch")
                self.syslogger.info("Error is"+str(e))
@@ -126,7 +130,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if appName is None:
             try:
-               appName = self.installer_cfg["XR"]["appName"]
+               appName = self.auditor_cfg["XR"]["appName"]
             except Exception as e:
                self.syslogger.info("Failed to extract app name for XR audit app, defaulting to audit_xr.bin")
                self.syslogger.info("Error is"+str(e))
@@ -134,7 +138,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if cronName is None:
             try:
-               cronName = self.installer_cfg["XR"]["cronName"]
+               cronName = self.auditor_cfg["XR"]["cronName"]
             except Exception as e:
                self.syslogger.info("Failed to extract cronName for XR audit app, defaulting to audit_xr.cron")
                self.syslogger.info("Error is"+str(e))
@@ -142,7 +146,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if cronPrefix is None:
             try:
-               cronPrefix = self.installer_cfg["XR"]["cronPrefix"]
+               cronPrefix = self.auditor_cfg["XR"]["cronPrefix"]
             except Exception as e:
                self.syslogger.info("Failed to extract cronPrefix for XR audit cronjob, defaulting to audit_cron_xr_")
                self.syslogger.info("Error is"+str(e))
@@ -150,7 +154,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if outputXMLDir is None:
             try:
-               outputXMLDir = self.installer_cfg["XR"]["output_xml_dir"]
+               outputXMLDir = self.auditor_cfg["XR"]["output_xml_dir"]
             except Exception as e:
                self.syslogger.info("Failed to extract output xml directory for XR audit, defaulting to /misc/app_host")
                self.syslogger.info("Error is"+str(e))
@@ -197,20 +201,20 @@ class IosxrAuditMain(AuditHelpers):
             app_exists = False
      
         if app_exists:
-            while(wait_count < 5):
+            while(wait_count < OPEN_FILE_WAIT_COUNT):
                 clean_up_filename = self.run_bash(cmd="lsof "+dstfolder+"/"+appName)
                 print clean_up_filename
                 if clean_up_filename["output"] is not "" :
-                    # Process currently running, Sleep 5 seconds before attempting again
-                    self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
-                    time.sleep(5)
+                    # Process currently running, Sleep OPEN_FILE_WAIT_INTERVAL seconds before attempting again
+                    self.syslogger.info("Process currently running, wait "+str(OPEN_FILE_WAIT_INTERVAL)+" seconds before attempting again")
+                    time.sleep(OPEN_FILE_WAIT_INTERVAL)
                 else:
                     if uninstall:
                         result = self.run_bash(cmd="rm -f "+dstfolder+"/"+appName)
                         if result["status"]:
                             self.syslogger.info("Failed to remove xr audit app from XR LXC: "+appName)
                             self.syslogger.info("Retrying") 
-                            time.sleep(5)
+                            time.sleep(OPEN_FILE_WAIT_INTERVAL)
                         else:
                             self.syslogger.info("Removed xr audit app from XR LXC: "+appName)
                             self.logger.info("Removed xr audit app from XR LXC: "+appName)
@@ -224,7 +228,7 @@ class IosxrAuditMain(AuditHelpers):
                             break
                         else:
                             self.syslogger.info("Retrying")
-                            time.sleep(5)
+                            time.sleep(OPEN_FILE_WAIT_INTERVAL)
                 wait_count = wait_count + 1
 
             if not action_success:
@@ -279,7 +283,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if srcfolder is None:
             try:
-               srcfolder = IosxrAuditMain.current_dir()+"/"+self.installer_cfg["ADMIN"]["srcDir"]
+               srcfolder = IosxrAuditMain.current_dir()+"/"+self.auditor_cfg["ADMIN"]["srcDir"]
             except Exception as e:
                self.syslogger.info("Failed to extract src directory for ADMIN audit app, defaulting to current_dir/admin/")
                self.syslogger.info("Error is"+str(e))
@@ -287,7 +291,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if dstfolder is None:
             try:
-               dstfolder = self.installer_cfg["ADMIN"]["appDir"]
+               dstfolder = self.auditor_cfg["ADMIN"]["appDir"]
             except Exception as e:
                self.syslogger.info("Failed to extract app directory for Admin audit app, defaulting to /misc/scratch")
                self.syslogger.info("Error is"+str(e))
@@ -295,7 +299,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if appName is None:
             try:
-               appName = self.installer_cfg["ADMIN"]["appName"]
+               appName = self.auditor_cfg["ADMIN"]["appName"]
             except Exception as e:
                self.syslogger.info("Failed to extract app name for ADMIN audit app, defaulting to audit_admin.bin")
                self.syslogger.info("Error is"+str(e))
@@ -303,7 +307,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if cronName is None:
             try:
-               cronName = self.installer_cfg["ADMIN"]["cronName"]
+               cronName = self.auditor_cfg["ADMIN"]["cronName"]
             except Exception as e:
                self.syslogger.info("Failed to extract cronName for ADMIN audit app, defaulting to audit_admin.cron")
                self.syslogger.info("Error is"+str(e))
@@ -311,7 +315,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if cronPrefix is None:
             try:
-               cronPrefix = self.installer_cfg["ADMIN"]["cronPrefix"]
+               cronPrefix = self.auditor_cfg["ADMIN"]["cronPrefix"]
             except Exception as e:
                self.syslogger.info("Failed to extract cronPrefix for ADMIN audit cronjob, defaulting to audit_cron_admin_")
                self.syslogger.info("Error is"+str(e))
@@ -333,12 +337,12 @@ class IosxrAuditMain(AuditHelpers):
         action_success = False
 
         if app_exists:
-            while(wait_count < 5):
+            while(wait_count < OPEN_FILE_WAIT_COUNT):
                 clean_up_filename = self.active_adminruncmd(cmd="lsof "+dstfolder+"/"+appName)
                 cmd_out = clean_up_filename["output"][3:-1]
                 if cmd_out:
-                    self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
-                    time.sleep(5)
+                    self.syslogger.info("Process currently running, wait "+str(OPEN_FILE_WAIT_INTERVAL)+" seconds before attempting again")
+                    time.sleep(OPEN_FILE_WAIT_INTERVAL)
                 else:
                     if uninstall:
                         remove_from_admin = self.active_adminruncmd(cmd="rm -f "+dstfolder+"/"+appName)
@@ -349,7 +353,7 @@ class IosxrAuditMain(AuditHelpers):
                                 if appName in check_removal["output"][3:-1]:
                                     self.syslogger.info("Failed to remove audit app from Admin LXC: "+appName)
                                     self.logger.info("Failed to remove audit app from Admin LXC: "+appName)
-                                    time.sleep(5) 
+                                    time.sleep(OPEN_FILE_WAIT_INTERVAL) 
                                 else:
                                     self.syslogger.info("Successfully removed audit app from Admin LXC: "+appName)
                                     self.logger.info("Successfully removed audit app from Admin LXC: "+appName)
@@ -375,7 +379,7 @@ class IosxrAuditMain(AuditHelpers):
                         else:
                             self.syslogger.info("Failed to copy Admin LXC audit app, Error:")
                             self.syslogger.info(transfer_to_admin["output"])
-                            time.sleep(5)
+                            time.sleep(OPEN_FILE_WAIT_INTERVAL)
                 wait_count = wait_count + 1
 
             if not action_success:
@@ -471,7 +475,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if srcfolder is None:
             try:
-               srcfolder = IosxrAuditMain.current_dir()+"/"+self.installer_cfg["HOST"]["srcDir"]
+               srcfolder = IosxrAuditMain.current_dir()+"/"+self.auditor_cfg["HOST"]["srcDir"]
             except Exception as e:
                self.syslogger.info("Failed to extract src directory for HOST audit app, defaulting to current_dir/host/")
                self.syslogger.info("Error is"+str(e))
@@ -479,7 +483,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if dstfolder is None:
             try:
-               dstfolder = self.installer_cfg["HOST"]["appDir"]
+               dstfolder = self.auditor_cfg["HOST"]["appDir"]
             except Exception as e:
                self.syslogger.info("Failed to extract app directory for HOST audit app, defaulting to /misc/scratch")
                self.syslogger.info("Error is"+str(e))
@@ -487,7 +491,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if appName is None:
             try:
-               appName = self.installer_cfg["HOST"]["appName"]
+               appName = self.auditor_cfg["HOST"]["appName"]
             except Exception as e:
                self.syslogger.info("Failed to extract app name for HOST audit app, defaulting to audit_host.bin")
                self.syslogger.info("Error is"+str(e))
@@ -495,7 +499,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if cronName is None:
             try:
-               cronName = self.installer_cfg["HOST"]["cronName"]
+               cronName = self.auditor_cfg["HOST"]["cronName"]
             except Exception as e:
                self.syslogger.info("Failed to extract cronName for HOST audit app, defaulting to audit_host.cron")
                self.syslogger.info("Error is"+str(e))
@@ -503,7 +507,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if cronPrefix is None:
             try:
-               cronPrefix = self.installer_cfg["HOST"]["cronPrefix"]
+               cronPrefix = self.auditor_cfg["HOST"]["cronPrefix"]
             except Exception as e:
                self.syslogger.info("Failed to extract cronPrefix for HOST audit cronjob, defaulting to audit_cron_host_")
                self.syslogger.info("Error is"+str(e))
@@ -525,12 +529,12 @@ class IosxrAuditMain(AuditHelpers):
         action_success = False
 
         if app_exists:
-            while(wait_count < 5):
+            while(wait_count < OPEN_FILE_WAIT_COUNT):
                 clean_up_filename = self.active_hostcmd(cmd="lsof "+dstfolder+"/"+appName)
                 cmd_out = clean_up_filename["output"][3:-1]
                 if cmd_out:
-                    self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
-                    time.sleep(5)
+                    self.syslogger.info("Process currently running, wait "+str(OPEN_FILE_WAIT_INTERVAL)+" seconds before attempting again")
+                    time.sleep(OPEN_FILE_WAIT_INTERVAL)
                 else:
                     if uninstall:
                         remove_from_host = self.active_hostcmd(cmd="rm -f "+dstfolder+"/"+appName)
@@ -541,7 +545,7 @@ class IosxrAuditMain(AuditHelpers):
                                 if appName in check_removal["output"][3:-1]:
                                     self.syslogger.info("Failed to remove audit app from HOST: "+appName)
                                     self.logger.info("Failed to remove audit app from HOST: "+appName)
-                                    time.sleep(5)
+                                    time.sleep(OPEN_FILE_WAIT_INTERVAL)
                                 else:
                                     self.syslogger.info("Successfully removed audit app from HOST: "+appName)
                                     self.logger.info("Successfully removed audit app from HOST: "+appName)
@@ -567,7 +571,7 @@ class IosxrAuditMain(AuditHelpers):
                         else:
                             self.syslogger.info("Failed to copy HOST audit app, Error:")
                             self.syslogger.info(transfer_to_host["output"])
-                            time.sleep(5)
+                            time.sleep(OPEN_FILE_WAIT_INTERVAL)
                 wait_count = wait_count + 1
 
             if not action_success:
@@ -657,6 +661,75 @@ class IosxrAuditMain(AuditHelpers):
 
 
 
+    def setup_standby_auditor(self, srcfolder=None, dstfolder=None, appName=None, uninstall=False):
+
+        if not self.ha_setup:
+            self.syslogger.info("Standby RP not present, bailing out")
+            return False
+
+
+        if srcfolder is None:
+            try:
+               srcfolder = self.auditor_cfg["STANDBY_INSTALLER"]["srcDir"]
+            except Exception as e:
+               self.syslogger.info("Failed to extract src directory for auditor app, defaulting to /misc/scratch/")
+               self.syslogger.info("Error is"+str(e))
+               srcfolder = "/misc/scratch/";
+
+        if dstfolder is None:
+            try:
+               dstfolder = self.auditor_cfg["STANDBY_INSTALLER"]["appDir"]
+            except Exception as e:
+               self.syslogger.info("Failed to extract app directory for XR audit app, defaulting to /misc/scratch")
+               self.syslogger.info("Error is"+str(e))
+               dstfolder = "/misc/scratch"
+
+        if appName is None:
+            try:
+               appName = self.auditor_cfg["STANDBY_INSTALLER"]["appName"]
+            except Exception as e:
+               self.syslogger.info("Failed to extract app name for XR audit app, defaulting to audit_xr.bin")
+               self.syslogger.info("Error is"+str(e))
+               appName = "auditor"
+
+
+        if uninstall:
+            remove_from_standby_xr = self.standby_xrruncmd(cmd="rm -f "+dstfolder+"/"+appName)
+            if remove_from_standby_xr["status"] == "success":
+                check_removal = self.standby_xrruncmd(cmd="ls "+dstfolder)
+
+                if check_removal["status"] == "success":
+                    if appName in check_removal["output"]:
+                        self.syslogger.info("Failed to remove auditor app from Standby XR LXC: "+appName)
+                        self.logger.info("Failed to remove auditor app from Standby XR LXC: "+appName)
+                        return False
+                    else:
+                        self.syslogger.info("Successfully removed auditor app from Standby XR LXC: "+appName)
+                        self.logger.info("Successfully removed auditor app from Standby XR LXC "+appName)
+                        return True 
+                else:
+                    self.syslogger.info("Failed to initiate check of removal of auditor app from Standby XR LXC: "+appName)
+                    self.logger.info("Failed to initiate check of removal of auditor app from Standby XR LXC: "+appName)
+                    return False
+            else:
+                self.syslogger.info("Failed to initiate removal of auditor app from Standby XR LXC: "+appName)
+                self.logger.info("Failed to initiate removal of auditor app from Standby XR LXC: "+appName)
+                return False
+        else:
+            transfer_to_standby_xr = self.standby_xrscp(src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
+            if transfer_to_standby_xr["status"] == "success":
+                self.logger.info("Standby XR LXC auditor app successfully copied")
+                self.syslogger.info("Standby LXC auditor app successfully copied")
+                if self.debug:
+                    self.logger.debug(transfer_to_standby_xr["output"])
+                return True
+            else:
+                self.syslogger.info("Failed to copy auditor app to standby XR LXC, Error:")
+                self.syslogger.info(transfer_to_standby_xr["output"])
+                return False
+
+
+
     def setup_standby_xr_audit(self, srcfolder=None, dstfolder=None, appName=None, cronName=None, cronPrefix=None, outputXMLDir = None, uninstall=False):
 
         if not self.ha_setup:
@@ -665,7 +738,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if srcfolder is None:
             try:
-               srcfolder = IosxrAuditMain.current_dir()+"/"+self.installer_cfg["XR"]["srcDir"]
+               srcfolder = IosxrAuditMain.current_dir()+"/"+self.auditor_cfg["XR"]["srcDir"]
             except Exception as e:
                self.syslogger.info("Failed to extract src directory for XR audit app, defaulting to current_dir/xr/")
                self.syslogger.info("Error is"+str(e))
@@ -673,7 +746,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if dstfolder is None:
             try:
-               dstfolder = self.installer_cfg["XR"]["appDir"]
+               dstfolder = self.auditor_cfg["XR"]["appDir"]
             except Exception as e:
                self.syslogger.info("Failed to extract app directory for XR audit app, defaulting to /misc/scratch")
                self.syslogger.info("Error is"+str(e))
@@ -681,7 +754,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if appName is None:
             try:
-               appName = self.installer_cfg["XR"]["appName"]
+               appName = self.auditor_cfg["XR"]["appName"]
             except Exception as e:
                self.syslogger.info("Failed to extract app name for XR audit app, defaulting to audit_xr.bin")
                self.syslogger.info("Error is"+str(e))
@@ -689,7 +762,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if cronName is None:
             try:
-               cronName = self.installer_cfg["XR"]["cronName"]
+               cronName = self.auditor_cfg["XR"]["cronName"]
             except Exception as e:
                self.syslogger.info("Failed to extract cronName for XR audit app, defaulting to audit_xr.cron")
                self.syslogger.info("Error is"+str(e))
@@ -697,7 +770,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if cronPrefix is None:
             try:
-               cronPrefix = self.installer_cfg["XR"]["cronPrefix"]
+               cronPrefix = self.auditor_cfg["XR"]["cronPrefix"]
             except Exception as e:
                self.syslogger.info("Failed to extract cronPrefix for XR audit cronjob, defaulting to audit_cron_xr_")
                self.syslogger.info("Error is"+str(e))
@@ -706,7 +779,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if outputXMLDir is None:
             try:
-               outputXMLDir = self.installer_cfg["XR"]["output_xml_dir"]
+               outputXMLDir = self.auditor_cfg["XR"]["output_xml_dir"]
             except Exception as e:
                self.syslogger.info("Failed to extract output xml directory for XR audit, defaulting to /misc/app_host")
                self.syslogger.info("Error is"+str(e))
@@ -752,12 +825,12 @@ class IosxrAuditMain(AuditHelpers):
         action_success = False
 
         if app_exists:
-            while(wait_count < 5):
+            while(wait_count < OPEN_FILE_WAIT_COUNT):
                 clean_up_filename = self.standby_xrruncmd(cmd="lsof "+dstfolder+"/"+appName)
                 cmd_out = clean_up_filename["output"]
                 if cmd_out:
-                    self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
-                    time.sleep(5)
+                    self.syslogger.info("Process currently running, wait "+str(OPEN_FILE_WAIT_INTERVAL)+" seconds before attempting again")
+                    time.sleep(OPEN_FILE_WAIT_INTERVAL)
                 else:
                     if uninstall:
                         remove_from_standby_xr = self.standby_xrruncmd(cmd="rm -f "+dstfolder+"/"+appName)
@@ -768,7 +841,7 @@ class IosxrAuditMain(AuditHelpers):
                                 if appName in check_removal["output"]:
                                     self.syslogger.info("Failed to remove audit app from Standby XR LXC: "+appName)
                                     self.logger.info("Failed to remove audit app from Standby XR LXCT: "+appName)
-                                    time.sleep(5)
+                                    time.sleep(OPEN_FILE_WAIT_INTERVAL)
                                 else:
                                     self.syslogger.info("Successfully removed audit app from Standby XR LXC: "+appName)
                                     self.logger.info("Successfully removed audit app from Standby XR LXC "+appName)
@@ -794,7 +867,7 @@ class IosxrAuditMain(AuditHelpers):
                         else:
                             self.syslogger.info("Failed to copy XR LXC audit app to standby, Error:")
                             self.syslogger.info(transfer_to_standby_xr["output"])
-                            time.sleep(5)
+                            time.sleep(OPEN_FILE_WAIT_INTERVAL)
                 wait_count = wait_count + 1
 
             if not action_success:
@@ -895,7 +968,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if srcfolder is None:
             try:
-               srcfolder = IosxrAuditMain.current_dir()+"/"+self.installer_cfg["ADMIN"]["srcDir"]
+               srcfolder = IosxrAuditMain.current_dir()+"/"+self.auditor_cfg["ADMIN"]["srcDir"]
             except Exception as e:
                self.syslogger.info("Failed to extract src directory for ADMIN audit app, defaulting to current_dir/admin/")
                self.syslogger.info("Error is"+str(e))
@@ -903,7 +976,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if dstfolder is None:
             try:
-               dstfolder = self.installer_cfg["ADMIN"]["appDir"]
+               dstfolder = self.auditor_cfg["ADMIN"]["appDir"]
             except Exception as e:
                self.syslogger.info("Failed to extract app directory for Admin audit app, defaulting to /misc/scratch")
                self.syslogger.info("Error is"+str(e))
@@ -911,7 +984,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if appName is None:
             try:
-               appName = self.installer_cfg["ADMIN"]["appName"]
+               appName = self.auditor_cfg["ADMIN"]["appName"]
             except Exception as e:
                self.syslogger.info("Failed to extract app name for ADMIN audit app, defaulting to audit_admin.bin")
                self.syslogger.info("Error is"+str(e))
@@ -919,7 +992,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if cronName is None:
             try:
-               cronName = self.installer_cfg["ADMIN"]["cronName"]
+               cronName = self.auditor_cfg["ADMIN"]["cronName"]
             except Exception as e:
                self.syslogger.info("Failed to extract cronName for ADMIN audit app, defaulting to audit_admin.cron")
                self.syslogger.info("Error is"+str(e))
@@ -927,7 +1000,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if cronPrefix is None:
             try:
-               cronPrefix = self.installer_cfg["ADMIN"]["cronPrefix"]
+               cronPrefix = self.auditor_cfg["ADMIN"]["cronPrefix"]
             except Exception as e:
                self.syslogger.info("Failed to extract cronPrefix for ADMIN audit cronjob, defaulting to audit_cron_admin_")
                self.syslogger.info("Error is"+str(e))
@@ -950,12 +1023,12 @@ class IosxrAuditMain(AuditHelpers):
         action_success = False
 
         if app_exists:
-            while(wait_count < 5):
+            while(wait_count < OPEN_FILE_WAIT_COUNT):
                 clean_up_filename = self.standby_adminruncmd(cmd="lsof "+dstfolder+"/"+appName)
                 cmd_out = clean_up_filename["output"][3:-1]
                 if cmd_out:
-                    self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
-                    time.sleep(5)
+                    self.syslogger.info("Process currently running, wait "+str(OPEN_FILE_WAIT_INTERVAL)+" seconds before attempting again")
+                    time.sleep(OPEN_FILE_WAIT_INTERVAL)
                 else:
                     if uninstall:
                         remove_from_standby_admin = self.standby_adminruncmd(cmd="rm -f "+dstfolder+"/"+appName)
@@ -966,7 +1039,7 @@ class IosxrAuditMain(AuditHelpers):
                                 if appName in check_removal["output"][3:-1]:
                                     self.syslogger.info("Failed to remove audit app from Standby RP's Admin LXC: "+appName)
                                     self.logger.info("Failed to remove audit app from Standby RP's Admin LXC: "+appName)
-                                    time.sleep(5)
+                                    time.sleep(OPEN_FILE_WAIT_INTERVAL)
                                 else:
                                     self.syslogger.info("Successfully removed audit app from Standby RP's Admin LXC: "+appName)
                                     self.logger.info("Successfully removed audit app from Standby RP's Admin LXC: "+appName)
@@ -992,7 +1065,7 @@ class IosxrAuditMain(AuditHelpers):
                         else:
                             self.syslogger.info("Failed to copy Standby RP Admin LXC audit app, Error:")
                             self.syslogger.info(transfer_to_standby_admin["output"])
-                            time.sleep(5)
+                            time.sleep(OPEN_FILE_WAIT_INTERVAL)
                 wait_count = wait_count + 1
 
             if not action_success:
@@ -1091,7 +1164,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if srcfolder is None:
             try:
-               srcfolder = IosxrAuditMain.current_dir()+"/"+self.installer_cfg["HOST"]["srcDir"]
+               srcfolder = IosxrAuditMain.current_dir()+"/"+self.auditor_cfg["HOST"]["srcDir"]
             except Exception as e:
                self.syslogger.info("Failed to extract src directory for HOST audit app, defaulting to current_dir/host/")
                self.syslogger.info("Error is"+str(e))
@@ -1099,7 +1172,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if dstfolder is None:
             try:
-               dstfolder = self.installer_cfg["HOST"]["appDir"]
+               dstfolder = self.auditor_cfg["HOST"]["appDir"]
             except Exception as e:
                self.syslogger.info("Failed to extract app directory for HOST audit app, defaulting to /misc/scratch")
                self.syslogger.info("Error is"+str(e))
@@ -1107,7 +1180,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if appName is None:
             try:
-               appName = self.installer_cfg["HOST"]["appName"]
+               appName = self.auditor_cfg["HOST"]["appName"]
             except Exception as e:
                self.syslogger.info("Failed to extract app name for HOST audit app, defaulting to audit_host.bin")
                self.syslogger.info("Error is"+str(e))
@@ -1115,7 +1188,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if cronName is None:
             try:
-               cronName = self.installer_cfg["HOST"]["cronName"]
+               cronName = self.auditor_cfg["HOST"]["cronName"]
             except Exception as e:
                self.syslogger.info("Failed to extract cronName for HOST audit app, defaulting to audit_host.cron")
                self.syslogger.info("Error is"+str(e))
@@ -1123,7 +1196,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if cronPrefix is None:
             try:
-               cronPrefix = self.installer_cfg["HOST"]["cronPrefix"]
+               cronPrefix = self.auditor_cfg["HOST"]["cronPrefix"]
             except Exception as e:
                self.syslogger.info("Failed to extract cronPrefix for HOST audit cronjob, defaulting to audit_cron_host_")
                self.syslogger.info("Error is"+str(e))
@@ -1146,12 +1219,12 @@ class IosxrAuditMain(AuditHelpers):
         action_success = False
 
         if app_exists:
-            while(wait_count < 5):
+            while(wait_count < OPEN_FILE_WAIT_COUNT):
                 clean_up_filename = self.standby_hostcmd(cmd="lsof "+dstfolder+"/"+appName)
                 cmd_out = clean_up_filename["output"][3:-1]
                 if cmd_out:
-                    self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
-                    time.sleep(5)
+                    self.syslogger.info("Process currently running, wait "+str(OPEN_FILE_WAIT_INTERVAL)+" seconds before attempting again")
+                    time.sleep(OPEN_FILE_WAIT_INTERVAL)
                 else:
                     if uninstall:
                         remove_from_standby_host = self.standby_hostcmd(cmd="rm -f "+dstfolder+"/"+appName)
@@ -1162,7 +1235,7 @@ class IosxrAuditMain(AuditHelpers):
                                 if appName in check_removal["output"][3:-1]:
                                     self.syslogger.info("Failed to remove audit app from Standby RP's HOST shell: "+appName)
                                     self.logger.info("Failed to remove audit app from Standby RP's HOST shell: "+appName)
-                                    time.sleep(5)
+                                    time.sleep(OPEN_FILE_WAIT_INTERVAL)
                                 else:
                                     self.syslogger.info("Successfully removed audit app from Standby RP's HOST shell: "+appName)
                                     self.logger.info("Successfully removed audit app from Standby RP's HOST shell: "+appName)
@@ -1188,7 +1261,7 @@ class IosxrAuditMain(AuditHelpers):
                         else:
                             self.syslogger.info("Failed to copy Standby RP HOST audit app, Error:")
                             self.syslogger.info(transfer_to_standby_host["output"])
-                            time.sleep(5)
+                            time.sleep(OPEN_FILE_WAIT_INTERVAL)
                 wait_count = wait_count + 1
 
             if not action_success:
@@ -1282,7 +1355,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if srcfolder is None:
             try:
-               srcfolder = IosxrAuditMain.current_dir()+"/"+self.installer_cfg["COLLECTOR"]["srcDir"]
+               srcfolder = IosxrAuditMain.current_dir()+"/"+self.auditor_cfg["COLLECTOR"]["srcDir"]
             except Exception as e:
                self.syslogger.info("Failed to extract src directory for COLLECTOR audit app, defaulting to current_dir/host/")
                self.syslogger.info("Error is"+str(e))
@@ -1290,7 +1363,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if dstfolder is None:
             try:
-               dstfolder = self.installer_cfg["COLLECTOR"]["appDir"]
+               dstfolder = self.auditor_cfg["COLLECTOR"]["appDir"]
             except Exception as e:
                self.syslogger.info("Failed to extract app directory for COLLECTOR audit app, defaulting to /misc/scratch")
                self.syslogger.info("Error is"+str(e))
@@ -1298,7 +1371,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if appName is None:
             try:
-               appName = self.installer_cfg["COLLECTOR"]["appName"]
+               appName = self.auditor_cfg["COLLECTOR"]["appName"]
             except Exception as e:
                self.syslogger.info("Failed to extract app name for COLLECTOR audit app, defaulting to audit_collector.bin")
                self.syslogger.info("Error is"+str(e))
@@ -1306,7 +1379,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if cronName is None:
             try:
-               cronName = self.installer_cfg["COLLECTOR"]["cronName"]
+               cronName = self.auditor_cfg["COLLECTOR"]["cronName"]
             except Exception as e:
                self.syslogger.info("Failed to extract cronName for COLLECTOR audit app, defaulting to audit_collector.cron")
                self.syslogger.info("Error is"+str(e))
@@ -1314,7 +1387,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if cronPrefix is None:
             try:
-               cronPrefix = self.installer_cfg["COLLECTOR"]["cronPrefix"]
+               cronPrefix = self.auditor_cfg["COLLECTOR"]["cronPrefix"]
             except Exception as e:
                self.syslogger.info("Failed to extract cronPrefix for COLLECTOR audit cronjob, defaulting to audit_cron_collector_")
                self.syslogger.info("Error is"+str(e))
@@ -1336,20 +1409,20 @@ class IosxrAuditMain(AuditHelpers):
             app_exists = False
 
         if app_exists:
-            while(wait_count < 5):
+            while(wait_count < OPEN_FILE_WAIT_COUNT):
                 clean_up_filename = self.run_bash(cmd="lsof "+dstfolder+"/"+appName)
                 print clean_up_filename
                 if clean_up_filename["output"] is not "" :
-                    # Process currently running, Sleep 5 seconds before attempting again
-                    self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
-                    time.sleep(5)
+                    # Process currently running, Sleep OPEN_FILE_WAIT_INTERVAL seconds before attempting again
+                    self.syslogger.info("Process currently running, wait "+str(OPEN_FILE_WAIT_INTERVAL)+" seconds before attempting again")
+                    time.sleep(OPEN_FILE_WAIT_INTERVAL)
                 else:
                     if uninstall:
                         result = self.run_bash(cmd="rm -f "+dstfolder+"/"+appName)
                         if result["status"]:
                             self.syslogger.info("Failed to remove Collector audit app from XR LXC: "+appName)
                             self.syslogger.info("Retrying")
-                            time.sleep(5)
+                            time.sleep(OPEN_FILE_WAIT_INTERVAL)
                         else:
                             self.syslogger.info("Removed Collector audit app from XR LXC: "+appName)
                             self.logger.info("Removed Collector audit app from XR LXC: "+appName)
@@ -1363,7 +1436,7 @@ class IosxrAuditMain(AuditHelpers):
                             break
                         else:
                             self.syslogger.info("Retrying")
-                            time.sleep(5)
+                            time.sleep(OPEN_FILE_WAIT_INTERVAL)
                 wait_count = wait_count + 1
 
             if not action_success:
@@ -1423,7 +1496,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if srcfolder is None:
             try:
-               srcfolder = IosxrAuditMain.current_dir()+"/"+self.installer_cfg["COLLECTOR"]["srcDir"]
+               srcfolder = IosxrAuditMain.current_dir()+"/"+self.auditor_cfg["COLLECTOR"]["srcDir"]
             except Exception as e:
                self.syslogger.info("Failed to extract src directory for COLLECTOR audit app, defaulting to current_dir/host/")
                self.syslogger.info("Error is"+str(e))
@@ -1431,7 +1504,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if dstfolder is None:
             try:
-               dstfolder = self.installer_cfg["COLLECTOR"]["appDir"]
+               dstfolder = self.auditor_cfg["COLLECTOR"]["appDir"]
             except Exception as e:
                self.syslogger.info("Failed to extract app directory for COLLECTOR audit app, defaulting to /misc/scratch")
                self.syslogger.info("Error is"+str(e))
@@ -1439,7 +1512,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if appName is None:
             try:
-               appName = self.installer_cfg["COLLECTOR"]["appName"]
+               appName = self.auditor_cfg["COLLECTOR"]["appName"]
             except Exception as e:
                self.syslogger.info("Failed to extract app name for COLLECTOR audit app, defaulting to audit_collector.bin")
                self.syslogger.info("Error is"+str(e))
@@ -1447,7 +1520,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if cronName is None:
             try:
-               cronName = self.installer_cfg["COLLECTOR"]["cronName"]
+               cronName = self.auditor_cfg["COLLECTOR"]["cronName"]
             except Exception as e:
                self.syslogger.info("Failed to extract cronName for COLLECTOR audit app, defaulting to audit_collector.cron")
                self.syslogger.info("Error is"+str(e))
@@ -1455,7 +1528,7 @@ class IosxrAuditMain(AuditHelpers):
 
         if cronPrefix is None:
             try:
-               cronPrefix = self.installer_cfg["COLLECTOR"]["cronPrefix"]
+               cronPrefix = self.auditor_cfg["COLLECTOR"]["cronPrefix"]
             except Exception as e:
                self.syslogger.info("Failed to extract cronPrefix for COLLECTOR audit cronjob, defaulting to audit_cron_collector_")
                self.syslogger.info("Error is"+str(e))
@@ -1477,12 +1550,12 @@ class IosxrAuditMain(AuditHelpers):
         action_success = False
 
         if app_exists:
-            while(wait_count < 5):
+            while(wait_count < OPEN_FILE_WAIT_COUNT):
                 clean_up_filename = self.standby_xrruncmd(cmd="lsof "+dstfolder+"/"+appName)
                 cmd_out = clean_up_filename["output"]
                 if cmd_out:
-                    self.syslogger.info("Process currently running, wait 5 seconds before attempting again")
-                    time.sleep(5)
+                    self.syslogger.info("Process currently running, wait "+str(OPEN_FILE_WAIT_INTERVAL)+" seconds before attempting again")
+                    time.sleep(OPEN_FILE_WAIT_INTERVAL)
                 else:
                     if uninstall:
                         remove_from_standby_xr = self.standby_xrruncmd(cmd="rm -f "+dstfolder+"/"+appName)
@@ -1493,7 +1566,7 @@ class IosxrAuditMain(AuditHelpers):
                                 if appName in check_removal["output"]:
                                     self.syslogger.info("Failed to remove Collector app from Standby XR LXC: "+appName)
                                     self.logger.info("Failed to remove Collector app from Standby XR LXCT: "+appName)
-                                    time.sleep(5)
+                                    time.sleep(OPEN_FILE_WAIT_INTERVAL)
                                 else:
                                     self.syslogger.info("Successfully removed Collector app from Standby XR LXC: "+appName)
                                     self.logger.info("Successfully removed Collector app from Standby XR LXC "+appName)
@@ -1519,7 +1592,7 @@ class IosxrAuditMain(AuditHelpers):
                         else:
                             self.syslogger.info("Failed to copy Standby XR LXC  audit app, Error:")
                             self.syslogger.info(transfer_to_standby_xr["output"])
-                            time.sleep(5)
+                            time.sleep(OPEN_FILE_WAIT_INTERVAL)
                 wait_count = wait_count + 1
 
             if not action_success:
@@ -1622,14 +1695,14 @@ if __name__ == "__main__":
     parser.add_argument('-i', '--install', action='store_true', dest='install',
                     help='Optional: No argument and -i serve the save purpose: \n Install the required artifacts (audit apps, collectors and cron jobs)')
     parser.add_argument('-u', '--uninstall', action='store_true', dest='uninstall',
-                    help='Uninstall the all artifacts from the system based on installer.cfg.yml settings')
+                    help='Uninstall the all artifacts from the system based on auditor.cfg.yml settings')
     parser.add_argument('-v', '--verbose', action='store_true',
                     help='Enable verbose logging')
 
 
     results = parser.parse_args()
 
-    audit_obj = IosxrAuditMain(installer_cfgfile=IosxrAuditMain.current_dir()+"/userfiles/installer.cfg.yml",
+    audit_obj = IosxrAuditMain(auditor_cfgfile=IosxrAuditMain.current_dir()+"/userfiles/auditor.cfg.yml",
                                domain="INSTALLER",
                                syslog_server="11.11.11.2", syslog_port=514)
 
@@ -1651,6 +1724,20 @@ if __name__ == "__main__":
                 audit_obj.logger.debug(os.path.join(root, directory))
             for filename in filenames:
                 audit_obj.logger.debug(os.path.join(root,filename))
+
+
+    # Replicate itself to standby xr to make sure installer/uninstaller is available
+    # post switchover on an HA(active/standby) setup
+
+    if not audit_obj.setup_standby_auditor(uninstall=uninstall_flag):
+        if not uninstall_flag:
+            audit_obj.syslogger.info("Failed to setup auditor app on standby XR LXC")
+            audit_obj.logger.info("Failed to setup auditor app on standby XR LXC")
+        else:
+            audit_obj.syslogger.info("Failed to remove auditor app on standby XR LXC")
+            audit_obj.logger.info("Failed to remove auditor app on standby XR LXC")
+        sys.exit(1)
+
 
 
     if not audit_obj.setup_xr_audit(uninstall=uninstall_flag):

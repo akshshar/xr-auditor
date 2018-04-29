@@ -33,3 +33,8 @@ COLLECTOR:
     cronPrefix: "audit_cron_collector_"
     vrf: "global-vrf"
     output_xml_dir: "/misc/app_host"
+
+STANDBY_INSTALLER:
+    srcDir: "/misc/scratch"
+    appName: "auditor"
+    appDir: "/misc/scratch"

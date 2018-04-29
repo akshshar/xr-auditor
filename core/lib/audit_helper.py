@@ -32,10 +32,14 @@ VALID_DOMAINS = ["XR-LXC",
                  "HOST",
                  "COLLECTOR",
                  "INSTALLER"]
+
 XML_PREFIX_DOMAINS = ["XR-LXC",
                       "ADMIN-LXC",
                       "HOST"]
+
 COMPLIANCE_PREFIX = "compliance_audit"
+
+
 
 class AuditHelpers(ZtpHelpers):
 

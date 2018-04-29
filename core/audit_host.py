@@ -48,8 +48,8 @@ if __name__ == "__main__":
     audit_obj.toggle_debug(0)
 
     try:
-        installer_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/installer.cfg.yml")
-        output_xml_dir = installer_cfg["HOST"]["output_xml_dir"]
+        auditor_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/auditor.cfg.yml")
+        output_xml_dir = auditor_cfg["HOST"]["output_xml_dir"]
     except Exception as e:
         audit_obj.syslogger.info("Failed to extract output_xml_dir for the HOST domain,"
                                  "defaulting to /misc/app_host")
