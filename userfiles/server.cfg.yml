@@ -1,5 +1,5 @@
 ---
-USER: "cisco"
+USER: "vagrant"
 
 # Specify Path relative to packaged collector.bin in collector.spec
 ID_RSA_FILE_PATH: "./userfiles/id_rsa_server" 
@@ -13,7 +13,7 @@ ID_RSA_FILE_PATH: "./userfiles/id_rsa_server"
 
 
 SERVER_HOST: 
-      CONNECTION: "11.11.11.2"
+      CONNECTION: "11.1.1.20"
       CONNECTION_TYPE: "IP"
       DOMAIN_NAME_SERVER : ""
 
@@ -43,4 +43,4 @@ COMPLIANCE_XMLNAME_PARAMS_ORDERED:
 # Specify the remote directory on the server
 # where the compliance XML file should be copied
 
-REMOTE_DIRECTORY: "/home/cisco"
+REMOTE_DIRECTORY: "/home/vagrant"

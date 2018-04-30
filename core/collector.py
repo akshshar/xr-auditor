@@ -13,6 +13,8 @@ import datetime, time
 import xmltodict as xd
 import json
 from ctypes import cdll
+import argparse
+
 libc = cdll.LoadLibrary('libc.so.6')
 _setns = libc.setns
 CLONE_NEWNET = 0x40000000
@@ -146,7 +148,7 @@ class IosxrAuditMain(AuditHelpers):
                         # Wait DOMAIN_XML_CREATION_WAIT_INTERVAL seconds before trying again
                         self.syslogger.info("File "+xml_file+" not found, retrying")
                         if self.debug:
-                            self.logger.debug("File: "+xml_file+" found, retrying")
+                            self.logger.debug("File: "+xml_file+" not found, retrying")
                         time.sleep(DOMAIN_XML_CREATION_WAIT_INTERVAL)
                     wait_counter = wait_counter + 1
 
@@ -182,7 +184,7 @@ class IosxrAuditMain(AuditHelpers):
 
             fname = os.path.basename(self.compliance_xmlname)
 
-            cmd =  "cat "+filename+" | ssh -i "+ os.path.abspath(self.id_rsa_file)
+            cmd =  "cat "+filename+" | timeout 5 ssh -i "+ os.path.abspath(self.id_rsa_file)
             cmd =  cmd + " -o StrictHostKeyChecking=no "
             cmd =  cmd + self.remote_user+"@"+self.server_connection
             cmd =  cmd + " \"cat > "+self.remote_directory+"/"+fname+"\""
@@ -211,6 +213,13 @@ class IosxrAuditMain(AuditHelpers):
 
 if __name__ == "__main__":
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d', '--debug', action='store_true',
+                    help='Enable verbose logging')
+
+
+    results = parser.parse_args()
+
     # Create an Object of the child class, syslog parameters are optional. 
     # If nothing is specified, then logging will happen to local log rotated file.
 
@@ -224,7 +233,9 @@ if __name__ == "__main__":
         audit_obj.syslogger.info("Exit flag is set, aborting")
         sys.exit(1)
 
-    audit_obj.toggle_debug(0)
+    if results.debug:
+        audit_obj.toggle_debug(1)
+
     if audit_obj.debug:
         for root, directories, filenames in os.walk(IosxrAuditMain.current_dir()):
             for directory in directories:
@@ -232,7 +243,6 @@ if __name__ == "__main__":
             for filename in filenames:
                 audit_obj.logger.debug(os.path.join(root,filename))
 
-    audit_obj.toggle_debug(0)
 
     try:
         auditor_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/auditor.cfg.yml")

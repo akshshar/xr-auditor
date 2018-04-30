@@ -207,12 +207,9 @@ class IosxrAuditMain(AuditHelpers):
         if app_exists:
             while(wait_count < OPEN_FILE_WAIT_COUNT):
                 clean_up_filename = self.run_bash(cmd="lsof "+dstfolder+"/"+appName)
-                self.syslogger.info("File: "+dstfolder+"/"+appName+" busy")
                 self.syslogger.info(clean_up_filename)
                 if self.debug:
-                    self.logger.debug("File: "+dstfolder+"/"+appName+" busy")
                     self.logger.debug(clean_up_filename)
-
                 if clean_up_filename["output"] is not "" :
                     # Process currently running, Sleep OPEN_FILE_WAIT_INTERVAL seconds before attempting again
                     self.syslogger.info("Process currently running, wait "+str(OPEN_FILE_WAIT_INTERVAL)+" seconds before attempting again")
@@ -1420,10 +1417,8 @@ class IosxrAuditMain(AuditHelpers):
         if app_exists:
             while(wait_count < OPEN_FILE_WAIT_COUNT):
                 clean_up_filename = self.run_bash(cmd="lsof "+dstfolder+"/"+appName)
-                self.syslogger.info("File: "+dstfolder+"/"+appName+" busy")
                 self.syslogger.info(clean_up_filename)
                 if self.debug:
-                    self.logger.debug("File: "+dstfolder+"/"+appName+" busy")
                     self.logger.debug(clean_up_filename)
 
                 if clean_up_filename["output"] is not "" :

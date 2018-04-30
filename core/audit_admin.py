@@ -8,6 +8,7 @@ import sys, os
 import shutil
 import datetime
 import xmltodict as xd
+import argparse
 
 class IosxrAuditMain(AuditHelpers):
 
@@ -25,6 +26,14 @@ class IosxrAuditMain(AuditHelpers):
 
 if __name__ == "__main__":
 
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d', '--debug', action='store_true',
+                    help='Enable verbose logging')
+
+
+    results = parser.parse_args()
+
     # Create an Object of the child class, syslog parameters are optional. 
     # If nothing is specified, then logging will happen to local log rotated file.
 
@@ -37,7 +46,9 @@ if __name__ == "__main__":
         audit_obj.syslogger.info("Exit flag is set, aborting")
         sys.exit(1)
 
-    audit_obj.toggle_debug(0)
+    if results.debug:
+        audit_obj.toggle_debug(1)
+
     if audit_obj.debug:
         for root, directories, filenames in os.walk(IosxrAuditMain.current_dir()):
             for directory in directories:
@@ -45,9 +56,6 @@ if __name__ == "__main__":
             for filename in filenames:
                 audit_obj.logger.debug(os.path.join(root,filename))
 
-
-
-    audit_obj.toggle_debug(0)
 
     try:
         auditor_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/auditor.cfg.yml")
