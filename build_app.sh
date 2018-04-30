@@ -6,8 +6,8 @@ SCRIPT_PATH=$(dirname `which $0`)
 cd $SCRIPT_PATH
 
 apt-get install -y git python-pip
-pip install --upgrade pip
-pip install -U -r requirements.txt
+pip install --proxy $https_proxy --upgrade pip
+pip install --proxy $https_proxy -U -r requirements.txt
 
 # First build the individual cron scripts
 pyinstaller specs/xr.spec

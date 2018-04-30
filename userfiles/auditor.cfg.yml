@@ -29,7 +29,7 @@ COLLECTOR:
     srcDir: "./collector/"
     appName: "collector.bin"
     appDir: "/misc/scratch"
-    cronName: "audit_collector.cron"
+    cronName: "collector.cron"
     cronPrefix: "audit_cron_collector_"
     vrf: "global-vrf"
     output_xml_dir: "/misc/app_host"

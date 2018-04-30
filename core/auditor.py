@@ -25,6 +25,10 @@ class IosxrAuditMain(AuditHelpers):
                  *args, **kwargs):
 
         super(IosxrAuditMain, self).__init__(*args, **kwargs)
+
+        if self.request_version:
+            return None
+
         if auditor_cfgfile is None:
             self.syslogger.info("Installer config file not provided, Bailing out")
             self.exit = True
@@ -203,7 +207,12 @@ class IosxrAuditMain(AuditHelpers):
         if app_exists:
             while(wait_count < OPEN_FILE_WAIT_COUNT):
                 clean_up_filename = self.run_bash(cmd="lsof "+dstfolder+"/"+appName)
-                print clean_up_filename
+                self.syslogger.info("File: "+dstfolder+"/"+appName+" busy")
+                self.syslogger.info(clean_up_filename)
+                if self.debug:
+                    self.logger.debug("File: "+dstfolder+"/"+appName+" busy")
+                    self.logger.debug(clean_up_filename)
+
                 if clean_up_filename["output"] is not "" :
                     # Process currently running, Sleep OPEN_FILE_WAIT_INTERVAL seconds before attempting again
                     self.syslogger.info("Process currently running, wait "+str(OPEN_FILE_WAIT_INTERVAL)+" seconds before attempting again")
@@ -1381,9 +1390,9 @@ class IosxrAuditMain(AuditHelpers):
             try:
                cronName = self.auditor_cfg["COLLECTOR"]["cronName"]
             except Exception as e:
-               self.syslogger.info("Failed to extract cronName for COLLECTOR audit app, defaulting to audit_collector.cron")
+               self.syslogger.info("Failed to extract cronName for COLLECTOR audit app, defaulting to collector.cron")
                self.syslogger.info("Error is"+str(e))
-               cronName = "audit_collector.cron"
+               cronName = "collector.cron"
 
         if cronPrefix is None:
             try:
@@ -1411,7 +1420,12 @@ class IosxrAuditMain(AuditHelpers):
         if app_exists:
             while(wait_count < OPEN_FILE_WAIT_COUNT):
                 clean_up_filename = self.run_bash(cmd="lsof "+dstfolder+"/"+appName)
-                print clean_up_filename
+                self.syslogger.info("File: "+dstfolder+"/"+appName+" busy")
+                self.syslogger.info(clean_up_filename)
+                if self.debug:
+                    self.logger.debug("File: "+dstfolder+"/"+appName+" busy")
+                    self.logger.debug(clean_up_filename)
+
                 if clean_up_filename["output"] is not "" :
                     # Process currently running, Sleep OPEN_FILE_WAIT_INTERVAL seconds before attempting again
                     self.syslogger.info("Process currently running, wait "+str(OPEN_FILE_WAIT_INTERVAL)+" seconds before attempting again")
@@ -1522,9 +1536,9 @@ class IosxrAuditMain(AuditHelpers):
             try:
                cronName = self.auditor_cfg["COLLECTOR"]["cronName"]
             except Exception as e:
-               self.syslogger.info("Failed to extract cronName for COLLECTOR audit app, defaulting to audit_collector.cron")
+               self.syslogger.info("Failed to extract cronName for COLLECTOR audit app, defaulting to collector.cron")
                self.syslogger.info("Error is"+str(e))
-               cronName = "audit_collector.cron"
+               cronName = "collector.cron"
 
         if cronPrefix is None:
             try:
@@ -1692,25 +1706,45 @@ if __name__ == "__main__":
 
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('-v', '--version', action='store_true',
+                    help='Display Current version of the Auditor app and exit')
     parser.add_argument('-i', '--install', action='store_true', dest='install',
-                    help='Optional: No argument and -i serve the save purpose: \n Install the required artifacts (audit apps, collectors and cron jobs)')
+                    help='Install the required artifacts (audit apps, collectors and cron jobs)\n to default locations or to those specified in auditor.cfg.yml')
     parser.add_argument('-u', '--uninstall', action='store_true', dest='uninstall',
-                    help='Uninstall the all artifacts from the system based on auditor.cfg.yml settings')
-    parser.add_argument('-v', '--verbose', action='store_true',
+                    help='Uninstall all the artifacts from the system based on auditor.cfg.yml settings')
+    parser.add_argument('-d', '--debug', action='store_true',
                     help='Enable verbose logging')
 
 
     results = parser.parse_args()
 
+    if not ( results.install or 
+             results.uninstall or 
+             results.version):
+        parser.print_help()
+        sys.exit(0)
+
+
     audit_obj = IosxrAuditMain(auditor_cfgfile=IosxrAuditMain.current_dir()+"/userfiles/auditor.cfg.yml",
+                               compliance_xsd=IosxrAuditMain.current_dir()+"/userfiles/compliance.xsd",
                                domain="INSTALLER",
+                               request_version=results.version,
                                syslog_server="11.11.11.2", syslog_port=514)
+
+    if results.version:
+        if audit_obj.version:
+            print audit_obj.version["version"]
+            sys.exit(0)
+        else:
+            print "Failed to get version"
+            sys.exit(1)
 
     if audit_obj.exit:
         audit_obj.syslogger.info("Exit flag is set, aborting")
+        audit_obj.logger.info("Failed to run auditor, see /tmp/ztp_python.log for collected syslogs")
         sys.exit(1)
 
-    if results.verbose:
+    if results.debug:
         audit_obj.toggle_debug(1)
 
     uninstall_flag = False
@@ -1724,20 +1758,6 @@ if __name__ == "__main__":
                 audit_obj.logger.debug(os.path.join(root, directory))
             for filename in filenames:
                 audit_obj.logger.debug(os.path.join(root,filename))
-
-
-    # Replicate itself to standby xr to make sure installer/uninstaller is available
-    # post switchover on an HA(active/standby) setup
-
-    if not audit_obj.setup_standby_auditor(uninstall=uninstall_flag):
-        if not uninstall_flag:
-            audit_obj.syslogger.info("Failed to setup auditor app on standby XR LXC")
-            audit_obj.logger.info("Failed to setup auditor app on standby XR LXC")
-        else:
-            audit_obj.syslogger.info("Failed to remove auditor app on standby XR LXC")
-            audit_obj.logger.info("Failed to remove auditor app on standby XR LXC")
-        sys.exit(1)
-
 
 
     if not audit_obj.setup_xr_audit(uninstall=uninstall_flag):
@@ -1782,6 +1802,20 @@ if __name__ == "__main__":
 
 
     if audit_obj.ha_setup:
+ 
+        # Replicate itself to standby xr to make sure installer/uninstaller is available
+        # post switchover on an HA(active/standby) setup
+
+        if not audit_obj.setup_standby_auditor(uninstall=uninstall_flag):
+            if not uninstall_flag:
+                audit_obj.syslogger.info("Failed to setup auditor app on standby XR LXC")
+                audit_obj.logger.info("Failed to setup auditor app on standby XR LXC")
+            else:
+                audit_obj.syslogger.info("Failed to remove auditor app on standby XR LXC")
+                audit_obj.logger.info("Failed to remove auditor app on standby XR LXC")
+            sys.exit(1)
+
+
         if not audit_obj.setup_standby_xr_audit(uninstall=uninstall_flag):
             if not uninstall_flag:
                 audit_obj.syslogger.info("Failed to setup Standby XR LXC audit artifacts")

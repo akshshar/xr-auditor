@@ -43,7 +43,8 @@ COMPLIANCE_PREFIX = "compliance_audit"
 
 class AuditHelpers(ZtpHelpers):
 
-    def __init__(self, 
+    def __init__(self,
+                 request_version=False,
                  syslog_server=None, 
                  syslog_port=None, 
                  syslog_file=None,
@@ -52,6 +53,16 @@ class AuditHelpers(ZtpHelpers):
                  compliance_cfg=None):
 
         self.exit = False
+        self.version = {}
+        self.request_version = request_version
+
+        if self.request_version:
+            if compliance_xsd is None:
+                self.exit = True
+            else:
+                self.compliance_xsd = compliance_xsd
+            self.version = self.xsd_to_dict(version=True)
+            return None
 
         if domain is None:
             self.syslogger.info("No domain specified, aborting.\n"
@@ -116,7 +127,7 @@ class AuditHelpers(ZtpHelpers):
             self.setup_debug_logger_child()
             self.debug = False
 
-            
+
         if compliance_xsd is None:
             self.syslogger.info("No Compliance xsd file - compliance_xsd provided, aborting")
             self.exit = True
@@ -144,7 +155,6 @@ class AuditHelpers(ZtpHelpers):
         self.calendar_months = {'Jan':'01', 'Feb':'02', 'Mar':'03', 'Apr':'04',
                                 'May':'05', 'Jun':'06', 'Jul':'07', 'Aug':'08',
                                 'Sep':'09', 'Oct':'10', 'Nov':'11', 'Dec':'12'}
-
 
 
 
@@ -1314,14 +1324,19 @@ class AuditHelpers(ZtpHelpers):
             self.syslogger.info("Error is %s" % e) 
         return result
 
-   
-    def xsd_to_dict(self):
+
+    def xsd_to_dict(self, version=False):
         xsd_dict = {}
         try:
             with open(self.compliance_xsd,'r') as f:
                 xsd_dict_raw = xd.parse(f)
                 xsd_dict = json.loads(json.dumps(xsd_dict_raw))
+            if version:
+                version = "v"+ str(xsd_dict["xs:schema"]["@version"])
+                return {"version" : version} 
         except Exception as e:
+            if version:
+                return {}
             self.syslogger.info("Failed to parse compliance xsd file")
             self.syslogger.info("Error is %s" % e)
             return {}

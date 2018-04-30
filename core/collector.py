@@ -214,7 +214,6 @@ if __name__ == "__main__":
     # Create an Object of the child class, syslog parameters are optional. 
     # If nothing is specified, then logging will happen to local log rotated file.
 
-
     audit_obj = IosxrAuditMain(server_cfg=IosxrAuditMain.current_dir()+"/userfiles/server.cfg.yml",
                                syslog_server="11.11.11.2", syslog_port=514,
                                domain = "COLLECTOR",
