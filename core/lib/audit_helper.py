@@ -24,6 +24,8 @@ from pprint import pprint
 import logging, logging.handlers
 from ctypes import cdll
 import copy
+import threading
+import signal
 
 libc = cdll.LoadLibrary('libc.so.6')
 _setns = libc.setns
@@ -41,6 +43,24 @@ XML_PREFIX_DOMAINS = ["XR-LXC",
 
 COMPLIANCE_PREFIX = "compliance_audit"
 
+
+
+class KillerThread(threading.Thread):
+  def __init__(self, pid, timeout, event ):
+    threading.Thread.__init__(self)
+    self.pid = pid
+    self.timeout = timeout
+    self.event = event
+    self.setDaemon(True)
+
+  def run(self):
+    self.event.wait(self.timeout)
+    if not self.event.is_set():
+      try:
+          os.killpg(os.getpgid(self.pid), signal.SIGTERM)
+      except OSError, e:
+        #This is raised if the process has already completed
+        pass
 
 
 class AuditHelpers(ZtpHelpers):
@@ -215,8 +235,14 @@ class AuditHelpers(ZtpHelpers):
             if not result["status"]:
                 return result["output"]
             else:
-                self.syslogger.info("Failed to fetch product name, output:" + result["output"]+ ", error:"+result["error"])
-                return ""
+                self.syslogger.info("Failed to use get_ztp_product_id, trying backup cmd")
+                cmd = "ip netns exec xrnns /pkg/bin/show_inventory -e | grep -A1 \"Rack 0\" | tail -1 | cut -d \' \' -f 2"
+                result = self.run_bash(cmd)
+                if not result["status"]:
+                    return result["output"]
+                else:
+                    self.syslogger.info("Failed to fetch product name, output:" + result["output"]+ ", error:"+result["error"])
+                    return ""
         except Exception as e:
             self.syslogger.info("Failed to fetch product name, Error: %s" % e) 
             return ""
@@ -236,7 +262,7 @@ class AuditHelpers(ZtpHelpers):
         except Exception as e:
             sys.syslogger.info("Failed to fetch pattern for DATE from compliance xsd, Error:"+str(e))
             sys.syslogger.info("Using default pattern: CCYYMMDD-HH:MI TZ")
- 
+
         try:
             result = self.xrcmd({"exec_cmd" : "show clock"})
 
@@ -246,6 +272,7 @@ class AuditHelpers(ZtpHelpers):
                 CCYY = result["output"][0].split(' ')[-1]
                 MM = self.calendar_months[result["output"][0].split(' ')[3]]
                 DD = result["output"][0].split(' ')[4]
+                DD = str("%02d" % int(DD))
                 TZ = result["output"][0].split(' ')[1]
   
                 date = CCYY+MM+DD+"-"+HH+":"+MI+' '+TZ
@@ -275,6 +302,18 @@ class AuditHelpers(ZtpHelpers):
             return ""
 
 
+    def get_ip(self):
+        try:
+            if "outgoing_interface" in self.compliance_cfg_dict:
+                interface = self.compliance_cfg_dict["outgoing_interface"]
+                return self.get_interface_ip(interface)
+            else:
+                return self.get_mgmt_ip()
+        except Exception as e:
+            self.syslogger.info("Failed to fetch ip , Error: %s" %e)
+            return ""
+
+
     def get_mgmt_ip(self):
         try:
             # Get the name of the current node
@@ -288,14 +327,23 @@ class AuditHelpers(ZtpHelpers):
                 self.syslogger.info("Failed to get current node name, output: "+result["output"]+", error: "+result["error"])
                 return ""
 
-            result = self.xrcmd({"exec_cmd" : "show interface MgmtEth"+my_node_name+"/0"})
+            return self.get_interface_ip("MgmtEth"+my_node_name+"/0")
+        except Exception as e:
+            self.syslogger.info("Failed to fetch mgmt interface ip , Error: %s" %e)
+            return ""
+
+
+    def get_interface_ip(self, interface_name):
+
+        try:
+            result = self.xrcmd({"exec_cmd" : "show interface "+interface_name})
 
             if result["status"] == "success":
                 return result["output"][3].split(' ')[-1]
             else:
                 return ""
         except Exception as e:
-            self.syslogger.info("Failed to fetch hostname, Error: %s" % e)
+            self.syslogger.info("Failed to fetch interface: "+interface_name+" ip, Error: %s" % e)
             return ""
 
         
@@ -307,7 +355,7 @@ class AuditHelpers(ZtpHelpers):
                 'PRODUCT': self.get_product,
                 'OS': self.get_os, 
                 'VERSION': self.get_version, 
-                'IPADDR' : self.get_mgmt_ip
+                'IPADDR' : self.get_ip
                 }
         return field_dict[field]()
 
@@ -985,6 +1033,32 @@ class AuditHelpers(ZtpHelpers):
 
 
 
+    def run_bash_timed(self, cmd=None, timeout=5, vrf="xrnns", pid=1):
+        event = threading.Event()
+
+        with open(self.get_netns_path(nsname=vrf,nspid=pid)) as fd:
+            self.setns(fd, CLONE_NEWNET)
+
+            if self.debug:
+                self.logger.debug("bash cmd being run: "+cmd)
+
+            if cmd is not None:
+                process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, preexec_fn=os.setsid)
+                killer = KillerThread(process.pid, timeout, event)
+                killer.start()
+                out, err = process.communicate()
+                event.set()
+                killer.join()
+
+                if self.debug:
+                    self.logger.debug("output: "+out)
+                    self.logger.debug("error: "+err)
+            else:
+                self.syslogger.info("No bash command provided")
+                return {"status" : 1, "output" : "", "error" : "No bash command provided"}
+
+            status = process.returncode
+            return {"status" : status, "output" : out, "error" : err}
 
 
     def run_bash(self, cmd=None, vrf="xrnns", pid=1):
@@ -1409,7 +1483,7 @@ class AuditHelpers(ZtpHelpers):
 
     def get_checksum(self, filename):
         try:
-            result = self.run_bash(cmd="md5sum "+filename)
+            result = self.run_bash(cmd="md5sum "+filename, vrf="", pid=1)
             if not result["status"]:
                 return result["output"].split(' ')[0]
             else:
@@ -1438,7 +1512,7 @@ class AuditHelpers(ZtpHelpers):
             elif element_type == 'dir':
                 cmd = "ls -ld"
         try:
-            result = self.run_bash(cmd=cmd+" "+ element_name)
+            result = self.run_bash(cmd=cmd+" "+ element_name, vrf="", pid=1)
             if not result["status"]:
                 return result["output"]
             else:

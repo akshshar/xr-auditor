@@ -39,12 +39,27 @@ class IosxrAuditMain(AuditHelpers):
                 self.exit = True
 
         self.compliance_xmlname_parameters = { "router_hostname" : self.get_hostname_string,
-                                               "router_mgmt_ip" : self.get_mgmt_ip_dashed}
+                                               "router_ip" : self.get_ip_dashed}
 
         try:
             # Extract the absolute path for server private key
-            self.id_rsa_file = self.server_cfg_dict["ID_RSA_FILE_PATH"]
-            self.id_rsa_file = IosxrAuditMain.current_dir()+"/"+self.id_rsa_file
+            if "ID_RSA_FILE_PATH" in self.server_cfg_dict:
+                id_rsa_relative_path  = self.server_cfg_dict["ID_RSA_FILE_PATH"]
+                id_rsa_full_path = IosxrAuditMain.current_dir()+"/"+id_rsa_relative_path
+                id_rsa_filename = os.path.basename(id_rsa_full_path)
+
+                if "ID_RSA_XR_LXC_FILE_PATH" in self.server_cfg_dict:
+                    self._copy_file(src=id_rsa_full_path,
+                                    dest=self.server_cfg_dict["ID_RSA_XR_LXC_FILE_PATH"])
+                    self.id_rsa_file = self.server_cfg_dict["ID_RSA_XR_LXC_FILE_PATH"]
+                else:
+                    self.id_rsa_file = IosxrAuditMain.current_dir()+"/"+self.server_cfg_dict["ID_RSA_FILE_PATH"]
+
+            elif "ID_RSA_XR_LXC_FILE_PATH" in self.server_cfg_dict:
+                self.id_rsa_file = self.server_cfg_dict["ID_RSA_XR_LXC_FILE_PATH"]
+            else:
+                self.id_rsa_file = "/misc/scratch/id_rsa_server" 
+
 
             # Extract the Remote user for Server connection over SSH
             self.remote_user = self.server_cfg_dict["USER"]
@@ -80,7 +95,7 @@ class IosxrAuditMain(AuditHelpers):
             if "COMPLIANCE_XMLNAME_PARAMS_ORDERED" in self.server_cfg_dict:
                 xmlname_params = self.server_cfg_dict["COMPLIANCE_XMLNAME_PARAMS_ORDERED"]
             else:
-                xmlname_params = ['router_hostname', 'router_mgmt_ip']
+                xmlname_params = ['router_hostname', 'router_ip']
        
             xmlname_string = ""
             for param in xmlname_params:
@@ -98,6 +113,20 @@ class IosxrAuditMain(AuditHelpers):
             self.exit = True
 
 
+    def _copy_file(self, src=None, dest=None):
+
+        try:
+            shutil.copy2(src, dest)
+            # eg. src and dest are the same file
+            return True
+        except shutil.Error as e:
+            self.syslogger.info("Failed to copy file, Error: %s" % e)
+            # eg. source or destination doesn't exist
+            return False
+        except IOError as e:
+            self.syslogger.info('Failed to copy file, Error: %s' % e.strerror)
+            return False
+
     def get_hostname_string(self):
         hostname = self.get_host()
         if not hostname:
@@ -105,12 +134,12 @@ class IosxrAuditMain(AuditHelpers):
         else:
             return str(hostname)
 
-    def get_mgmt_ip_dashed(self):
-        mgmt_ip = self.get_mgmt_ip()
-        if mgmt_ip == "":
+    def get_ip_dashed(self):
+        ip = self.get_ip()
+        if ip == "":
             return ""
         else:
-            return ('_'.join(mgmt_ip.split('.'))).split('/')[0]
+            return ('_'.join(ip.split('.'))).split('/')[0]
 
         
     def collate_xml(self, domain_dict=None, output_xml_dir=None):
@@ -175,7 +204,7 @@ class IosxrAuditMain(AuditHelpers):
         return output_file
 
 
-    def send_to_server(self, filename, vrf="global-vrf"):
+    def send_to_server(self, filename, vrf="global-vrf", timeout=5):
         with open(self.get_netns_path(nsname=self.vrf)) as fd:
             self.setns(fd, CLONE_NEWNET)
             if filename is None:
@@ -184,13 +213,14 @@ class IosxrAuditMain(AuditHelpers):
 
             fname = os.path.basename(self.compliance_xmlname)
 
-            cmd =  "cat "+filename+" | timeout 5 ssh -i "+ os.path.abspath(self.id_rsa_file)
+            cmd =  "cat "+filename+" | ssh -i "+ os.path.abspath(self.id_rsa_file)
             cmd =  cmd + " -o StrictHostKeyChecking=no "
             cmd =  cmd + self.remote_user+"@"+self.server_connection
             cmd =  cmd + " \"cat > "+self.remote_directory+"/"+fname+"\""
 
             try:
-                result = self.run_bash(cmd, vrf=vrf)
+                #result = self.run_bash(cmd, vrf=vrf)
+                result = self.run_bash_timed(cmd, timeout, vrf=vrf)
                 return result["status"]
             except Exception as e:
                 self.syslogger.info("Failed to transfer file to remote host")
@@ -295,6 +325,10 @@ if __name__ == "__main__":
         audit_obj.syslogger.info('Valid XML! :)')
         audit_obj.syslogger.info('Successfully created output XML: '+str(xml_file))
 
+        if audit_obj.debug:
+            audit_obj.logger.debug('Valid XML! :)')
+            audit_obj.logger.debug('Successfully created output XML: '+str(xml_file))
+
         # Attempt to send to remote server only on the active RP
 
         # Am I the active RP?
@@ -302,19 +336,29 @@ if __name__ == "__main__":
 
         if check_active_rp["status"] == "success":
             if check_active_rp["output"]:
-                if not audit_obj.send_to_server(xml_file, vrf="global-vrf"):
+                if not audit_obj.send_to_server(xml_file, vrf="global-vrf", timeout=10):
                     audit_obj.syslogger.info("Successfully transferred audit result to Remote Server, over SSH")
+                    if audit_obj.debug:
+                        audit_obj.logger.debug("Successfully transferred audit result to Remote Server, over SSH")
                     sys.exit(0)
                 else:
                     audit_obj.syslogger.info("Failed to send audit result to Remote Server")
+                    if audit_obj.debug:
+                        audit_obj.logger.debug("Failed to send audit result to Remote Server")
                     sys.exit(1)
             else:
                 audit_obj.syslogger.info("Not running on active RP, bailing out")
+                if audit_obj.debug:
+                    audit_obj.logger.debug("Not running on active RP, bailing out")
                 sys.exit(0)
         else:
             audit_obj.syslogger.info("Failed to check current RP node's state")
+            if audit_obj.debug:
+                audit_obj.logger.debug("Failed to check current RP node's state")
             sys.exit(1)
     else:
         audit_obj.syslogger.info('Output XML Not valid! :(')
+        if audit_obj.debug:
+            audit_obj.logger.debug("Output XML Not valid! :(")
         sys.exit(1)
 

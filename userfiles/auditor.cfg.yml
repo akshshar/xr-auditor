@@ -1,4 +1,6 @@
 ---
+root_lr_user: vagrant
+
 XR:
     srcDir: "./xr"
     appName: "audit_xr.bin"
