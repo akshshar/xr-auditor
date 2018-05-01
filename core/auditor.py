@@ -191,44 +191,6 @@ class IosxrAuditMain(AuditHelpers):
 
 
 
-        # Remove any accumulated stale /tmp/_MEI folders
-
-        result = self.run_bash("ls -d /tmp/_MEI*")
-        if not result["status"]:
-            get_MEI_output = result["output"]
-            get_MEI_list = filter(None, get_MEI_output.split("\n"))
-            for folder in get_MEI_list:
-               if folder == IosxrAuditMain.current_dir():
-                   if self.debug:
-                       self.logger.debug("Skipping my own folder")
-                   continue
-               result = self.run_bash("rm -rf "+folder)
-               if not result["status"]:
-                   check_removal = self.run_bash(cmd="ls -d /tmp/_MEI*")
-                   if not check_removal["status"]:
-                       if "_MEI" in check_removal["output"]:
-                           self.syslogger.info("Failed to remove stale /tmp/_MEI folders")
-                           if self.debug:
-                               self.logger.debug("Failed to remove stale /tmp/_MEI folders")
-                       else:
-                           self.syslogger.info("Removed stale /tmp/_MEI folders")
-                           if self.debug:
-                               self.logger.debug("Removed stale /tmp/_MEI folders")
-                   else:
-                       self.syslogger.info("Failed to check removal of /tmp/_MEI folders")
-                       if self.debug:
-                           self.logger.debug("Failed to check removal of /tmp/_MEI folders")
-               else:
-                   self.syslogger.info("Failed to remove stale /tmp/_MEI folders")
-                   if self.debug:
-                       self.logger.debug("Failed to remove stale /tmp/_MEI folders")
-        else:
-            self.syslogger.info("Failed to fetch list of /tmp/_MEI folders")
-            if self.debug:
-                self.logger.debug("Failed to fetch list of /tmp/_MEI folders")
-
-
-
         wait_count = 0
         action_success = False
 
@@ -853,44 +815,6 @@ class IosxrAuditMain(AuditHelpers):
                     self.syslogger.info("Failed to remove XML file with prefix: "+xml_prefix+"in "+outputXMLDir)
                     if self.debug:
                         self.logger.debug("Failed to remove XML file with prefix: "+xml_prefix+"in "+outputXMLDir)
-
-
-
-        # Remove any accumulated stale /tmp/_MEI folders
-
-        result = self.run_bash("ls -d /tmp/_MEI*")
-        if not result["status"]:
-            get_MEI_output = result["output"]
-            get_MEI_list = filter(None, get_MEI_output.split("\n"))
-            for folder in get_MEI_list:
-                if folder == IosxrAuditMain.current_dir():
-                    if self.debug:
-                        self.logger.debug("Skipping my own folder")
-                    continue
-                result = self.run_bash("rm -rf "+folder)
-                if not result["status"]:
-                    check_removal = self.run_bash(cmd="ls -d /tmp/_MEI*")
-                    if not check_removal["status"]:
-                        if "_MEI" in check_removal["output"]:
-                            self.syslogger.info("Failed to remove stale /tmp/_MEI folders")
-                            if self.debug:
-                                self.logger.debug("Failed to remove stale /tmp/_MEI folders")
-                        else:
-                            self.syslogger.info("Removed stale /tmp/_MEI folders")
-                            if self.debug:
-                                self.logger.debug("Removed stale /tmp/_MEI folders")
-                    else:
-                        self.syslogger.info("Failed to check removal of /tmp/_MEI folders")
-                        if self.debug:
-                            self.logger.debug("Failed to check removal of /tmp/_MEI folders")
-                else:
-                    self.syslogger.info("Failed to remove stale /tmp/_MEI folders")
-                    if self.debug:
-                        self.logger.debug("Failed to remove stale /tmp/_MEI folders")
-        else:
-            self.syslogger.info("Failed to fetch list of /tmp/_MEI folders")
-            if self.debug:
-                self.logger.debug("Failed to fetch list of /tmp/_MEI folders")
 
 
 
