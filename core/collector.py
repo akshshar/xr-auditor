@@ -60,7 +60,6 @@ class IosxrAuditMain(AuditHelpers):
             else:
                 self.id_rsa_file = "/misc/scratch/id_rsa_server" 
 
-
             # Extract the Remote user for Server connection over SSH
             self.remote_user = self.server_cfg_dict["USER"]
 
@@ -78,7 +77,14 @@ class IosxrAuditMain(AuditHelpers):
             else:
                 self.server_connection_type = "IP"
 
-               
+
+            # Extract the remote server's SSH port
+            if "SERVER_SSH_PORT" in self.server_cfg_dict:
+                self.server_ssh_port = self.server_cfg_dict["SERVER_SSH_PORT"]
+            else:
+                self.server_ssh_port ="22"
+
+
             # Extract the Domain Name Server to configure if CONNECTION_TYPE = "DOMAIN_NAME"
             if self.server_connection_type == "DOMAIN_NAME":
                 if "DOMAIN_NAME_SERVER" in self.server_cfg_dict["SERVER_HOST"]:
@@ -88,6 +94,7 @@ class IosxrAuditMain(AuditHelpers):
                     self.exit = True
             else:
                 self.dns = ""
+
 
 
             # Extract the naming pattern for the final compliance XML file
@@ -214,7 +221,7 @@ class IosxrAuditMain(AuditHelpers):
             fname = os.path.basename(self.compliance_xmlname)
 
             cmd =  "cat "+filename+" | ssh -i "+ os.path.abspath(self.id_rsa_file)
-            cmd =  cmd + " -o StrictHostKeyChecking=no "
+            cmd =  cmd + " -p "+str(self.server_ssh_port)+" -o StrictHostKeyChecking=no "
             cmd =  cmd + self.remote_user+"@"+self.server_connection
             cmd =  cmd + " \"cat > "+self.remote_directory+"/"+fname+"\""
 

@@ -1,26 +1,31 @@
 ---
 USER: "vagrant"
 
+OUTGOING_INTERFACE: "GigabitEthernet0/0/0/0"
+
+
 # Specify Path to private key relative to packaged collector.bin in collector.spec
 ID_RSA_FILE_PATH: "./userfiles/id_rsa_server" 
 
 # Specify the PATH in XR-LXC where you'd like to store the private key 
 # so that it can be replaced during execution without having to recompile
 
-#ID_RSA_XR_LXC_FILE_PATH: "/root/id_rsa"
+ID_RSA_XR_LXC_FILE_PATH: "/misc/scratch/id_rsa"
 
 # SERVER_HOST is either the Domain name or IP address of server
 
-# Specify SERVER_HOST type, valid values are:  
+# Specify SERVER_HOST CONNECTION_TYPE, valid values are:  
 # Valid values are:  [ "IP", "DOMAIN_NAME" ]
 
 # Specify Domain Name Server if SERVER_HOST is a domain name
 
 
 SERVER_HOST: 
-      CONNECTION: "11.1.1.20"
+      CONNECTION: "10.0.2.2"
       CONNECTION_TYPE: "IP"
       DOMAIN_NAME_SERVER : ""
+
+SERVER_SSH_PORT: 2200
 
 # Specify router parameters as an ordered list,to be used for the name 
 # compliance XML file. 

@@ -179,7 +179,6 @@ class AuditHelpers(ZtpHelpers):
                                 'Sep':'09', 'Oct':'10', 'Nov':'11', 'Dec':'12'}
 
 
-
        
     def setup_debug_logger_child(self):
         """Setup the debug logger to throw debugs to stdout/stderr 
@@ -304,8 +303,8 @@ class AuditHelpers(ZtpHelpers):
 
     def get_ip(self):
         try:
-            if "outgoing_interface" in self.compliance_cfg_dict:
-                interface = self.compliance_cfg_dict["outgoing_interface"]
+            if "OUTGOING_INTERFACE" in self.compliance_cfg_dict:
+                interface = self.compliance_cfg_dict["OUTGOING_INTERFACE"]
                 return self.get_interface_ip(interface)
             else:
                 return self.get_mgmt_ip()
