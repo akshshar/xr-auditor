@@ -72,7 +72,7 @@ class AuditHelpers(ZtpHelpers):
                  syslog_file=None,
                  domain=None,
                  compliance_xsd=None,
-                 compliance_cfg=None):
+                 auditor_cfg=None):
 
         self.exit = False
         self.version = {}
@@ -143,7 +143,6 @@ class AuditHelpers(ZtpHelpers):
                 self.exit =  True
 
             self.exit = False
-            return None 
         else:
             self.setup_syslog_child()
             self.setup_debug_logger_child()
@@ -156,24 +155,51 @@ class AuditHelpers(ZtpHelpers):
         else:
             self.compliance_xsd = compliance_xsd
 
-        if compliance_cfg is None:
+        if auditor_cfg is None:
             self.syslogger.info("No path to Compliance config yaml file provided, aborting")
             self.exit = True 
         else:
-            self.compliance_cfg = compliance_cfg
+            self.auditor_cfg = auditor_cfg
 
 
         self.compliance_xsd_dict = {}
+        self.auditor_cfg_dict = {}
+        self.router_cfg_dict = {}
         self.compliance_cfg_dict = {}
-
+        self.server_cfg_dict = {}
+        self.install_cfg_dict = {} 
+       
         self.compliance_xsd_dict = self.xsd_to_dict()
         if not self.compliance_xsd_dict:
             self.exit = True
 
-        self.compliance_cfg_dict = self.yaml_to_dict(self.compliance_cfg)
-        if not self.compliance_cfg_dict:
+        self.auditor_cfg_dict = self.yaml_to_dict(self.auditor_cfg)
+        if not self.auditor_cfg_dict:
             self.exit = True        
 
+        try:
+            self.compliance_cfg_dict = self.auditor_cfg_dict["COMPLIANCE_CONFIG"]
+        except Exception as e:
+            self.syslogger.info("Failed to extact compliance config from auditor.cfg.yml, Error: %s" % e)
+            self.exit = True
+
+        try:
+            self.router_cfg_dict = self.auditor_cfg_dict["ROUTER_CONFIG"]
+        except Exception as e:
+            self.syslogger.info("Failed to extact router config from auditor.cfg.yml, Error: %s" % e)
+            self.exit = True
+
+        try:
+            self.server_cfg_dict = self.auditor_cfg_dict["SERVER_CONFIG"]
+        except Exception as e:
+            self.syslogger.info("Failed to extact remote server config from auditor.cfg.yml, Error: %s" % e)
+            self.exit = True
+
+        try:
+            self.install_cfg_dict = self.auditor_cfg_dict["INSTALL_CONFIG"]
+        except Exception as e:
+            self.syslogger.info("Failed to extact install config from auditor.cfg.yml, Error: %s" % e)
+            self.exit = True
         self.calendar_months = {'Jan':'01', 'Feb':'02', 'Mar':'03', 'Apr':'04',
                                 'May':'05', 'Jun':'06', 'Jul':'07', 'Aug':'08',
                                 'Sep':'09', 'Oct':'10', 'Nov':'11', 'Dec':'12'}
@@ -303,9 +329,12 @@ class AuditHelpers(ZtpHelpers):
 
     def get_ip(self):
         try:
-            if "OUTGOING_INTERFACE" in self.compliance_cfg_dict:
-                interface = self.compliance_cfg_dict["OUTGOING_INTERFACE"]
-                return self.get_interface_ip(interface)
+            if "OUTGOING_INTERFACE" in self.router_cfg_dict:
+                if self.router_cfg_dict["OUTGOING_INTERFACE"]:
+                    interface = self.router_cfg_dict["OUTGOING_INTERFACE"]
+                    return self.get_interface_ip(interface)
+                else:
+                    return self.get_mgmt_ip()
             else:
                 return self.get_mgmt_ip()
         except Exception as e:
@@ -415,9 +444,6 @@ class AuditHelpers(ZtpHelpers):
         if cmd is None:
             return {"status" : "error", "output" : "No command specified"}
 
-        #if root_lr_user is None:
-        #    return {"status" : "error", "output" : "root-lr user not specified"}
-
         status = "success"
 
 
@@ -462,9 +488,6 @@ class AuditHelpers(ZtpHelpers):
            :rtype: string
         """
 
-        #if root_lr_user is None:
-        #    return {"status" : "error", "output" : "root-lr user not specified"}
-
 
         if src is None:
             return {"status" : "error", "output" : "src file path in XR not specified"}
@@ -485,10 +508,6 @@ class AuditHelpers(ZtpHelpers):
 
 
     def active_adminscp(self, src=None, dest=None):
-
-        #if root_lr_user is None:
-        #    return {"status" : "error", "output" : "root-lr user not specified"}
-
 
         if src is None:
             return {"status" : "error", "output" : "src file path in XR not specified"}
@@ -535,10 +554,6 @@ class AuditHelpers(ZtpHelpers):
 
     def active_adminruncmd(self, cmd=None):
 
-        #if root_lr_user is None:
-        #    return {"status" : "error", "output" : "root-lr user not specified"}
-
-
         if cmd is None:
             return {"status" : "error", "output" : "linux cmd not specified"}
 
@@ -580,9 +595,6 @@ class AuditHelpers(ZtpHelpers):
         if cmd is None:
             return {"status" : "error", "output" : "No command specified"}
 
-        #if root_lr_user is None:
-        #    return {"status" : "error", "output" : "root-lr user not specified"}
-
 
         if self.debug:
             self.logger.debug("Received host command request: \"%s\"" % cmd)
@@ -605,10 +617,6 @@ class AuditHelpers(ZtpHelpers):
                     { 'status': 'error/success', 'output': '' }
            :rtype: string
         """
-
-        #if root_lr_user is None:
-        #    return {"status" : "error", "output" : "root-lr user not specified"}
-
 
         if src is None:
             return {"status" : "error", "output" : "src file path in XR not specified"}
@@ -681,18 +689,12 @@ class AuditHelpers(ZtpHelpers):
 
         # First fetch the XR LXC xrnns ips for active and standby
  
-        #result = self.get_xr_ip()
 
-        #if result["status"] == "success":
-
-        #split_active_ip = result["output"]["active_xr_ip"].split('.')
         split_active_ip = self.active_xr_ip.split('.')
         split_active_ip[3] = '1'
         active_admin_ip = '.'.join(split_active_ip)
  
-        # if result["output"]["standby_xr_ip"] is not "":
         if self.standby_xr_ip is not "":
-            #split_standby_ip = result["output"]["standby_xr_ip"].split('.') 
             split_standby_ip = self.standby_xr_ip.split('.')
             split_standby_ip[3] = '1'
             standby_admin_ip = '.'.join(split_standby_ip)
@@ -706,10 +708,6 @@ class AuditHelpers(ZtpHelpers):
 
 
     def standby_adminruncmd(self, cmd=None):
-
-        #if root_lr_user is None:
-        #    return {"status" : "error", "output" : "root-lr user not specified"}
-
 
         if cmd is None:
             return {"status" : "error", "output" : "linux cmd not specified"}
@@ -744,9 +742,6 @@ class AuditHelpers(ZtpHelpers):
 
 
     def standby_adminscp(self, src=None, dest=None):
-        #if root_lr_user is None:
-        #    return {"status" : "error", "output" : "root-lr user not specified"}
-
 
         if src is None:
             return {"status" : "error", "output" : "src file path in XR not specified"}
@@ -814,8 +809,6 @@ class AuditHelpers(ZtpHelpers):
 
 
         # First fetch the XR LXC xrnns ips for active and standby
-
-        #result = self.get_xr_ip()
 
         if self.ha_setup:
             if self.standby_xr_ip is not "":
@@ -890,10 +883,6 @@ class AuditHelpers(ZtpHelpers):
         if cmd is None:
             return {"status" : "error", "output" : "No command specified"}
 
-        #if root_lr_user is None:
-        #    return {"status" : "error", "output" : "root-lr user not specified"}
-
-
         if self.debug:
             self.logger.debug("Received host command request: \"%s\"" % cmd)
 
@@ -915,10 +904,6 @@ class AuditHelpers(ZtpHelpers):
                     { 'status': 'error/success', 'output': '' }
            :rtype: string
         """
-
-        #if root_lr_user is None:
-        #    return {"status" : "error", "output" : "root-lr user not specified"}
-
 
         if src is None:
             return {"status" : "error", "output" : "src file path in XR not specified"}
@@ -968,10 +953,6 @@ class AuditHelpers(ZtpHelpers):
         if cmd is None:
             return {"status" : "error", "output" : "No command specified"}
 
-        #if root_lr_user is None:
-        #    return {"status" : "error", "output" : "root-lr user not specified"}
-
-
         if self.debug:
             self.logger.debug("Received host command request: \"%s\"" % cmd)
 
@@ -993,10 +974,6 @@ class AuditHelpers(ZtpHelpers):
                     { 'status': 'error/success', 'output': '' }
            :rtype: string
         """
-
-        #if root_lr_user is None:
-        #    return {"status" : "error", "output" : "root-lr user not specified"}
-
 
         if src is None:
             return {"status" : "error", "output" : "src file path in XR not specified"}

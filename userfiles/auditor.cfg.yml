@@ -1,42 +1,160 @@
 ---
-root_lr_user: vagrant
+#############################################################################
+#                      ROUTER SPECIFIC SETTINGS                             #
+#############################################################################
 
-XR:
-    srcDir: "./xr"
-    appName: "audit_xr.bin"
-    appDir: "/misc/scratch"
-    cronName: "audit_xr.cron"
-    cronPrefix: "audit_cron_xr_" 
-    output_xml_dir: "/misc/app_host"
+ROUTER_CONFIG:
+
+    OUTGOING_INTERFACE: ""
+    ROOT_LR_USER: "vagrant"
 
 
-ADMIN:
-    srcDir: "./admin"
-    appName: "audit_admin.bin"
-    appDir: "/misc/scratch"
-    cronName: "audit_admin.cron"
-    cronPrefix: "audit_cron_admin_"
-    output_xml_dir: "/misc/scratch"
-    output_xml_dir_xr: "/misc/app_host"
+#############################################################################
+#                        REMOTE SERVER SETTINGS                             #
+#############################################################################
 
-HOST:
-    srcDir: "./host/"
-    appName: "audit_host.bin"
-    appDir: "/misc/scratch"
-    cronName: "audit_host.cron"
-    cronPrefix: "audit_cron_host_"
-    output_xml_dir: "/misc/app_host"
+SERVER_CONFIG:
+    USER: "cisco"
 
-COLLECTOR:
-    srcDir: "./collector/"
-    appName: "collector.bin"
-    appDir: "/misc/scratch"
-    cronName: "collector.cron"
-    cronPrefix: "audit_cron_collector_"
-    vrf: "global-vrf"
-    output_xml_dir: "/misc/app_host"
+    # Specify the remote directory on the server
+    # where the compliance XML file should be copied
 
-STANDBY_INSTALLER:
-    srcDir: "/misc/scratch"
-    appName: "auditor"
-    appDir: "/misc/scratch"
+    REMOTE_DIRECTORY: "/home/cisco"
+
+
+    # Specify Path to private key relative to packaged collector.bin
+    # Must match path specified in collector.spec
+
+    ID_RSA_FILE_PATH: "./userfiles/id_rsa_server" 
+
+    # Specify the PATH in XR-LXC where you'd like to store the private key 
+    # so that it can be replaced during execution without having to recompile
+
+    ID_RSA_XR_LXC_FILE_PATH: "/misc/scratch/id_rsa"
+
+    # SERVER_HOST is either the Domain name or IP address of server
+
+    # Specify SERVER_HOST CONNECTION_TYPE, valid values are:  
+    # Valid values are:  [ "IP", "DOMAIN_NAME" ]
+
+    # Specify Domain Name Server if SERVER_HOST is a domain name
+
+
+    SERVER_HOST: 
+          CONNECTION: "11.11.11.2"
+          CONNECTION_TYPE: "IP"
+          DOMAIN_NAME_SERVER : ""
+
+    SERVER_SSH_PORT: 22
+
+    # Specify router parameters as an ordered list,to be used for the name 
+    # compliance XML file. 
+    # Valid supported parameters today are:
+    #      1)  router_hostname
+    #      2)  router_ip
+    #
+    # So, if both the above parameters are specified, then final compliance 
+    # file will look something like:
+    #
+    #        compliance_audit_{{router_hostname}}_{{router_ip}}.xml
+    #
+    #
+    #    For e.g. compliance_audit_rtr1_11_11_11_33.xml
+    #             where  rtr1        =  router_hostname
+    #                    11_11_11_33 =  router_ip (with . replaced with _) 
+    # 
+    #
+
+    COMPLIANCE_XMLNAME_PARAMS_ORDERED:
+             - "router_hostname"
+             - "router_ip"
+
+
+
+#############################################################################
+#                      AUDITOR INSTALLATION SETTINGS                        #
+#############################################################################
+
+
+INSTALL_CONFIG:
+    XR:
+        srcDir: "./xr"
+        appName: "audit_xr.bin"
+        appDir: "/misc/scratch"
+        cronName: "audit_xr.cron"
+        cronPrefix: "audit_cron_xr_" 
+        output_xml_dir: "/misc/app_host"
+
+
+    ADMIN:
+        srcDir: "./admin"
+        appName: "audit_admin.bin"
+        appDir: "/misc/scratch"
+        cronName: "audit_admin.cron"
+        cronPrefix: "audit_cron_admin_"
+        output_xml_dir: "/misc/scratch"
+        output_xml_dir_xr: "/misc/app_host"
+
+    HOST:
+        srcDir: "./host/"
+        appName: "audit_host.bin"
+        appDir: "/misc/scratch"
+        cronName: "audit_host.cron"
+        cronPrefix: "audit_cron_host_"
+        output_xml_dir: "/misc/app_host"
+
+    COLLECTOR:
+        srcDir: "./collector/"
+        appName: "collector.bin"
+        appDir: "/misc/scratch"
+        cronName: "collector.cron"
+        cronPrefix: "audit_cron_collector_"
+        vrf: "global-vrf"
+        output_xml_dir: "/misc/app_host"
+
+    STANDBY_INSTALLER:
+        srcDir: "/misc/scratch"
+        appName: "auditor"
+        appDir: "/misc/scratch"
+
+
+
+#############################################################################
+#                      COMPLIANCE DATA SETTINGS                             #
+#############################################################################
+
+
+COMPLIANCE_CONFIG:
+    DIR:
+        - NAME: /usr/bin
+          CMD:
+              - "ls -ld"
+        - NAME: /root
+          CMD:
+              - "ls -lrt"
+              - "touch test.txt"
+        - NAME: /misc/scratch
+        - NAME: /misc/app_host
+        - NAME: /etc
+        - NAME: /
+    FILE:
+        - NAME: /etc/ssh/sshd_config
+          CHK: on
+          CON: on
+          CMD:
+              - "ls -la"
+
+        - NAME: /etc/passwd
+          CHK: on
+          CON: on
+
+        - NAME: /usr/bin/python
+          CHK: on
+          CMD:
+              - "ls -la"
+
+        - NAME: /etc/default/dhcp-server
+          CHK: on
+          CON: on
+          CMD:
+              - "ls -lhrt"

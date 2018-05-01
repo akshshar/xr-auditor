@@ -30,13 +30,13 @@ class IosxrAuditMain(AuditHelpers):
 
         super(IosxrAuditMain, self).__init__(*args, **kwargs) 
 
-        if server_cfg is None:
-            self.syslogger.info("No path to server config yaml file provided, aborting")
-            self.exit = True
-        else:
-            self.server_cfg_dict = self.yaml_to_dict(server_cfg)
-            if not self.server_cfg_dict:
-                self.exit = True
+        #if server_cfg is None:
+        #    self.syslogger.info("No path to server config yaml file provided, aborting")
+        #    self.exit = True
+        #else:
+        #    self.server_cfg_dict = self.yaml_to_dict(server_cfg)["SERVER_CONFIG"]
+        #    if not self.server_cfg_dict:
+        #        self.exit = True
 
         self.compliance_xmlname_parameters = { "router_hostname" : self.get_hostname_string,
                                                "router_ip" : self.get_ip_dashed}
@@ -260,10 +260,10 @@ if __name__ == "__main__":
     # Create an Object of the child class, syslog parameters are optional. 
     # If nothing is specified, then logging will happen to local log rotated file.
 
-    audit_obj = IosxrAuditMain(server_cfg=IosxrAuditMain.current_dir()+"/userfiles/server.cfg.yml",
+    audit_obj = IosxrAuditMain(server_cfg=IosxrAuditMain.current_dir()+"/userfiles/auditor.cfg.yml",
                                domain = "COLLECTOR",
                                compliance_xsd=IosxrAuditMain.current_dir()+"/userfiles/compliance.xsd",
-                               compliance_cfg=IosxrAuditMain.current_dir()+"/userfiles/compliance.cfg.yml")
+                               auditor_cfg=IosxrAuditMain.current_dir()+"/userfiles/auditor.cfg.yml")
 
     if audit_obj.exit:
         audit_obj.syslogger.info("Exit flag is set, aborting")
@@ -281,8 +281,7 @@ if __name__ == "__main__":
 
 
     try:
-        auditor_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/auditor.cfg.yml")
-        output_xml_dir = auditor_cfg["COLLECTOR"]["output_xml_dir"]
+        output_xml_dir = audit_obj.install_cfg_dict["COLLECTOR"]["output_xml_dir"]
     except Exception as e:
         audit_obj.syslogger.info("Failed to extract output_xml_dir for the COLLECTOR domain,"
                                  "defaulting to /misc/app_host")
@@ -290,8 +289,7 @@ if __name__ == "__main__":
 
 
     try:
-        auditor_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/auditor.cfg.yml")
-        input_xml_dir_xr = auditor_cfg["XR"]["output_xml_dir"]
+        input_xml_dir_xr = audit_obj.install_cfg_dict["XR"]["output_xml_dir"]
     except Exception as e:
         audit_obj.syslogger.info("Failed to extract output_xml_dir for the XR domain,"
                                  "defaulting to /misc/app_host")
@@ -299,16 +297,14 @@ if __name__ == "__main__":
 
 
     try:
-        auditor_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/auditor.cfg.yml")
-        input_xml_dir_admin = auditor_cfg["ADMIN"]["output_xml_dir_xr"]
+        input_xml_dir_admin = audit_obj.install_cfg_dict["ADMIN"]["output_xml_dir_xr"]
     except Exception as e:
         audit_obj.syslogger.info("Failed to extract output_xml_dir for the ADMIN domain,"
                                  "defaulting to /misc/app_host")
         input_xml_dir_admin = "/misc/app_host"
 
     try:
-        auditor_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/auditor.cfg.yml")
-        input_xml_dir_host = auditor_cfg["HOST"]["output_xml_dir"]
+        input_xml_dir_host = audit_obj.install_cfg_dict["HOST"]["output_xml_dir"]
     except Exception as e:
         audit_obj.syslogger.info("Failed to extract output_xml_dir for the HOST domain,"
                                  "defaulting to /misc/app_host")

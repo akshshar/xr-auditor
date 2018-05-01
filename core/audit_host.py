@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
     audit_obj = IosxrAuditMain(domain="HOST",
                                compliance_xsd=IosxrAuditMain.current_dir()+"/userfiles/compliance.xsd",
-                               compliance_cfg=IosxrAuditMain.current_dir()+"/userfiles/compliance.cfg.yml")
+                               auditor_cfg=IosxrAuditMain.current_dir()+"/userfiles/auditor.cfg.yml")
 
     if audit_obj.exit:
         audit_obj.syslogger.info("Exit flag is set, aborting")
@@ -57,8 +57,7 @@ if __name__ == "__main__":
 
 
     try:
-        auditor_cfg = audit_obj.yaml_to_dict(IosxrAuditMain.current_dir()+"/userfiles/auditor.cfg.yml")
-        output_xml_dir = auditor_cfg["HOST"]["output_xml_dir"]
+        output_xml_dir = audit_obj.install_cfg_dict["HOST"]["output_xml_dir"]
     except Exception as e:
         audit_obj.syslogger.info("Failed to extract output_xml_dir for the HOST domain,"
                                  "defaulting to /misc/app_host")

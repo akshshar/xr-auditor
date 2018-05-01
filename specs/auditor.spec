@@ -12,7 +12,6 @@ added_files = [
          ( '../cron/audit_host.cron', './host/' ),
          ( '../cron/collector.cron', './collector/' ),
          ( '../userfiles/id_rsa_server', './userfiles' ),
-         ( '../userfiles/compliance.cfg.yml', './userfiles' ),
          ( '../userfiles/auditor.cfg.yml', './userfiles' ),
          ( '../userfiles/compliance.xsd', './userfiles' )
          ]
