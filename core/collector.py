@@ -224,7 +224,6 @@ if __name__ == "__main__":
     # If nothing is specified, then logging will happen to local log rotated file.
 
     audit_obj = IosxrAuditMain(server_cfg=IosxrAuditMain.current_dir()+"/userfiles/server.cfg.yml",
-                               syslog_server="11.11.11.2", syslog_port=514,
                                domain = "COLLECTOR",
                                compliance_xsd=IosxrAuditMain.current_dir()+"/userfiles/compliance.xsd",
                                compliance_cfg=IosxrAuditMain.current_dir()+"/userfiles/compliance.cfg.yml")

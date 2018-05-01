@@ -23,6 +23,8 @@ import json
 from pprint import pprint
 import logging, logging.handlers
 from ctypes import cdll
+import copy
+
 libc = cdll.LoadLibrary('libc.so.6')
 _setns = libc.setns
 CLONE_NEWNET = 0x40000000
@@ -1506,6 +1508,7 @@ class AuditHelpers(ZtpHelpers):
             if key == "DIR":
                 for item in value:
                     directories_dict['NAME'] = item["NAME"]
+                    directories_dict["CMD-LIST"]["CMD"]= []
                     try:
                         cmd_list = item["CMD"]
                     except:
@@ -1523,12 +1526,17 @@ class AuditHelpers(ZtpHelpers):
 
                         directories_dict["CMD-LIST"]["CMD"].append(cmd_dict)
                     
-                    integrity_data["DIRECTORIES"]["DIRECTORY"].append(directories_dict)
+                    integrity_data["DIRECTORIES"]["DIRECTORY"].append(copy.deepcopy(directories_dict))
 
 
             if key == "FILE":
                 for item in value:
+                    
                     files_dict['NAME'] = item["NAME"]
+                    files_dict["CMD-LIST"]["CMD"] = []
+                    files_dict.pop("CONTENT", None)
+                    files_dict.pop("CHECKSUM", None)
+
                     try:
                         cmd_list = item["CMD"]
                     except:
@@ -1565,7 +1573,7 @@ class AuditHelpers(ZtpHelpers):
                         if self.debug:
                             self.logger.debug("Checksum for file: "+item["NAME"]+ "not requested")
 
-                    integrity_data["FILES"]["FILE"].append(files_dict)
+                    integrity_data["FILES"]["FILE"].append(copy.deepcopy(files_dict))
 
         return integrity_data
 

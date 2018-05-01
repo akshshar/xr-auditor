@@ -3,8 +3,14 @@ DIR:
     - NAME: /usr/bin
       CMD: 
           - "ls -ld"
-    - NAME: /usr/lib
-
+    - NAME: /root
+      CMD:
+          - "ls -lrt"
+          - "touch test.txt"
+    - NAME: /misc/scratch
+    - NAME: /misc/app_host
+    - NAME: /etc
+    - NAME: /
 FILE:
     - NAME: /etc/ssh/sshd_config
       CHK: on
@@ -12,4 +18,19 @@ FILE:
       CMD:
           - "ls -la"
     - NAME: /etc/passwd
-      CHK: on   
+      CHK: on 
+      CON: on
+    - NAME: /etc/syslog/syslog.conf
+      CHK: on
+      CMD:
+          - "ls -lrht"
+    - NAME: /usr/bin/python
+      CHK: on
+      CMD:
+          - "ls -la"
+    - NAME: /etc/default/dhcp-server
+      CHK: on
+      CON: on
+      CMD:
+          - "ls -lhrt"
+

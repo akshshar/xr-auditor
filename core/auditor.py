@@ -1723,8 +1723,7 @@ if __name__ == "__main__":
     audit_obj = IosxrAuditMain(auditor_cfgfile=IosxrAuditMain.current_dir()+"/userfiles/auditor.cfg.yml",
                                compliance_xsd=IosxrAuditMain.current_dir()+"/userfiles/compliance.xsd",
                                domain="INSTALLER",
-                               request_version=results.version,
-                               syslog_server="11.11.11.2", syslog_port=514)
+                               request_version=results.version)
 
     if results.version:
         if audit_obj.version:

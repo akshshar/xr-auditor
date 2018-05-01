@@ -68,8 +68,8 @@ if __name__ == "__main__":
     xml_file = audit_obj.create_xml_dump(output_xml_dir)
  
     if audit_obj.validate_xml_dump(xml_file):
-        audit_obj.syslogger.info('Valid XML! :)')
-        audit_obj.syslogger.info('Successfully created output XML: '+str(xml_file))
+        audit_obj.logger.info('Valid XML! :)')
+        audit_obj.logger.info('Successfully created output XML: '+str(xml_file))
         sys.exit(0)
     else:
         audit_obj.syslogger.info('Output XML Not valid! :(')
