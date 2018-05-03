@@ -11,6 +11,8 @@ import xmltodict as xd
 import time
 import itertools
 import argparse
+import tarfile
+
 from lib.audit_helper import XML_PREFIX_DOMAINS
 from lib.audit_helper import COMPLIANCE_PREFIX
 
@@ -159,10 +161,11 @@ class IosxrAuditMain(AuditHelpers):
                self.syslogger.info("Error is"+str(e))
                outputXMLDir = "/misc/app_host"
 
+
         if cleanxml:
             # Remove any accumulated xml files
             for xml_prefix in XML_PREFIX_DOMAINS+[COMPLIANCE_PREFIX]:
-                result = self.run_bash("rm -f "+outputXMLDir+"/"+xml_prefix+"*")
+                result = self.run_bash("rm -f "+outputXMLDir+"/"+xml_prefix+"*.xml")
                 if not result["status"]:
                     check_removal = self.run_bash(cmd="ls "+outputXMLDir+"/")
                     if not check_removal["status"]: 
@@ -175,7 +178,6 @@ class IosxrAuditMain(AuditHelpers):
                             self.syslogger.info("Removed existing XML file with prefix: "+xml_prefix+" in "+outputXMLDir)
                             if self.debug:
                                 self.logger.debug("Removed existing XML file with prefix: "+xml_prefix+" in "+outputXMLDir) 
-                            return True 
                     else:
                         self.syslogger.info("Failed to check removal of XML file with prefix: "+xml_prefix+" in  "+outputXMLDir)
                         if self.debug:
@@ -186,6 +188,7 @@ class IosxrAuditMain(AuditHelpers):
                     if self.debug:
                         self.logger.debug("Failed to remove XML file with prefix: "+xml_prefix+"in "+outputXMLDir)      
                     return False
+            return True
 
 
 
@@ -221,8 +224,8 @@ class IosxrAuditMain(AuditHelpers):
                             self.syslogger.info("Retrying") 
                             time.sleep(OPEN_FILE_WAIT_INTERVAL)
                         else:
-                            self.syslogger.info("Removed xr audit app from XR LXC: "+appName)
-                            self.logger.info("Removed xr audit app from XR LXC: "+appName)
+                            self.syslogger.info("Successfully removed xr audit app from XR LXC: "+appName)
+                            self.logger.info("Successfully removed xr audit app from XR LXC: "+appName)
                             action_success = True
                             break
                     else: 
@@ -265,6 +268,8 @@ class IosxrAuditMain(AuditHelpers):
             
             # If uninstall is set, then just return from here and it accomplishes our cleanup goal
             if uninstall:
+                self.syslogger.info("Successfully cleaned up XR audit cron jobs")
+                self.logger.info("Successfully cleaned up XR audit cron jobs") 
                 return True
 
             cron_setup = self.cron_job(folder="/etc/cron.d", croncmd = cron_cmd, croncmd_fname = cron_fname, action="add") 
@@ -283,7 +288,7 @@ class IosxrAuditMain(AuditHelpers):
 
 
 
-    def setup_admin_audit(self, srcfolder=None, dstfolder=None, appName=None, cronName=None, cronPrefix=None, uninstall=False):
+    def setup_admin_audit(self, srcfolder=None, dstfolder=None, appName=None, cronName=None, cronPrefix=None, outputXMLDir=None, uninstall=False, cleanxml=False):
 
 
         if srcfolder is None:
@@ -325,6 +330,43 @@ class IosxrAuditMain(AuditHelpers):
                self.syslogger.info("Failed to extract cronPrefix for ADMIN audit cronjob, defaulting to audit_cron_admin_")
                self.syslogger.info("Error is"+str(e))
                cronPrefix = "audit_cron_admin_"
+
+        if outputXMLDir is None:
+            try:
+               outputXMLDir = self.install_cfg_dict["ADMIN"]["output_xml_dir"]
+            except Exception as e:
+               self.syslogger.info("Failed to extract output xml directory for Admin audit, defaulting to /misc/scratch")
+               self.syslogger.info("Error is"+str(e))
+               outputXMLDir = "/misc/scratch"
+
+
+        if cleanxml:
+            # Remove any accumulated xml files
+            for xml_prefix in XML_PREFIX_DOMAINS+[COMPLIANCE_PREFIX]:
+                result = self.active_adminruncmd(cmd="rm -f "+outputXMLDir+"/"+xml_prefix+"*.xml")
+                if result["status"] == "success":
+                    check_removal = self.active_adminruncmd(cmd="ls "+outputXMLDir+"/")
+                    if check_removal["status"] == "success":
+                        if xml_prefix in check_removal["output"]:
+                            self.syslogger.info("Failed to remove existing XML file with prefix: "+xml_prefix+" in "+outputXMLDir)
+                            if self.debug:
+                                self.logger.debug("Failed to remove existing XML file with prefix: "+xml_prefix+" in "+outputXMLDir)
+                            return False
+                        else:
+                            self.syslogger.info("Removed existing XML file with prefix: "+xml_prefix+" in "+outputXMLDir)
+                            if self.debug:
+                                self.logger.debug("Removed existing XML file with prefix: "+xml_prefix+" in "+outputXMLDir)
+                    else:
+                        self.syslogger.info("Failed to check removal of XML file with prefix: "+xml_prefix+" in  "+outputXMLDir)
+                        if self.debug:
+                            self.logger.debug("Failed to check removal of XML files in "+outputXMLDir)
+                        return False
+                else:
+                    self.syslogger.info("Failed to remove XML file with prefix: "+xml_prefix+"in "+outputXMLDir)
+                    if self.debug:
+                        self.logger.debug("Failed to remove XML file with prefix: "+xml_prefix+"in "+outputXMLDir)
+                    return False
+            return True
 
 
         file_exists = self.active_adminruncmd(cmd="ls "+dstfolder)
@@ -433,6 +475,8 @@ class IosxrAuditMain(AuditHelpers):
                     
                     # If uninstall is set, then just return from here
                     if uninstall:
+                        self.syslogger.info("Successfully cleaned up admin audit cron jobs")
+                        self.logger.info("Successfully cleaned up admin audit cron jobs")   
                         return True
             else:
                 self.syslogger.info("Failed to initiate admin shell cron cleanup")
@@ -624,6 +668,8 @@ class IosxrAuditMain(AuditHelpers):
                     self.syslogger.info("Successfully cleaned up old host audit cron jobs")
                     # If uninstall is set, then just return from here
                     if uninstall:
+                        self.syslogger.info("Successfully cleaned up host audit cron jobs")
+                        self.logger.info("Successfully cleaned up host audit cron jobs")   
                         return True
             else:
                 self.syslogger.info("Failed to initiate host shell cron cleanup")
@@ -710,7 +756,7 @@ class IosxrAuditMain(AuditHelpers):
                         return False
                     else:
                         self.syslogger.info("Successfully removed auditor app from Standby XR LXC: "+appName)
-                        self.logger.info("Successfully removed auditor app from Standby XR LXC "+appName)
+                        self.logger.info("Successfully removed auditor app from Standby XR LXC: "+appName)
                         return True 
                 else:
                     self.syslogger.info("Failed to initiate check of removal of auditor app from Standby XR LXC: "+appName)
@@ -793,7 +839,7 @@ class IosxrAuditMain(AuditHelpers):
         if cleanxml:
             # Remove any accumulated xml files
             for xml_prefix in XML_PREFIX_DOMAINS+[COMPLIANCE_PREFIX]:
-                result = self.standby_xrruncmd("rm -f "+outputXMLDir+"/"+xml_prefix+"*")
+                result = self.standby_xrruncmd("rm -f "+outputXMLDir+"/"+xml_prefix+"*.xml")
                 if result["status"] == "success":
                     check_removal = self.standby_xrruncmd(cmd="ls "+outputXMLDir+"/")
                     if check_removal["status"] == "success":
@@ -806,7 +852,6 @@ class IosxrAuditMain(AuditHelpers):
                             self.syslogger.info("Removed existing XML file with prefix: "+xml_prefix+" in "+outputXMLDir)
                             if self.debug:
                                 self.logger.debug("Removed existing XML file with prefix: "+xml_prefix+" in "+outputXMLDir)
-                            return True
                     else:
                         self.syslogger.info("Failed to check removal of XML file with prefix: "+xml_prefix+" in  "+outputXMLDir)
                         if self.debug:
@@ -817,6 +862,7 @@ class IosxrAuditMain(AuditHelpers):
                     if self.debug:
                         self.logger.debug("Failed to remove XML file with prefix: "+xml_prefix+"in "+outputXMLDir)
                     return False
+            return True
 
 
         file_exists = self.standby_xrruncmd(cmd="ls "+dstfolder)
@@ -924,6 +970,8 @@ class IosxrAuditMain(AuditHelpers):
                    
                     # If uninstall is set, then just return from here
                     if uninstall:
+                        self.syslogger.info("Successfully cleaned up standby XR audit cron jobs")
+                        self.logger.info("Successfully cleaned up standby XR audit cron jobs")   
                         return True
             else:
                 self.syslogger.info("Failed to initiate standby XR LXC shell cron cleanup")
@@ -955,9 +1003,9 @@ class IosxrAuditMain(AuditHelpers):
             post_activation_cleanup = self.cron_job(folder="/misc/app_host", action="delete")
 
             if post_activation_cleanup["status"] == "success":
-                self.syslogger.info("Successfully cleaned up temp admin audit cron jobs post activation")
+                self.syslogger.info("Successfully cleaned up temp XR LXC audit cron jobs post activation")
             else:
-                self.syslogger.info("Failed to clean up temp admin audit cron jobs post activation,logging but not bailing out")
+                self.syslogger.info("Failed to clean up temp XR LXC audit cron jobs post activation,logging but not bailing out")
 
         else:
             self.syslogger.info("Failed to copy standby XR LXC audit cron file, Error: %s" % transfer_to_standby_xr["output"])
@@ -968,7 +1016,7 @@ class IosxrAuditMain(AuditHelpers):
 
 
 
-    def setup_standby_admin_audit(self, srcfolder=None, dstfolder=None, appName=None, cronName=None, cronPrefix=None, uninstall=False):
+    def setup_standby_admin_audit(self, srcfolder=None, dstfolder=None, appName=None, cronName=None, cronPrefix=None, outputXMLDir=None, uninstall=False, cleanxml=False):
 
         if not self.ha_setup:
             self.syslogger.info("Standby RP not present, bailing out")
@@ -1015,6 +1063,42 @@ class IosxrAuditMain(AuditHelpers):
                self.syslogger.info("Error is"+str(e))
                cronPrefix = "audit_cron_admin_"
 
+        if outputXMLDir is None:
+            try:
+               outputXMLDir = self.install_cfg_dict["ADMIN"]["output_xml_dir"]
+            except Exception as e:
+               self.syslogger.info("Failed to extract output xml directory for Admin audit, defaulting to /misc/scratch")
+               self.syslogger.info("Error is"+str(e))
+               outputXMLDir = "/misc/scratch"
+
+
+        if cleanxml:
+            # Remove any accumulated xml files
+            for xml_prefix in XML_PREFIX_DOMAINS+[COMPLIANCE_PREFIX]:
+                result = self.standby_adminruncmd(cmd="rm -f "+outputXMLDir+"/"+xml_prefix+"*.xml")
+                if result["status"] == "success":
+                    check_removal = self.standby_adminruncmd(cmd="ls "+outputXMLDir+"/")
+                    if check_removal["status"] == "success":
+                        if xml_prefix in check_removal["output"]:
+                            self.syslogger.info("Failed to remove existing XML file with prefix: "+xml_prefix+" in "+outputXMLDir)
+                            if self.debug:
+                                self.logger.debug("Failed to remove existing XML file with prefix: "+xml_prefix+" in "+outputXMLDir)
+                            return False
+                        else:
+                            self.syslogger.info("Removed existing XML file with prefix: "+xml_prefix+" in "+outputXMLDir)
+                            if self.debug:
+                                self.logger.debug("Removed existing XML file with prefix: "+xml_prefix+" in "+outputXMLDir)
+                    else:
+                        self.syslogger.info("Failed to check removal of XML file with prefix: "+xml_prefix+" in  "+outputXMLDir)
+                        if self.debug:
+                            self.logger.debug("Failed to check removal of XML files in "+outputXMLDir)
+                        return False
+                else:
+                    self.syslogger.info("Failed to remove XML file with prefix: "+xml_prefix+"in "+outputXMLDir)
+                    if self.debug:
+                        self.logger.debug("Failed to remove XML file with prefix: "+xml_prefix+"in "+outputXMLDir)
+                    return False
+            return True
 
 
         file_exists = self.standby_adminruncmd(cmd="ls "+dstfolder)
@@ -1065,14 +1149,14 @@ class IosxrAuditMain(AuditHelpers):
                     else:
                         transfer_to_standby_admin = self.standby_adminscp(src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
                         if transfer_to_standby_admin["status"] == "success":
-                            self.logger.info("Standby RP Admin LXC audit app successfully copied")
-                            self.syslogger.info("Standby RP Admin LXC audit app successfully copied")
+                            self.logger.info("Standby Admin LXC audit app successfully copied")
+                            self.syslogger.info("Standby Admin LXC audit app successfully copied")
                             action_success = True
                             if self.debug:
                                 self.logger.debug(transfer_to_standby_admin["output"])
                             break
                         else:
-                            self.syslogger.info("Failed to copy Standby RP Admin LXC audit app, Error:")
+                            self.syslogger.info("Failed to copy Standby Admin LXC audit app, Error:")
                             self.syslogger.info(transfer_to_standby_admin["output"])
                             time.sleep(OPEN_FILE_WAIT_INTERVAL)
                 wait_count = wait_count + 1
@@ -1088,7 +1172,7 @@ class IosxrAuditMain(AuditHelpers):
                     if self.debug:
                         self.logger.debug(transfer_to_standby_admin["output"])
                 else:
-                    self.syslogger.info("Failed to copy Standby RP Admin LXC audit app, Error:")
+                    self.syslogger.info("Failed to copy Standby Admin LXC audit app, Error:")
                     self.syslogger.info(transfer_to_standby_admin["output"])
 
 
@@ -1121,6 +1205,8 @@ class IosxrAuditMain(AuditHelpers):
                     self.syslogger.info("Successfully cleaned up old admin audit cron jobs")
                     # If uninstall is set, then just return from here
                     if uninstall:
+                        self.syslogger.info("Successfully cleaned up standby admin audit cron jobs")
+                        self.logger.info("Successfully cleaned up standby admin audit cron jobs")   
                         return True
             else:
                 self.syslogger.info("Failed to initiate Standby admin LXC shell cron cleanup")
@@ -1261,14 +1347,14 @@ class IosxrAuditMain(AuditHelpers):
                     else:
                         transfer_to_standby_host = self.standby_hostscp(src=srcfolder+"/"+appName, dest=dstfolder+"/"+appName)
                         if transfer_to_standby_host["status"] == "success":
-                            self.logger.info("Standby RP HOST audit app successfully copied")
-                            self.syslogger.info("Standby RP HOST audit app successfully copied")
+                            self.logger.info("Standby HOST audit app successfully copied")
+                            self.syslogger.info("Standby HOST audit app successfully copied")
                             action_success = True
                             if self.debug:
                                 self.logger.debug(transfer_to_standby_host["output"])
                             break
                         else:
-                            self.syslogger.info("Failed to copy Standby RP HOST audit app, Error:")
+                            self.syslogger.info("Failed to copy Standby HOST audit app, Error:")
                             self.syslogger.info(transfer_to_standby_host["output"])
                             time.sleep(OPEN_FILE_WAIT_INTERVAL)
                 wait_count = wait_count + 1
@@ -1317,6 +1403,8 @@ class IosxrAuditMain(AuditHelpers):
                     self.syslogger.info("Successfully cleaned up old Standby host audit cron jobs")
                     # If uninstall is set, then just return from here
                     if uninstall:
+                        self.syslogger.info("Successfully cleaned up standby host audit cron jobs")
+                        self.logger.info("Successfully cleaned up standby host audit cron jobs")   
                         return True
             else:
                 self.syslogger.info("Failed to initiate Standby host shell cron cleanup")
@@ -1436,14 +1524,14 @@ class IosxrAuditMain(AuditHelpers):
                             self.syslogger.info("Retrying")
                             time.sleep(OPEN_FILE_WAIT_INTERVAL)
                         else:
-                            self.syslogger.info("Removed Collector audit app from XR LXC: "+appName)
-                            self.logger.info("Removed Collector audit app from XR LXC: "+appName)
+                            self.syslogger.info("Successfully removed Collector audit app from XR LXC: "+appName)
+                            self.logger.info("Successfully removed Collector audit app from XR LXC: "+appName)
                             action_success = True
                             break
                     else:
                         if self._copy_file(srcfolder+"/"+appName, dstfolder+"/"+appName):
-                            self.logger.info("XR LXC Collector app successfully copied")
-                            self.syslogger.info("XR LXC Collector  app successfully copied")
+                            self.logger.info("Collector app successfully copied")
+                            self.syslogger.info("Collector  app successfully copied")
                             action_success = True
                             break
                         else:
@@ -1456,11 +1544,11 @@ class IosxrAuditMain(AuditHelpers):
         else:
             if not uninstall:
                 if self._copy_file(srcfolder+"/"+appName, dstfolder+"/"+appName):
-                    self.logger.info("XR LXC Collector app successfully copied")
-                    self.syslogger.info("XR LXC Collector app successfully copied")
+                    self.logger.info("Collector app successfully copied")
+                    self.syslogger.info("Collector app successfully copied")
                 else:
-                    self.logger.info("Failed to copy the XR LXC Collector app")
-                    self.syslogger.info("Failed to copy the XR LXC Collector app")
+                    self.logger.info("Failed to copy the Collector app")
+                    self.syslogger.info("Failed to copy the Collector app")
                     return False
 
 
@@ -1481,6 +1569,8 @@ class IosxrAuditMain(AuditHelpers):
 
             # If uninstall is set, then just return from here
             if uninstall:
+                self.syslogger.info("Successfully cleaned up collector  audit cron jobs")
+                self.logger.info("Successfully cleaned up collector audit cron jobs")   
                 return True
 
             cron_setup = self.cron_job(folder="/etc/cron.d", croncmd = cron_cmd, croncmd_fname = cron_fname, action="add")
@@ -1653,6 +1743,8 @@ class IosxrAuditMain(AuditHelpers):
                     self.syslogger.info("Successfully cleaned up old standby collector cron jobs")
                     # If uninstall is set, then just return from here
                     if uninstall:
+                        self.syslogger.info("Successfully cleaned up standby collector audit cron jobs")
+                        self.logger.info("Successfully cleaned up standby collector audit cron jobs")   
                         return True
             else:
                 self.syslogger.info("Failed to initiate standby XR LXC shell cron cleanup")
@@ -1696,6 +1788,254 @@ class IosxrAuditMain(AuditHelpers):
 
 
 
+    def list_current_files(self):
+
+        key_list = [ "XR", "COLLECTOR", "ADMIN", "HOST"]
+
+        for key in key_list:
+            try:
+               app_dir = self.install_cfg_dict[key]["appDir"]
+            except Exception as e:
+               self.syslogger.info("Failed to extract app directory for "+key+" audit app, defaulting to /misc/scratch")
+               self.syslogger.info("Error is"+str(e))
+               app_dir = "/misc/scratch"
+
+            try:
+               xml_dir = self.install_cfg_dict[key]["output_xml_dir"]
+            except Exception as e:
+               self.syslogger.info("Failed to extract output xml directory for "+key+" audit, defaulting to appropriate folder")
+               self.syslogger.info("Error is"+str(e))
+               if key == "ADMIN":
+                   xml_dir = "/misc/scratch"
+               elif key == "XR":
+                   xml_dir = "/misc/app_host"
+               elif key == "COLLECTOR":
+                   xml_dir = "/misc/app_host"
+               elif key == "HOST":
+                   xml_dir = "/misc/app_host"
+
+            #Now run the "ls -lrt" command on each relevant directory:
+
+            self.logger.info("\n\n####################################################\n"
+                             "                       ACTIVE-RP "+key+"                \n"
+                             "#####################################################\n\n")
+
+            if key == "XR" or key == "COLLECTOR":
+                self.logger.info("\n\n###### App Directory ######\n")
+
+                cmd_out = self.run_bash(cmd="ls -lrt "+app_dir)
+                if not cmd_out["status"]:
+                    self.logger.info("\n "+app_dir+":\n\n"
+                                     ""+cmd_out["output"]) 
+
+                self.logger.info("\n\n###### Cron directory ######\n")
+               
+                cmd_out = self.run_bash(cmd="ls -lrt /etc/cron.d")
+                if not cmd_out["status"]:
+                    self.logger.info("\n /etc/cron.d:\n\n"
+                                     ""+cmd_out["output"])
+
+                self.logger.info("\n\n###### XML Output Directory ######\n")
+
+                cmd_out = self.run_bash(cmd="ls -lrt "+xml_dir)
+                if not cmd_out["status"]:
+                    self.logger.info("\n "+xml_dir+":\n\n"
+                                     ""+cmd_out["output"])
+                    
+            
+            if key == "ADMIN":
+                self.logger.info("\n\n###### App Directory ######\n")
+
+                cmd_out = self.active_adminruncmd(cmd="ls -lrt "+app_dir)
+                if cmd_out["status"] == "success":
+                    self.logger.info("\n "+app_dir+":\n\n"
+                                     ""+'\n'.join(cmd_out["output"][3:-1])) 
+
+                self.logger.info("\n\n###### Cron directory ######\n")
+               
+                cmd_out = self.active_adminruncmd(cmd="ls -lrt /etc/cron.d")
+                if cmd_out["status"] == "success":
+                    self.logger.info("\n /etc/cron.d:\n\n"
+                                     ""+'\n'.join(cmd_out["output"][3:-1]))
+
+                self.logger.info("\n\n###### XML Output Directory ######\n")
+
+                cmd_out = self.active_adminruncmd(cmd="ls -lrt "+xml_dir)
+                if cmd_out["status"] == "success":
+                    self.logger.info("\n "+xml_dir+":\n\n"
+                                     ""+'\n'.join(cmd_out["output"][3:-1]))
+
+
+            if key == "HOST":
+                self.logger.info("\n\n###### App Directory ######\n")
+                cmd_out = self.active_hostcmd(cmd="ls -lrt "+app_dir)
+                if cmd_out["status"] == "success":
+                    self.logger.info("\n "+app_dir+":\n\n"
+                                     ""+'\n'.join(cmd_out["output"][3:-1])) 
+
+                self.logger.info("\n\n###### Cron directory ######\n")
+               
+                cmd_out = self.active_hostcmd(cmd="ls -lrt /etc/cron.d")
+                if cmd_out["status"] == "success":
+                    self.logger.info("\n /etc/cron.d:\n\n"
+                                     ""+'\n'.join(cmd_out["output"][3:-1]))
+
+                self.logger.info("\n\n###### XML Output Directory ######\n")
+
+                cmd_out = self.active_hostcmd(cmd="ls -lrt "+xml_dir)
+                if cmd_out["status"] == "success":
+                    self.logger.info("\n "+xml_dir+":\n\n"
+                                     ""+'\n'.join(cmd_out["output"][3:-1]))
+
+
+            self.logger.info("\n\n####################################################\n"
+                             "                       STANDBY-RP "+key+"               \n"
+                             "#####################################################\n\n")
+
+            if key == "XR" or key == "COLLECTOR":
+                self.logger.info("\n\n###### App Directory ######\n")
+
+                cmd_out = self.standby_xrruncmd(cmd="ls -lrt "+app_dir)
+                if cmd_out["status"] =="success":
+                    self.logger.info("\n "+app_dir+":\n\n"
+                                     ""+cmd_out["output"])
+
+                self.logger.info("\n\n###### Cron directory ######\n")
+
+                cmd_out = self.standby_xrruncmd(cmd="ls -lrt /etc/cron.d")
+                if cmd_out["status"] == "success":
+                    self.logger.info("\n /etc/cron.d:\n\n"
+                                     ""+cmd_out["output"])
+
+                self.logger.info("\n\n###### XML Output Directory ######\n")
+
+                cmd_out = self.standby_xrruncmd(cmd="ls -lrt "+xml_dir)
+                if cmd_out["status"] == "success":
+                    self.logger.info("\n "+xml_dir+":\n\n"
+                                     ""+cmd_out["output"])
+
+
+            if key == "ADMIN":
+                self.logger.info("\n\n###### App Directory ######\n")
+                cmd_out = self.standby_adminruncmd(cmd="ls -lrt "+app_dir)
+                if cmd_out["status"] == "success":
+                    self.logger.info("\n "+app_dir+":\n\n"
+                                     ""+'\n'.join(cmd_out["output"][3:-1]))
+
+                self.logger.info("\n\n###### Cron directory ######\n")
+
+                cmd_out = self.standby_adminruncmd(cmd="ls -lrt /etc/cron.d")
+                if cmd_out["status"] == "success":
+                    self.logger.info("\n /etc/cron.d:\n\n"
+                                     ""+'\n'.join(cmd_out["output"][3:-1]))
+
+                self.logger.info("\n\n###### XML Output Directory ######\n")
+
+                cmd_out = self.standby_adminruncmd(cmd="ls -lrt "+xml_dir)
+                if cmd_out["status"] == "success":
+                    self.logger.info("\n "+xml_dir+":\n\n"
+                                     ""+'\n'.join(cmd_out["output"][3:-1]))
+
+
+            if key == "HOST":
+                self.logger.info("\n\n###### App Directory ######\n")
+                cmd_out = self.standby_hostcmd(cmd="ls -lrt "+app_dir)
+                if cmd_out["status"] == "success":
+                    self.logger.info("\n "+app_dir+":\n\n"
+                                     ""+'\n'.join(cmd_out["output"][3:-1]))
+
+                self.logger.info("\n\n###### Cron directory ######\n")
+
+                cmd_out = self.standby_hostcmd(cmd="ls -lrt /etc/cron.d")
+                if cmd_out["status"] == "success":
+                    self.logger.info("\n /etc/cron.d:\n\n"
+                                     ""+'\n'.join(cmd_out["output"][3:-1]))
+
+                self.logger.info("\n\n###### XML Output Directory ######\n")
+
+                cmd_out = self.standby_hostcmd(cmd="ls -lrt "+xml_dir)
+                if cmd_out["status"] == "success":
+                    self.logger.info("\n "+xml_dir+":\n\n"
+                                     ""+'\n'.join(cmd_out["output"][3:-1]))
+   
+
+
+    def collect_logs(self, 
+                     temp_collection_dir="/misc/scratch/auditor_collected_logs",
+                     tarfile_output_dir = "/misc/scratch"):
+
+        # Create a directory to store collected logs
+
+        result =  self.run_bash(cmd="mkdir -p "+temp_collection_dir)
+        if result["status"]:
+            self.logger.info("Failed to create "+temp_collection_dir+" directory, bailing out")
+            return False
+             
+        # Active XR-LXC logs
+        if self._copy_file(src="/tmp/ztp_python.log", dest=temp_collection_dir+"/ACTIVE-XR-LXC.audit.log"):
+            self.logger.info("Successfully saved audit logs for Active XR LXC to "+temp_collection_dir+"/ACTIVE-XR-LXC.audit.log")
+        else:
+            self.logger.info("Failed to save audit logs for Active XR LXC to"+temp_collection_dir+"/ACTIVE-XR-LXC.audit.log" )
+            return False
+
+        # Active Admin LXC logs
+        result = self.active_admin_to_xr_scp(src="/tmp/ztp_python.log", dest=temp_collection_dir+"/ACTIVE-ADMIN-LXC.audit.log")
+        if result["status"] == "success":
+            self.logger.info("Successfully copied audit logs from Active Admin LXC to Active XR LXC at "+temp_collection_dir+"/ACTIVE-ADMIN-LXC.audit.log")
+        else:
+            self.logger.info("Failed to copy audit logs from Active Admin LXC to Active XR LXC at "+temp_collection_dir+"/ACTIVE-ADMIN-LXC.audit.log")
+            return False
+
+        # Active Host logs
+        result = self.active_host_to_xr_scp(src="/tmp/ztp_python.log", dest=temp_collection_dir+"/ACTIVE-HOST.audit.log")
+        if result["status"] == "success":
+            self.logger.info("Successfully copied audit logs from Active HOST to Active XR LXC at "+temp_collection_dir+"/ACTIVE-HOST.audit.log")
+        else:
+            self.logger.info("Failed to copy audit logs from Active HOST to Active XR LXC at "+temp_collection_dir+"/ACTIVE-HOST.audit.log")
+            return False
+
+        # Standby XR-LXC logs
+        result = self.standby_to_active_xr_scp(src="/tmp/ztp_python.log", dest=temp_collection_dir+"/STANDBY-XR-LXC.audit.log")
+        if result["status"] == "success":
+            self.logger.info("Successfully copied audit logs from Standby XR LXC to Active XR LXC at "+temp_collection_dir+"/STANDBY-XR-LXC.audit.log")
+        else:
+            self.logger.info("Failed to copy audit logs from Standby XR LXC to Active XR LXC at "+temp_collection_dir+"/STANDBY-XR.audit.log")
+            return False
+
+        # Standby Admin LXC logs
+        result = self.standby_admin_to_xr_scp(src="/tmp/ztp_python.log", dest=temp_collection_dir+"/STANDBY-ADMIN-LXC.audit.log")
+        if result["status"] == "success":
+            self.logger.info("Successfully copied audit logs from Standby ADMIN LXC to Active XR LXC at "+temp_collection_dir+"/STANDBY-ADMIN-LXC.audit.log")
+        else:
+            self.logger.info("Failed to copy audit logs from Standby ADMIN LXC to Active XR LXC at "+temp_collection_dir+"/STANDBY-ADMIN-LXC.audit.log")
+            return False
+
+
+        # Standby HOST logs
+        result = self.standby_host_to_xr_scp(src="/tmp/ztp_python.log", dest=temp_collection_dir+"/STANDBY-HOST.audit.log")
+        if result["status"] == "success":
+            self.logger.info("Successfully copied audit logs from Standby HOST to Active XR LXC at "+temp_collection_dir+"/STANDBY-HOST.audit.log")
+        else:
+            self.logger.info("Failed to copy audit logs from Standby HOST to Active XR LXC at "+temp_collection_dir+"/STANDBY-HOST.audit.log")
+            return False
+
+        # Create tarfile out of the collected logs 
+        with tarfile.open(tarfile_output_dir+"/auditor_collated_logs.tar.gz", "w:gz") as tar:
+            tar.add(temp_collection_dir, arcname="")
+         
+
+        # Remove temp_collection_dir
+        result = self.run_bash(cmd="rm -rf "+temp_collection_dir)
+        if result["status"]:
+            self.logger.info("Failed to remove temporary collection directory for audit logs: "+temp_collection_dir)
+            return False
+        else:
+            return True
+         
+
+
+
+
 if __name__ == "__main__":
 
     # Create an Object of the child class, syslog parameters are optional. 
@@ -1703,21 +2043,34 @@ if __name__ == "__main__":
 
 
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-v', '--version', action='store_true',
-                    help='Display Current version of the Auditor app and exit')
-    parser.add_argument('-i', '--install', action='store_true', dest='install',
-                    help='Install the required artifacts (audit apps, collectors and cron jobs)\n to default locations or to those specified in auditor.cfg.yml')
-    parser.add_argument('-u', '--uninstall', action='store_true', dest='uninstall',
-                    help='Uninstall all the artifacts from the system based on auditor.cfg.yml settings')
-    parser.add_argument('-d', '--debug', action='store_true',
-                    help='Enable verbose logging')
+    try:
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-v', '--version', action='store_true',
+                        help='Display Current version of the Auditor app and exit')
+        parser.add_argument('-i', '--install', action='store_true', dest='install',
+                        help='Install the required artifacts (audit apps, collectors and cron jobs)\n to default locations or to those specified in auditor.cfg.yml')
+        parser.add_argument('-u', '--uninstall', action='store_true', dest='uninstall',
+                        help='Uninstall all the artifacts from the system based on auditor.cfg.yml settings')
+        parser.add_argument('-c', '--clean-xml', action='store_true', dest='clean_xml',
+                        help='Remove old XML files from the system')
+        parser.add_argument('-l', '--list-files', action='store_true', dest='list_files',
+                        help='List all the audit related files (apps, cron jobs, xml files) currently on the system')
+        parser.add_argument('-o', '--output-logs-to-dir', action='store', dest='tarfile_output_dir',
+                        help='Specify the directory to use to collect the collated logs from all nodes on the system')
+        parser.add_argument('-d', '--debug', action='store_true',
+                        help='Enable verbose logging')
+    except SystemExit:
+        print "Invalid arguments provided, Error: " + str(sys.exc_info()[1])
+        parser.print_help()
 
-
+    
     results = parser.parse_args()
 
     if not ( results.install or 
-             results.uninstall or 
+             results.uninstall or
+             results.clean_xml or
+             results.list_files or
+             results.tarfile_output_dir or
              results.version):
         parser.print_help()
         sys.exit(0)
@@ -1744,10 +2097,38 @@ if __name__ == "__main__":
     if results.debug:
         audit_obj.toggle_debug(1)
 
-    uninstall_flag = False
+    if results.list_files:
+        audit_obj.list_current_files()
+        sys.exit(0)
 
-    if results.uninstall:
-         uninstall_flag = True
+    if results.tarfile_output_dir:
+        if os.path.isdir(results.tarfile_output_dir):
+            if not audit_obj.collect_logs(temp_collection_dir="/misc/scratch/auditor_collected_logs",
+                                      tarfile_output_dir=results.tarfile_output_dir):
+                audit_obj.logger.info("Failed to create audit logs tarfile")
+                sys.exit(1)
+            else:
+                audit_obj.logger.info("Audit logs tarfile created at: "+results.tarfile_output_dir+"/auditor_collated_logs.tar.gz")
+        else:
+            audit_obj.logger.info("Invalid directory specified for log collection")
+            sys.exit(1)
+        sys.exit(0)
+
+    if (results.uninstall or results.install) and results.clean_xml:
+        if results.uninstall:
+            sleep_interval = 30
+        else:
+            sleep_interval = 0
+        skip_app_cron_op = False
+    else:
+        if results.clean_xml:
+            sleep_interval = 0
+            skip_app_cron_op = True
+        else:
+            sleep_interval = 0
+            skip_app_cron_op = False
+
+
 
     if audit_obj.debug:
         for root, directories, filenames in os.walk(IosxrAuditMain.current_dir()):
@@ -1757,53 +2138,76 @@ if __name__ == "__main__":
                 audit_obj.logger.debug(os.path.join(root,filename))
 
 
-    if not audit_obj.setup_xr_audit(uninstall=uninstall_flag):
-        if not uninstall_flag:
-            audit_obj.syslogger.info("Failed to setup XR LXC audit artifacts")
-            audit_obj.logger.info("Failed to setup XR LXC audit artifacts")
-        else:
-            audit_obj.syslogger.info("Failed to remove XR LXC audit artifacts")
-            audit_obj.logger.info("Failed to remove XR LXC audit artifacts")
-        sys.exit(1)
-
-
-    if not audit_obj.setup_admin_audit(uninstall=uninstall_flag):
-        if not uninstall_flag:
-            audit_obj.syslogger.info("Failed to setup ADMIN LXC audit artifacts")
-            audit_obj.logger.info("Failed to setup ADMIN LXC audit artifacts")
-        else:
-            audit_obj.syslogger.info("Failed to remove ADMIN LXC audit artifacts")
-            audit_obj.logger.info("Failed to remove ADMIN LXC audit artifacts")
-        sys.exit(1)
-
-
-    if not audit_obj.setup_host_audit(uninstall=uninstall_flag):
-        if not uninstall_flag:
-            audit_obj.syslogger.info("Failed to setup HOST audit artifacts")
-            audit_obj.logger.info("Failed to setup HOST audit artifacts")
-        else:
-            audit_obj.syslogger.info("Failed to remove HOST audit artifacts")
-            audit_obj.logger.info("Failed to remove XR HOST audit artifacts")
-        sys.exit(1)
-
-
-
-    if not audit_obj.setup_collector(uninstall=uninstall_flag):
-        if not uninstall_flag:
-            audit_obj.syslogger.info("Failed to setup COLLECTOR artifacts")
-            audit_obj.logger.info("Failed to setup COLLECTOR artifacts")
-        else:
-            audit_obj.syslogger.info("Failed to remove COLLECTOR artifacts")
-            audit_obj.logger.info("Failed to remove COLLECTOR artifacts")
-        sys.exit(1)
-
-
-    if uninstall_flag:
-        # Clean up XMLs created on active RP XR LXC
-        if not audit_obj.setup_xr_audit(cleanxml=True):
-            audit_obj.syslogger.info("Failed to clean up Active RP XR LXC xml files")
-            audit_obj.logger.info("Failed to clean up Active RP XR LXC xml files")
+    if not skip_app_cron_op:
+        if not audit_obj.setup_xr_audit(uninstall=results.uninstall):
+            if not results.uninstall:
+                audit_obj.syslogger.info("Failed to setup XR LXC audit artifacts")
+                audit_obj.logger.info("Failed to setup XR LXC audit artifacts")
+            else:
+                audit_obj.syslogger.info("Failed to remove XR LXC audit artifacts")
+                audit_obj.logger.info("Failed to remove XR LXC audit artifacts")
             sys.exit(1)
+
+
+        if not audit_obj.setup_admin_audit(uninstall=results.uninstall):
+            if not results.uninstall:
+                audit_obj.syslogger.info("Failed to setup ADMIN LXC audit artifacts")
+                audit_obj.logger.info("Failed to setup ADMIN LXC audit artifacts")
+            else:
+                audit_obj.syslogger.info("Failed to remove ADMIN LXC audit artifacts")
+                audit_obj.logger.info("Failed to remove ADMIN LXC audit artifacts")
+            sys.exit(1)
+
+
+        if not audit_obj.setup_host_audit(uninstall=results.uninstall):
+            if not results.uninstall:
+                audit_obj.syslogger.info("Failed to setup HOST audit artifacts")
+                audit_obj.logger.info("Failed to setup HOST audit artifacts")
+            else:
+                audit_obj.syslogger.info("Failed to remove HOST audit artifacts")
+                audit_obj.logger.info("Failed to remove XR HOST audit artifacts")
+            sys.exit(1)
+
+
+
+        if not audit_obj.setup_collector(uninstall=results.uninstall):
+            if not results.uninstall:
+                audit_obj.syslogger.info("Failed to setup COLLECTOR artifacts")
+                audit_obj.logger.info("Failed to setup COLLECTOR artifacts")
+            else:
+                audit_obj.syslogger.info("Failed to remove COLLECTOR artifacts")
+                audit_obj.logger.info("Failed to remove COLLECTOR artifacts")
+            sys.exit(1)
+
+
+    # This sleep is added to take care of a condition where cleanup of cronjobs has
+    # happened during the execution of a previous cron run causing XML files to be freshly
+    # created. Sleeping for an appropriate amount of time ensures these XML files to be
+    # properly cleaned up as well
+
+    if results.clean_xml:
+        audit_obj.syslogger.info("Starting cleanup of accumulated xml files as requested on Active-RP")
+        audit_obj.logger.info("Starting cleanup of accumulated xml files as requested on Active-RP")
+
+        time.sleep(sleep_interval)
+
+        if audit_obj.setup_xr_audit(cleanxml=results.clean_xml):
+            audit_obj.syslogger.info("Cleaned up xml files on Active-RP XR LXC")
+            audit_obj.logger.info("Cleaned up xml files on Active-RP XR LXC")
+        else:
+            if results.uninstall:
+                audit_obj.syslogger.info("Failed to clean up xml files on Active-RP XR LXC")
+                audit_obj.logger.info("Failed to clean up xml files on Active-RP XR LXC")
+                sys.exit(1)
+
+        if audit_obj.setup_admin_audit(cleanxml=results.clean_xml):
+            audit_obj.syslogger.info("Cleaned up xml files on Active-RP Admin LXC")
+            audit_obj.logger.info("Cleaned up xml files on Active-RP Admin LXC")
+        else:
+            if results.uninstall:
+                audit_obj.syslogger.info("Failed to clean up xml files on Active-RP Admin LXC")
+                audit_obj.logger.info("Failed to clean up xml files on Active-RP Admin LXC")
+                sys.exit(1)
 
 
 
@@ -1812,67 +2216,93 @@ if __name__ == "__main__":
         # Replicate itself to standby xr to make sure installer/uninstaller is available
         # post switchover on an HA(active/standby) setup
 
-        if not audit_obj.setup_standby_auditor(uninstall=uninstall_flag):
-            if not uninstall_flag:
-                audit_obj.syslogger.info("Failed to setup auditor app on standby XR LXC")
-                audit_obj.logger.info("Failed to setup auditor app on standby XR LXC")
-            else:
-                audit_obj.syslogger.info("Failed to remove auditor app on standby XR LXC")
-                audit_obj.logger.info("Failed to remove auditor app on standby XR LXC")
-            sys.exit(1)
-
-
-        if not audit_obj.setup_standby_xr_audit(uninstall=uninstall_flag):
-            if not uninstall_flag:
-                audit_obj.syslogger.info("Failed to setup Standby XR LXC audit artifacts")
-                audit_obj.logger.info("Failed to setup Standby XR LXC audit artifacts")
-            else:
-               audit_obj.syslogger.info("Failed to remove Standby XR LXC audit artifacts")
-               audit_obj.logger.info("Failed to remove Standby XR LXC audit artifacts")
-            sys.exit(1)
-
-
-        if not audit_obj.setup_standby_admin_audit(uninstall=uninstall_flag):
-            if not uninstall_flag:
-                audit_obj.syslogger.info("Failed to setup Standby Admin LXC audit artifacts")
-                audit_obj.logger.info("Failed to setup Standby Admin LXC audit artifacts")
-            else:
-                audit_obj.syslogger.info("Failed to remove Standby Admin LXC audit artifacts")
-                audit_obj.logger.info("Failed to remove Standby Admin LXC audit artifacts")
-            sys.exit(1)
-
-
-        if not audit_obj.setup_standby_host_audit(uninstall=uninstall_flag):
-            if not uninstall_flag:
-                audit_obj.syslogger.info("Failed to setup Standby HOST audit artifacts")
-                audit_obj.logger.info("Failed to setup Standby HOST audit artifacts")
-            else:
-                audit_obj.syslogger.info("Failed to remove Standby HOST audit artifacts")
-                audit_obj.logger.info("Failed to remove Standby HOST audit artifacts")
-            sys.exit(1)
-
-
-        if not audit_obj.setup_standby_collector(uninstall=uninstall_flag):
-            if not uninstall_flag:
-                audit_obj.syslogger.info("Failed to setup Standby RP COLLECTOR artifacts")
-                audit_obj.logger.info("Failed to setup Standby RP COLLECTOR artifacts")
-            else:
-                audit_obj.syslogger.info("Failed to remove Standby RP COLLECTOR artifacts")
-                audit_obj.logger.info("Failed to remove Standby RP COLLECTOR artifacts")
-            sys.exit(1)
-
-
-        if uninstall_flag:
-            # Clean up XMLs created on active RP XR LXC
-            if not audit_obj.setup_standby_xr_audit(cleanxml=True):
-                audit_obj.syslogger.info("Failed to clean up Standby RP XR LXC XML files")
-                audit_obj.logger.info("Failed to clean up Standby RP XR LXC XML files")
+        if not skip_app_cron_op:
+            if not audit_obj.setup_standby_auditor(uninstall=results.uninstall):
+                if not results.uninstall:
+                    audit_obj.syslogger.info("Failed to setup auditor app on standby XR LXC")
+                    audit_obj.logger.info("Failed to setup auditor app on standby XR LXC")
+                else:
+                    audit_obj.syslogger.info("Failed to remove auditor app on standby XR LXC")
+                    audit_obj.logger.info("Failed to remove auditor app on standby XR LXC")
                 sys.exit(1)
 
-    if not uninstall_flag:
+
+            if not audit_obj.setup_standby_xr_audit(uninstall=results.uninstall):
+                if not results.uninstall:
+                    audit_obj.syslogger.info("Failed to setup Standby XR LXC audit artifacts")
+                    audit_obj.logger.info("Failed to setup Standby XR LXC audit artifacts")
+                else:
+                   audit_obj.syslogger.info("Failed to remove Standby XR LXC audit artifacts")
+                   audit_obj.logger.info("Failed to remove Standby XR LXC audit artifacts")
+                sys.exit(1)
+
+
+            if not audit_obj.setup_standby_admin_audit(uninstall=results.uninstall):
+                if not results.uninstall:
+                    audit_obj.syslogger.info("Failed to setup Standby Admin LXC audit artifacts")
+                    audit_obj.logger.info("Failed to setup Standby Admin LXC audit artifacts")
+                else:
+                    audit_obj.syslogger.info("Failed to remove Standby Admin LXC audit artifacts")
+                    audit_obj.logger.info("Failed to remove Standby Admin LXC audit artifacts")
+                sys.exit(1)
+
+
+            if not audit_obj.setup_standby_host_audit(uninstall=results.uninstall):
+                if not results.uninstall:
+                    audit_obj.syslogger.info("Failed to setup Standby HOST audit artifacts")
+                    audit_obj.logger.info("Failed to setup Standby HOST audit artifacts")
+                else:
+                    audit_obj.syslogger.info("Failed to remove Standby HOST audit artifacts")
+                    audit_obj.logger.info("Failed to remove Standby HOST audit artifacts")
+                sys.exit(1)
+
+
+            if not audit_obj.setup_standby_collector(uninstall=results.uninstall):
+                if not results.uninstall:
+                    audit_obj.syslogger.info("Failed to setup Standby RP COLLECTOR artifacts")
+                    audit_obj.logger.info("Failed to setup Standby RP COLLECTOR artifacts")
+                else:
+                    audit_obj.syslogger.info("Failed to remove Standby RP COLLECTOR artifacts")
+                    audit_obj.logger.info("Failed to remove Standby RP COLLECTOR artifacts")
+                sys.exit(1)
+
+
+        # if results.uninstall:
+        # Clean up XMLs created on active RP XR LXC
+
+        # This sleep is added to take care of a condition where cleanup of cronjobs has
+        # happened during the execution of a previous cron run causing XML files to be freshly
+        # created. Sleeping for an appropriate amount of time ensures these XML files to be
+        # properly cleaned up as well
+
+        if results.clean_xml:
+            audit_obj.syslogger.info("Starting cleanup of accumulated xml files as requested on Standby-RP")
+            audit_obj.logger.info("Starting cleanup of accumulated xml files as requested on Standby-RP")
+            time.sleep(sleep_interval)
+
+            if audit_obj.setup_standby_xr_audit(cleanxml=results.clean_xml):
+                audit_obj.syslogger.info("Cleaned up xml files on Standby-RP XR LXC")
+                audit_obj.logger.info("Cleaned up xml files on Standby-RP XR LXC")
+            else:
+                if results.uninstall:
+                    audit_obj.syslogger.info("Failed to clean up xml files on Standby-RP XR LXC")
+                    audit_obj.logger.info("Failed to clean up xml files on Standby-RP XR LXC")
+                    sys.exit(1)
+
+            if audit_obj.setup_standby_admin_audit(cleanxml=results.clean_xml):
+                audit_obj.syslogger.info("Cleaned up xml files on Standby-RP Admin LXC")
+                audit_obj.logger.info("Cleaned up xml files on Standby-RP Admin LXC")
+            else:
+                if results.uninstall:
+                    audit_obj.syslogger.info("Failed to clean up xml files on Standby-RP Admin LXC")
+                    audit_obj.logger.info("Failed to clean up xml files on Standby-RP Admin LXC")
+                    sys.exit(1)
+
+
+    if results.install:
         audit_obj.syslogger.info("Successfully set up artifacts, IOS-XR Linux auditing is now ON")
         audit_obj.logger.info("Successfully set up artifacts, IOS-XR Linux auditing is now ON")
-    else:
+    elif results.uninstall:
         audit_obj.syslogger.info("Successfully uninstalled all artifacts, IOS-XR Linux auditing is now OFF")
         audit_obj.logger.info("Successfully uninstalled artifacts, IOS-XR Linux auditing is now OFF")
     sys.exit(0)

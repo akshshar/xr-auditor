@@ -56,15 +56,15 @@ if __name__ == "__main__":
                 audit_obj.logger.debug(os.path.join(root,filename))
 
 
-    try:
-        output_xml_dir = audit_obj.install_cfg_dict["HOST"]["output_xml_dir"]
-    except Exception as e:
-        audit_obj.syslogger.info("Failed to extract output_xml_dir for the HOST domain,"
-                                 "defaulting to /misc/app_host")
-        output_xml_dir = "/misc/app_host"
+    #try:
+    #    output_xml_dir = audit_obj.install_cfg_dict["HOST"]["output_xml_dir"]
+    #except Exception as e:
+    #    audit_obj.syslogger.info("Failed to extract output_xml_dir for the HOST domain,"
+    #                             "defaulting to /misc/app_host")
+    #    output_xml_dir = "/misc/app_host"
 
 
-    xml_file = audit_obj.create_xml_dump(output_xml_dir)
+    xml_file = audit_obj.create_xml_dump("/misc/app_host")
 
     if audit_obj.validate_xml_dump(xml_file):
         audit_obj.syslogger.info('Valid XML! :)')

@@ -296,20 +296,21 @@ if __name__ == "__main__":
         input_xml_dir_xr = "/misc/app_host"
 
 
-    try:
-        input_xml_dir_admin = audit_obj.install_cfg_dict["ADMIN"]["output_xml_dir_xr"]
-    except Exception as e:
-        audit_obj.syslogger.info("Failed to extract output_xml_dir for the ADMIN domain,"
-                                 "defaulting to /misc/app_host")
-        input_xml_dir_admin = "/misc/app_host"
+    #try:
+    #    input_xml_dir_admin = audit_obj.install_cfg_dict["ADMIN"]["output_xml_dir"]
+    #except Exception as e:
+    #    audit_obj.syslogger.info("Failed to extract output_xml_dir for the ADMIN domain,"
+    #                             "defaulting to /misc/app_host")
+    #    input_xml_dir_admin = "/misc/app_host"
+    input_xml_dir_admin = "/misc/app_host"
 
-    try:
-        input_xml_dir_host = audit_obj.install_cfg_dict["HOST"]["output_xml_dir"]
-    except Exception as e:
-        audit_obj.syslogger.info("Failed to extract output_xml_dir for the HOST domain,"
-                                 "defaulting to /misc/app_host")
-        input_xml_dir_host = "/misc/app_host"
-
+    #try:
+    #    input_xml_dir_host = audit_obj.install_cfg_dict["HOST"]["output_xml_dir"]
+    #except Exception as e:
+    #    audit_obj.syslogger.info("Failed to extract output_xml_dir for the HOST domain,"
+    #                             "defaulting to /misc/app_host")
+    #    input_xml_dir_host = "/misc/app_host"
+    input_xml_dir_host = "/misc/app_host"
 
 
 

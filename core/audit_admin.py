@@ -65,12 +65,12 @@ if __name__ == "__main__":
         output_xml_dir = "/misc/scratch"
 
 
-    try:
-        output_xml_dir_xr = audit_obj.install_cfg_dict["output_xml_dir_xr"]
-    except Exception as e:
-        audit_obj.syslogger.info("Failed to extract output_xml_dir_xr for the ADMIN domain,"
-                                 "defaulting to /misc/app_host")
-        output_xml_dir_xr = "/misc/app_host"
+    #try:
+    #    output_xml_dir_xr = audit_obj.install_cfg_dict["output_xml_dir_xr"]
+    #except Exception as e:
+    #    audit_obj.syslogger.info("Failed to extract output_xml_dir_xr for the ADMIN domain,"
+    #                             "defaulting to /misc/app_host")
+    #    output_xml_dir_xr = "/misc/app_host"
 
 
 
@@ -81,9 +81,9 @@ if __name__ == "__main__":
         audit_obj.syslogger.info('Successfully created output XML: '+str(xml_file))
         if not audit_obj.transfer_admin_to_host(
                          src=xml_file,
-                         dest=output_xml_dir_xr+"/ADMIN-LXC.xml"):
+                         dest="/misc/app_host/ADMIN-LXC.xml"):
             audit_obj.syslogger.info("Successfully transferred output XML"
-                                "file to host "+output_xml_dir_xr)
+                                "file to host /misc/app_host ")
             sys.exit(0)
         else:
             audit_obj.syslogger.info("Failed to transfer output XML to host")

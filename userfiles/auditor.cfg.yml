@@ -93,7 +93,6 @@ INSTALL_CONFIG:
         cronName: "audit_admin.cron"
         cronPrefix: "audit_cron_admin_"
         output_xml_dir: "/misc/scratch"
-        output_xml_dir_xr: "/misc/app_host"
 
     HOST:
         srcDir: "./host/"
@@ -101,7 +100,6 @@ INSTALL_CONFIG:
         appDir: "/misc/scratch"
         cronName: "audit_host.cron"
         cronPrefix: "audit_cron_host_"
-        output_xml_dir: "/misc/app_host"
 
     COLLECTOR:
         srcDir: "./collector/"

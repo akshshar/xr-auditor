@@ -506,6 +506,35 @@ class AuditHelpers(ZtpHelpers):
         return {"status" : result["status"], "output" : result["output"]}
 
 
+    def admin_to_xr_scp(self, src=None, dest=None):
+        """Transfer a file from Admin LXC to active XR LXC
+           :param src: Path of src file in Admin LXC to be 
+                       transferred to active XR shell
+           :type src: string
+           :param src: Path of destination file in admin shell 
+           :type src: string
+           :return: Return a dictionary with status and output
+                    { 'status': 'error/success', 'output': '' }
+           :rtype: string
+        """
+
+
+        if src is None:
+            return {"status" : "error", "output" : "src file path in admin LXC not specified"}
+
+
+        if dest is None:
+            return {"status" : "error", "output" : "dest file path in active XR shell not specified"}
+
+
+        if self.debug:
+            self.logger.debug("Received scp request to transfer file from Admin LXC to XR LXC")
+
+
+        result = self.admincmd(cmd="run scp "+src+" root@"+self.active_xr_ip+":"+dest)
+
+        return {"status" : result["status"], "output" : result["output"]}
+
 
     def active_adminscp(self, src=None, dest=None):
 
@@ -534,8 +563,9 @@ class AuditHelpers(ZtpHelpers):
 
         filename = posixpath.basename(src)
 
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        tempfile = "audit_aadscp_"+filename+"_"+timestamp
+        #timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        #tempfile = "audit_aadscp_"+filename+"_"+timestamp
+        tempfile = "audit_aadscp_"+filename
 
         result = self.adminscp(src=src, dest="/misc/scratch/"+tempfile)
 
@@ -544,6 +574,50 @@ class AuditHelpers(ZtpHelpers):
             return {"status" : result["status"], "output" : result["output"]}
         else:
             result = self.admincmd(cmd="run scp /misc/scratch/"+tempfile+" root@"+active_admin_ip+":"+dest)
+
+            # Remove tempfile from Admin shell
+
+            self.admincmd(cmd="run rm -f /misc/scratch/"+tempfile)
+            return {"status" : result["status"], "output" : result["output"]}
+
+
+    def active_admin_to_xr_scp(self, src=None, dest=None):
+
+        if src is None:
+            return {"status" : "error", "output" : "src file path in active Admin shell not specified"}
+
+
+        if dest is None:
+            return {"status" : "error", "output" : "dest file path in XR shell not specified"}
+
+
+        if self.debug:
+            self.logger.debug("Inside active_admin_to_xr_scp")
+
+        # Get the active Admin LXC's xrnns ip
+        result = self.get_admin_ip()
+
+        if result["status"] == "success":
+            active_admin_ip = result["output"]["active_admin_ip"]
+        else:
+            self.syslogger.info("Failed to get active RP's  admin xrnns ip")
+            return {"status" : "error", "output" : ""}
+
+
+        # First transfer the file to temp location in Admin LXC
+
+        filename = posixpath.basename(src)
+
+        #timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        #tempfile = "audit_aadscp_"+filename+"_"+timestamp
+        tempfile = "audit_aadxscp_"+filename
+
+        result = self.admincmd(cmd="run scp root@"+active_admin_ip+":"+src+" /misc/scratch/"+tempfile)
+
+        if result["status"] == "error":
+            return {"status" : result["status"], "output" : result["output"]}
+        else:
+            result = self.admin_to_xr_scp(src="/misc/scratch/"+tempfile, dest=dest)
 
             # Remove tempfile from Admin shell
 
@@ -634,8 +708,9 @@ class AuditHelpers(ZtpHelpers):
 
         filename = posixpath.basename(src)
 
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        tempfile = "audit_hscp_"+filename+"_"+timestamp
+        #timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        #tempfile = "audit_hscp_"+filename+"_"+timestamp
+        tempfile = "audit_hscp_"+filename
  
         result = self.adminscp(src=src, dest="/misc/scratch/"+tempfile)
 
@@ -773,8 +848,9 @@ class AuditHelpers(ZtpHelpers):
 
         filename = posixpath.basename(src)
 
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        tempfile = "audit_sadscp_"+filename+"_"+timestamp
+        #timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        #tempfile = "audit_sadscp_"+filename+"_"+timestamp
+        tempfile = "audit_sadscp_"+filename
 
         result = self.adminscp(src=src, dest="/misc/scratch/"+tempfile)
 
@@ -783,6 +859,51 @@ class AuditHelpers(ZtpHelpers):
             return {"status" : result["status"], "output" : result["output"]}
         else:
             result = self.admincmd(cmd="run scp /misc/scratch/"+tempfile+" root@"+standby_admin_ip+":"+dest)
+
+            # Remove tempfile from Admin shell
+
+            self.admincmd(cmd="run rm -f /misc/scratch/"+tempfile)
+            return {"status" : result["status"], "output" : result["output"]}
+
+
+
+    def standby_admin_to_xr_scp(self, src=None, dest=None):
+
+        if src is None:
+            return {"status" : "error", "output" : "src file path in standby Admin shell not specified"}
+
+
+        if dest is None:
+            return {"status" : "error", "output" : "dest file path in XR shell not specified"}
+
+
+        if self.debug:
+            self.logger.debug("Inside standby_admin_to_xr_scp")
+
+        # Get the standby Admin LXC's xrnns ip
+        result = self.get_admin_ip()
+
+        if result["status"] == "success":
+            standby_admin_ip = result["output"]["standby_admin_ip"]
+        else:
+            self.syslogger.info("Failed to get standby RP's  admin xrnns ip")
+            return {"status" : "error", "output" : ""}
+
+
+        # First transfer the file to temp location in Admin LXC
+
+        filename = posixpath.basename(src)
+
+        #timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        #tempfile = "audit_aadscp_"+filename+"_"+timestamp
+        tempfile = "audit_sadxscp_"+filename
+
+        result = self.admincmd(cmd="run scp root@"+standby_admin_ip+":"+src+" /misc/scratch/"+tempfile)
+
+        if result["status"] == "error":
+            return {"status" : result["status"], "output" : result["output"]}
+        else:
+            result = self.admin_to_xr_scp(src="/misc/scratch/"+tempfile, dest=dest)
 
             # Remove tempfile from Admin shell
 
@@ -868,6 +989,46 @@ class AuditHelpers(ZtpHelpers):
             return {"status" : "error", "output" : result["output"]}
 
 
+    def standby_to_active_xr_scp(self, src=None, dest=None):
+        """Transfer a file from XR LXC to underlying host shell
+           :param src: Path of src file in XR to be 
+                       transferred to host shell
+           :type src: string
+           :param src: Path of destination file in host shell of standby RP 
+           :type src: string
+           :return: Return a dictionary with status and output
+                    { 'status': 'error/success', 'output': '' }
+           :rtype: string
+        """
+
+        if src is None:
+            return {"status" : "error", "output" : "src file path in Standby XR not specified"}
+
+        if dest is None:
+            return {"status" : "error", "output" : "dest file path in Active XR LXC shell not specified"}
+
+
+        if self.debug:
+            self.logger.debug("Received scp request to transfer file from Standby XR LXC to Active XR LXC")
+
+
+        if self.ha_setup:
+            if self.standby_xr_ip is not "":
+                cmd_run = self.run_bash("scp root@"+self.standby_xr_ip+":"+src+" "+dest)
+                if not cmd_run["status"]:
+                    return {"status" : "success", "output" : cmd_run["output"]}
+                else:
+                    self.syslogger.info("Failed to transfer file from standby XR LXC, output:"+cmd_run["output"]+", error:"+cmd_run["error"])
+                    return {"status" : "error", "output" : cmd_run["error"]}
+            else:
+                self.syslogger.info("No standby xr ip, (no standby RP?)")
+                return {"status" : "error", "output" : result["output"]}
+
+        else:
+            self.syslogger.info("Failed to fetch the  xr xrnns ips")
+            return {"status" : "error", "output" : result["output"]}
+
+
 
     def active_hostcmd(self, cmd=None):
         """Issue a cmd in the host linux shell and obtain the output
@@ -921,8 +1082,9 @@ class AuditHelpers(ZtpHelpers):
 
         filename = posixpath.basename(src)
 
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        tempfile = "audit_ahscp_"+filename+"_"+timestamp
+        #timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        #tempfile = "audit_ahscp_"+filename+"_"+timestamp
+        tempfile = "audit_ahscp_"+filename
 
         result = self.active_adminscp(src=src, dest="/misc/scratch/"+tempfile)
 
@@ -933,6 +1095,41 @@ class AuditHelpers(ZtpHelpers):
             result = self.active_adminruncmd(cmd="scp /misc/scratch/"+tempfile+" root@10.0.2.16:"+dest)
 
             # Remove tempfile from activey Admin shell
+
+            self.active_adminruncmd(cmd="rm -f /misc/scratch/"+tempfile)
+            return {"status" : result["status"], "output" : result["output"]}
+
+
+    def active_host_to_xr_scp(self, src=None, dest=None):
+
+        if src is None:
+            return {"status" : "error", "output" : "src file path in active host not specified"}
+
+
+        if dest is None:
+            return {"status" : "error", "output" : "dest file path in active XR-LXC not specified"}
+
+
+        if self.debug:
+            self.logger.debug("Received scp request to transfer file from active host to active XR")
+
+
+        # First transfer the file to temp location in active Admin LXC 
+
+        filename = posixpath.basename(src)
+
+        #timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        #tempfile = "audit_ahscp_"+filename+"_"+timestamp
+        tempfile = "audit_ahxscp_"+filename
+
+
+        result = self.active_adminruncmd(cmd="scp root@10.0.2.16:"+src+" /misc/scratch/"+tempfile)
+
+        if result["status"] == "error":
+            return {"status" : result["status"], "output" : result["output"]}
+        else:
+            result = self.active_admin_to_xr_scp(src="/misc/scratch/"+tempfile, dest=dest)
+            # Remove tempfile from active Admin shell
 
             self.active_adminruncmd(cmd="rm -f /misc/scratch/"+tempfile)
             return {"status" : result["status"], "output" : result["output"]}
@@ -991,8 +1188,9 @@ class AuditHelpers(ZtpHelpers):
 
         filename = posixpath.basename(src)
 
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        tempfile = "audit_shscp_"+filename+"_"+timestamp
+        #timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        #tempfile = "audit_shscp_"+filename+"_"+timestamp
+        tempfile = "audit_shscp_"+filename
 
         result = self.standby_adminscp(src=src, dest="/misc/scratch/"+tempfile)
 
@@ -1003,6 +1201,42 @@ class AuditHelpers(ZtpHelpers):
             result = self.standby_adminruncmd(cmd="scp /misc/scratch/"+tempfile+" root@10.0.2.16:"+dest)
 
             # Remove tempfile from Standby Admin shell
+
+            self.standby_adminruncmd(cmd="rm -f /misc/scratch/"+tempfile)
+            return {"status" : result["status"], "output" : result["output"]}
+
+
+
+    def standby_host_to_xr_scp(self, src=None, dest=None):
+
+        if src is None:
+            return {"status" : "error", "output" : "src file path in standby host not specified"}
+
+
+        if dest is None:
+            return {"status" : "error", "output" : "dest file path in active XR-LXC not specified"}
+
+
+        if self.debug:
+            self.logger.debug("Received scp request to transfer file from standby host to active XR")
+
+
+        # First transfer the file to temp location in standby Admin LXC 
+
+        filename = posixpath.basename(src)
+
+        #timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        #tempfile = "audit_ahscp_"+filename+"_"+timestamp
+        tempfile = "audit_shxscp_"+filename
+
+
+        result = self.standby_adminruncmd(cmd="scp root@10.0.2.16:"+src+" /misc/scratch/"+tempfile)
+
+        if result["status"] == "error":
+            return {"status" : result["status"], "output" : result["output"]}
+        else:
+            result = self.standby_admin_to_xr_scp(src="/misc/scratch/"+tempfile, dest=dest)
+            # Remove tempfile from active Admin shell
 
             self.standby_adminruncmd(cmd="rm -f /misc/scratch/"+tempfile)
             return {"status" : result["status"], "output" : result["output"]}
@@ -1526,6 +1760,41 @@ class AuditHelpers(ZtpHelpers):
             self.syslogger.info("Failed to transfer file to host")
             self.syslogger.info("Error is: "+str(e))
             return 1
+
+
+    def transfer_host_to_xr(self, src=None, dest=None):
+        if src is None:
+            self.syslogger.info("No source on host specified, bailing out")
+            return 1
+
+        if dest is None:
+            self.syslogger.info("No destination on admin LXC specified, bailing out")
+            return 1
+
+
+        try:
+            result = self.run_bash(cmd="cp "+src+" /misc/app_host/", vrf="", pid=1)
+            return result["status"]
+        except Exception as e:
+            self.syslogger.info("Failed to transfer file to /misc/app_host")
+            self.syslogger.info("Error is: "+str(e))
+            return 1
+
+
+    def hostcmd_from_admin(self, cmd=None):
+        if cmd is None:
+            return {"status" : "error", "output" : "No command specified"}
+
+        if self.debug:
+            self.logger.debug("Received host command request from admin: \"%s\"" % cmd)
+
+
+        cmd_run = self.run_bash(cmd="ssh root@10.0.2.16 "+cmd, vrf="", pid=1)
+        if not cmd_run["status"]:
+                return {"status" : "success", "output" : cmd_run["output"]}
+        else:
+           self.syslogger.info("Failed to run command on host from the admin shell")
+           return {"status" : "error", "output" : cmd_run["output"]}
 
 
     def gather_integrity_data(self):
