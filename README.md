@@ -303,64 +303,70 @@ The vagrant setup looks something like this:
 *   **Step 5**:   Create a new ssh-key pair for your devbox environment (if you see see the earlier [image]
 (https://github.com/akshshar/xr-auditor/blob/master/images/iosxr-auditor-operation.png?raw=true) the devbox will serve as the remote server to which the router sends the collected XML data.
 
-    For password-less operation, the way we make this work is:
-    1.  Create an ssh-key pair on the server (devbox) . 
-    2.  Add the public key of the pair to the devbox (server)'s  ~/.ssh/authorized_keys file . 
-    3.  Package the private key as part of the app during the build process and transfer to the router . 
-    4.  The app on the router then uses the private key to ssh and transfer files to the server (devbox) without requiring a password.  
+   For password-less operation, the way we make this work is:
+    
+   1.  Create an ssh-key pair on the server (devbox) .  
+    
+   2.  Add the public key of the pair to the devbox (server)'s  ~/.ssh/authorized_keys file . 
+    
+   3.  Package the private key as part of the app during the build process and transfer to the router .  
+    
+   The app on the router then uses the private key to ssh and transfer files to the server (devbox) without requiring a password.   
     
 
-    Following the above steps on devbox:  
-    
-    1.  Create the ssh-key pair:
-    
-    ```
-    vagrant@vagrant:~/xr-auditor$ ssh-keygen -t rsa
-    Generating public/private rsa key pair.
-    Enter file in which to save the key (/home/vagrant/.ssh/id_rsa): 
-    Enter passphrase (empty for no passphrase): 
-    Enter same passphrase again: 
-    Your identification has been saved in /home/vagrant/.ssh/id_rsa.
-    Your public key has been saved in /home/vagrant/.ssh/id_rsa.pub.
-    The key fingerprint is:
-    SHA256:nUQqNANDpVUjwJLZ+7LrFY4go/y+yBcc+ProRqYejF8 vagrant@vagrant
-    The key's randomart image is:
-    +---[RSA 2048]----+
-    |   *=+B.o .      |
-    |  + o= + +       |
-    |  ..... . .      |
-    | . ..  . o .     |
-    |o + ... S o      |
-    |== =.o..         |
-    |*+. Eoo          |
-    |o+=o..           |
-    |+*=*+.           |
-    +----[SHA256]-----+
-    vagrant@vagrant:~/xr-auditor$ 
-    ```
+   Following the above steps on devbox:    
     
     
-    2.  Add the public key to authorized_keys:
+   *  Create the ssh-key pair:  
     
-    ```
-    vagrant@vagrant:~/xr-auditor$ 
-    vagrant@vagrant:~/xr-auditor$ cat ~/.ssh/id_rsa >> ~/.ssh/authorized_keys 
-    vagrant@vagrant:~/xr-auditor$ 
-    ```
     
-    3.  Copy the private key to the folder `userfiles/` in the xr-auditor directory:
+      ```
+      vagrant@vagrant:~/xr-auditor$ ssh-keygen -t rsa
+      Generating public/private rsa key pair.
+      Enter file in which to save the key (/home/vagrant/.ssh/id_rsa): 
+      Enter passphrase (empty for no passphrase): 
+      Enter same passphrase again: 
+      Your identification has been saved in /home/vagrant/.ssh/id_rsa.
+      Your public key has been saved in /home/vagrant/.ssh/id_rsa.pub.
+      The key fingerprint is:
+      SHA256:nUQqNANDpVUjwJLZ+7LrFY4go/y+yBcc+ProRqYejF8 vagrant@vagrant
+      The key's randomart image is:
+      +---[RSA 2048]----+
+      |   *=+B.o .      |
+      |  + o= + +       |
+      |  ..... . .      |
+      | . ..  . o .     |
+      |o + ... S o      |
+      |== =.o..         |
+      |*+. Eoo          |
+      |o+=o..           |
+      |+*=*+.           |
+      +----[SHA256]-----+
+      vagrant@vagrant:~/xr-auditor$ 
+      ```
     
-    ```
-    vagrant@vagrant:~/xr-auditor$ 
-    vagrant@vagrant:~/xr-auditor$ cp ~/.ssh/id_rsa userfiles/id_rsa_server 
-    vagrant@vagrant:~/xr-auditor$ 
-    ```
+    
+   *  Add the public key to authorized_keys:
+      
+      ```
+      vagrant@vagrant:~/xr-auditor$ 
+      vagrant@vagrant:~/xr-auditor$ cat ~/.ssh/id_rsa >> ~/.ssh/authorized_keys 
+      vagrant@vagrant:~/xr-auditor$ 
+      ```
+    
+   *  Copy the private key to the folder `userfiles/` in the xr-auditor directory:
+     
+      ```
+      vagrant@vagrant:~/xr-auditor$ 
+      vagrant@vagrant:~/xr-auditor$ cp ~/.ssh/id_rsa userfiles/id_rsa_server 
+      vagrant@vagrant:~/xr-auditor$ 
+      ```
 &nbsp;    
 &nbsp;  
 
-* **Step 6**:  Edit the appropriate settings in the `userfiles/auditor.cfg.yml` file to match the environment you are building for. This file encapsulates information about the router, the server to which the data will be sent, the installation directories for the app and the compliance data that the app must collect:
+*   **Step 6**:  Edit the appropriate settings in the `userfiles/auditor.cfg.yml` file to match the environment you are building for. This file encapsulates information about the router, the server to which the data will be sent, the installation directories for the app and the compliance data that the app must collect:
 
-<a href="https://github.com/akshshar/xr-auditor/blob/master/images/auditor_cfg_yml_edits.png?raw=true">![auditor_cfg_yml_edits](https://github.com/akshshar/xr-auditor/blob/master/images/auditor_cfg_yml_edits.png?raw=true)</a>
+    <a href="https://github.com/akshshar/xr-auditor/blob/master/images/auditor_cfg_yml_edits.png?raw=true">![auditor_cfg_yml_edits](https://github.com/akshshar/xr-auditor/blob/master/images/auditor_cfg_yml_edits.png?raw=true)</a>
 
 
 
