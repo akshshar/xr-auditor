@@ -1,6 +1,6 @@
 # Auditor
 
-This application enables periodic auditing of the IOS-XR container-based architecture by running individual python applications in each individual environment in IOS-XR, i.e.:
+This application enables periodic auditing of the IOS-XR container-based architecture by running individual python applications in each individual environment in IOS-XR, i.e.:  
 
   *  XR-LXC  
   
@@ -12,7 +12,8 @@ This application enables periodic auditing of the IOS-XR container-based archite
 
 The individual python applications collect local data based on a YAML based user-config provided during the build process and store accummulated data in the form of XML that is strictly validated against a user-defined XML schema. The accummulated XML data is then sent periodically to an external server over SSH where it may be easily processed and visualized using any tools that can consume the XML schema and the data.
 
-Further, the application supports:
+Further, the application supports:  
+
     *  Installation on a High-Availability (Active/Standby RP) system through a single command.  
     
     *  A clean uninstallation across the entire system through a single command.  
