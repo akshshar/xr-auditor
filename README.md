@@ -277,9 +277,10 @@ The vagrant setup looks something like this:
     vagrant@vagrant:~$ 
     
     ```
-&nbsp;     
+    &nbsp;     
     
-    Now again clone the xr-auditor app so that you have the application code available for build inside the devbox environment:
+    Now again clone the xr-auditor app so that you have the application code available for build inside the devbox environment:  
+    
     
     ```
     vagrant@vagrant:~$ git clone https://github.com/akshshar/xr-auditor.git
@@ -294,18 +295,20 @@ The vagrant setup looks something like this:
     vagrant@vagrant:~/xr-auditor$ 
 
     
-    ```
+    ```  
+    
 &nbsp;    
 &nbsp;  
 
-*   **Step 5**:   Create a new ssh-key pair for your devbox environment (if you see see the earlier [image](https://github.com/akshshar/xr-auditor/blob/master/images/iosxr-auditor-operation.png?raw=true) the devbox will serve as the remote server to which the router sends the collected XML data.
+*   **Step 5**:   Create a new ssh-key pair for your devbox environment (if you see see the earlier [image]
+(https://github.com/akshshar/xr-auditor/blob/master/images/iosxr-auditor-operation.png?raw=true) the devbox will serve as the remote server to which the router sends the collected XML data.
 
-    >For password-less operation, the way we make this work is:
-    >
-    >1.  Create an ssh-key pair on the server (devbox)
-    >2.  Add the public key of the pair to the devbox (server)'s  ~/.ssh/authorized_keys file
-    >3.  Package the private key as part of the app during the build process and transfer to the router
-    >4.  The app on the router then uses the private key to ssh and transfer files to the server (devbox) without requiring a password.
+    For password-less operation, the way we make this work is:
+    1.  Create an ssh-key pair on the server (devbox) . 
+    2.  Add the public key of the pair to the devbox (server)'s  ~/.ssh/authorized_keys file . 
+    3.  Package the private key as part of the app during the build process and transfer to the router . 
+    4.  The app on the router then uses the private key to ssh and transfer files to the server (devbox) without requiring a password.  
+    
 
     Following the above steps on devbox:  
     
