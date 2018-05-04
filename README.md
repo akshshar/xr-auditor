@@ -1,4 +1,32 @@
-# Auditor
+## Contents:
+<li class="">
+<a href="#auditor" id="markdown-toc-auditor">Auditor</a><ul>
+<li class=""><a href="#introduction" id="markdown-toc-introduction">Introduction</a></li>
+<li class=""><a href="#user-story-click-to-expand" id="markdown-toc-user-story-click-to-expand">User Story (Click to Expand)</a></li>
+<li class="">
+<a href="#ios-xr-architecture" id="markdown-toc-ios-xr-architecture">IOS-XR architecture</a><ul>
+<li class=""><a href="#ios-xr-aaa-support-vs-linux" id="markdown-toc-ios-xr-aaa-support-vs-linux">IOS-XR AAA support vs Linux</a></li>
+<li class=""><a href="#ios-xr-telemetry-support-vs-linux-" id="markdown-toc-ios-xr-telemetry-support-vs-linux-">IOS-XR Telemetry support vs Linux .</a></li>
+<li class=""><a href="#enter-xr-auditor" id="markdown-toc-enter-xr-auditor">Enter xr-auditor</a></li>
+</ul>
+</li>
+<li class=""><a href="#setting-up-the-build-environment-on-your-laptop" id="markdown-toc-setting-up-the-build-environment-on-your-laptop">Setting up the Build environment on your laptop:</a></li>
+<li class="active"><a href="#building-the-application" id="markdown-toc-building-the-application">Building the Application:</a></li>
+<li>
+<a href="#running-the-auditor-app" id="markdown-toc-running-the-auditor-app">Running the auditor app</a><ul>
+<li><a href="#view-the-options-available" id="markdown-toc-view-the-options-available">View the options available</a></li>
+<li><a href="#dump-auditor-version" id="markdown-toc-dump-auditor-version">Dump Auditor Version</a></li>
+<li><a href="#install-all-the-auditing-components" id="markdown-toc-install-all-the-auditing-components">Install all the auditing components:</a></li>
+<li><a href="#list-the-generated-xml-files" id="markdown-toc-list-the-generated-xml-files">list the generated XML files</a></li>
+<li><a href="#view-the-generated-xml-content-on-the-server" id="markdown-toc-view-the-generated-xml-content-on-the-server">View the generated XML content on the Server</a></li>
+<li><a href="#uninstalling-the-auditing-apps" id="markdown-toc-uninstalling-the-auditing-apps">Uninstalling the auditing apps</a></li>
+<li><a href="#go-behind-the-scenes-with-verbose-debugging" id="markdown-toc-go-behind-the-scenes-with-verbose-debugging">Go behind the scenes with Verbose Debugging</a></li>
+<li><a href="#troubleshooting--gathering-logs-from-all-domains" id="markdown-toc-troubleshooting--gathering-logs-from-all-domains">Troubleshooting: Gathering logs from all Domains</a></li>
+</ul>
+</li>
+<li><a href="#support-for-activestandby-rp-systems" id="markdown-toc-support-for-activestandby-rp-systems">Support for Active/Standby RP systems:</a></li>
+</ul>
+</li>
 
 ## Introduction
 
