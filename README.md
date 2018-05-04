@@ -1375,7 +1375,7 @@ If we deconstruct parts of the XML data, we can see the basic structure starts w
 
 The next set of higher level tags are:
 
-1.  <GENERAL>
+1.  &lt;GENERAL&gt;
 
   ```
 
@@ -1391,11 +1391,11 @@ The next set of higher level tags are:
 	</GENERAL>
   ```
   
-  The <GENERAL> data is used to collect relevant information from the router config and oper state in order to uniquely identify the router that produced this XML content.
+  The `<GENERAL>` data is used to collect relevant information from the router config and oper state in order to uniquely identify the router that produced this XML content.
 
 
 
-2. <INTEGRITY-SET>
+2. &lt;INTEGRITY-SET&gt;
 
 This is the actual compliance/audit data being collected by the apps from the individual Linux shells. It can be seen from the snippets below, that the integrity set consists of three sections identified by the `domain` which can be `XR-LXC`, `ADMIN-LXC` or `HOST`.
 
@@ -1461,9 +1461,409 @@ Within each domain, there are a list of `<FILES>` each of which can be subjected
 
 ```
 
->So where are the commands and the list of files and directories defined??
->This is part of the `userfiles/auditor.cfg.yml` file as well. Jump to the `COMPLIANCE_CONFIG` section and you will see a YAML specification as shown below:
-><a href="https://github.com/akshshar/xr-auditor/blob/master/images/compliance_config.png?raw=true">![compliance_config](https://github.com/akshshar/xr-auditor/blob/master/images/compliance_config.png?raw=true)</a>
+
+&nbsp;  
+&nbsp;  
+&nbsp;  
+
+
+
+
+>  **So, where are the commands and the list of files and directories defined??**
+>  This is part of the `userfiles/auditor.cfg.yml` file as well. Jump to the `COMPLIANCE_CONFIG` section and you will see a YAML specification as shown below:
+>   <a href="https://github.com/akshshar/xr-auditor/blob/master/images/compliance_config.png?raw=true">![compliance_config](https://github.com/akshshar/xr-auditor/blob/master/images/compliance_config.png?raw=true)</a> . 
+
+
+&nbsp;  
+&nbsp;  
+&nbsp;  
+
+
+### Uninstalling the auditing apps
+
+To uninstall everything that the auditor app installs and to return back to the clean original state, use `-u` option.
+To clean up the generated XML files along with the apps and cronjobs, add the `-c' option to the command:  
+
+
+```
+RP/0/RP0/CPU0:rtr#bash
+Fri May  4 16:43:25.437 UTC
+
+[xr-vm_node0_RP0_CPU0:~]$
+[xr-vm_node0_RP0_CPU0:~]$
+[xr-vm_node0_RP0_CPU0:~]$/misc/scratch/auditor -u -c
+2018-05-04 16:43:39,234 - DebugZTPLogger - INFO - Using root-lr user specified in auditor.cfg.yml, Username: vagrant
+2018-05-04 16:43:40,388 - DebugZTPLogger - INFO - Successfully removed xr audit app from XR LXC: audit_xr.bin
+2018-05-04 16:43:40,389 - DebugZTPLogger - INFO - Successfully cleaned up XR audit cron jobs
+2018-05-04 16:43:42,714 - DebugZTPLogger - INFO - Successfully removed audit app from Admin LXC: audit_admin.bin
+2018-05-04 16:43:43,868 - DebugZTPLogger - INFO - Successfully cleaned up admin audit cron jobs
+2018-05-04 16:43:47,888 - DebugZTPLogger - INFO - Successfully removed audit app from HOST: audit_host.bin
+2018-05-04 16:43:49,271 - DebugZTPLogger - INFO - Successfully cleaned up host audit cron jobs
+2018-05-04 16:43:50,388 - DebugZTPLogger - INFO - Successfully removed Collector audit app from XR LXC: collector.bin
+2018-05-04 16:43:50,388 - DebugZTPLogger - INFO - Successfully cleaned up collector audit cron jobs
+2018-05-04 16:43:50,388 - DebugZTPLogger - INFO - Starting cleanup of accumulated xml files as requested on Active-RP
+2018-05-04 16:44:20,471 - DebugZTPLogger - INFO - Cleaned up xml files on Active-RP XR LXC
+2018-05-04 16:44:26,199 - DebugZTPLogger - INFO - Cleaned up xml files on Active-RP Admin LXC
+2018-05-04 16:44:26,200 - DebugZTPLogger - INFO - Successfully uninstalled artifacts, IOS-XR Linux auditing is now OFF
+[xr-vm_node0_RP0_CPU0:~]$
+
+```
+
+You can issue a `/misc/scratch/auditor -l` again to check that all the relevant directories got cleaned up.
+
+
+
+### Go behind the scenes with Verbose Debugging
+
+All the options support verbose debugging, use the `-d` flag if you'd like to peak into what's happening behind the scenes when the auditor app installs or uninstalls individual apps and cron jobs.
+
+For example, if we use the `-d` flag during the installation process, we get:
+
+
+```
+[xr-vm_node0_RP0_CPU0:~]$
+[xr-vm_node0_RP0_CPU0:~]$/misc/scratch/auditor -i -d
+2018-05-04 16:49:08,511 - DebugZTPLogger - INFO - Using root-lr user specified in auditor.cfg.yml, Username: vagrant
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/xr
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/userfiles
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/lib
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/include
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/host
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/collector
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/admin
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/termios.so
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/resource.so
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/readline.so
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/pyexpat.so
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/lxml.etree.so
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/libz.so.1
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/libz-a147dcb0.so.1.2.3
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/libtinfo.so.5
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/libssl.so.1.0.0
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/libreadline.so.6
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/libpython2.7.so.1.0
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/libffi.so.6
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/libexpat.so.1
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/libcrypto.so.1.0.0
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/libbz2.so.1.0
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/bz2.so
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/_ssl.so
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/_multibytecodec.so
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/_json.so
+2018-05-04 16:49:08,512 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/_hashlib.so
+2018-05-04 16:49:08,513 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/_ctypes.so
+2018-05-04 16:49:08,513 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/_codecs_tw.so
+2018-05-04 16:49:08,513 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/_codecs_kr.so
+2018-05-04 16:49:08,513 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/_codecs_jp.so
+2018-05-04 16:49:08,513 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/_codecs_iso2022.so
+2018-05-04 16:49:08,513 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/_codecs_hk.so
+2018-05-04 16:49:08,513 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/_codecs_cn.so
+2018-05-04 16:49:08,513 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/xr/audit_xr.cron
+2018-05-04 16:49:08,513 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/xr/audit_xr.bin
+2018-05-04 16:49:08,513 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/userfiles/id_rsa_server
+2018-05-04 16:49:08,514 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/userfiles/compliance.xsd
+2018-05-04 16:49:08,514 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/userfiles/auditor.cfg.yml
+2018-05-04 16:49:08,514 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/lib/python2.7
+2018-05-04 16:49:08,514 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/lib/python2.7/config-x86_64-linux-gnu
+2018-05-04 16:49:08,514 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/lib/python2.7/config-x86_64-linux-gnu/Makefile
+2018-05-04 16:49:08,514 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/include/python2.7
+2018-05-04 16:49:08,514 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/include/python2.7/pyconfig.h
+2018-05-04 16:49:08,514 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/host/audit_host.cron
+2018-05-04 16:49:08,514 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/host/audit_host.bin
+2018-05-04 16:49:08,514 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/collector/collector.cron
+2018-05-04 16:49:08,514 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/collector/collector.bin
+2018-05-04 16:49:08,514 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/admin/audit_admin.cron
+2018-05-04 16:49:08,514 - DebugZTPLogger - DEBUG - /tmp/_MEIMqQ1ge/admin/audit_admin.bin
+2018-05-04 16:49:08,514 - DebugZTPLogger - DEBUG - bash cmd being run: ls /misc/scratch/
+2018-05-04 16:49:08,521 - DebugZTPLogger - DEBUG - output: auditor
+auditor_collated_logs.tar.gz
+clihistory
+config
+core
+crypto
+id_rsa
+nvgen_traces
+status_file
+tpa.log
+ztp
+
+2018-05-04 16:49:08,521 - DebugZTPLogger - DEBUG - error: 
+2018-05-04 16:49:08,529 - DebugZTPLogger - INFO - XR LXC audit app successfully copied
+2018-05-04 16:49:08,531 - DebugZTPLogger - DEBUG - bash cmd being run: chmod 0644 /etc/cron.d/audit_cron_xr_2018-05-04_16-49-08
+2018-05-04 16:49:08,537 - DebugZTPLogger - DEBUG - output: 
+2018-05-04 16:49:08,537 - DebugZTPLogger - DEBUG - error: 
+2018-05-04 16:49:08,537 - DebugZTPLogger - INFO - XR LXC audit cron job successfully set up
+2018-05-04 16:49:08,537 - DebugZTPLogger - DEBUG - Received bash cmd: ls /misc/scratch to run in shell of active RP's admin LXC
+2018-05-04 16:49:08,537 - DebugZTPLogger - DEBUG - Received admin exec command request: "run ssh root@192.0.0.1 ls /misc/scratch"
+2018-05-04 16:49:09,093 - DebugZTPLogger - DEBUG - Exec command output is ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run ssh root@192.0.0.1 ls /misc/scratch', 'Fri May  4  16:49:08.992 UTC', 'calvados_log_aaad_0_0.out', 'calvados_log_confd_helper_0_0.out', 'calvados_log_instagt_log_0_0.out', 'calvados_log_tacacsd_0_0.out', 'calvados_log_vmm_0_0.out', 'card_specific_install', 'core', 'shelf_mgr_pds', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:09,094 - DebugZTPLogger - DEBUG - Inside active_adminscp
+2018-05-04 16:49:09,094 - DebugZTPLogger - DEBUG - Received scp request to transfer file from XR LXC to admin LXC
+2018-05-04 16:49:09,094 - DebugZTPLogger - DEBUG - Received admin exec command request: "run scp root@192.0.0.4:/tmp/_MEIMqQ1ge/./admin/audit_admin.bin /misc/scratch/audit_aadscp_audit_admin.bin"
+2018-05-04 16:49:09,727 - DebugZTPLogger - DEBUG - Exec command output is ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run scp root@192.0.0.4:/tmp/_MEIMqQ1ge/./admin/audit_admin.bin /misc/scratch/audit_aadscp_audit_admin.bin', 'Fri May  4  16:49:09.545 UTC', 'audit_admin.bin                                 0%    0     0.0KB/s   --:-- ETA', 'audit_admin.bin                               100% 6882KB   6.7MB/s   00:00', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:09,727 - DebugZTPLogger - DEBUG - Received admin exec command request: "run scp /misc/scratch/audit_aadscp_audit_admin.bin root@192.0.0.1:/misc/scratch/audit_admin.bin"
+2018-05-04 16:49:10,379 - DebugZTPLogger - DEBUG - Exec command output is ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run scp /misc/scratch/audit_aadscp_audit_admin.bin root@192.0.0.1:/misc/scratch/audit_admin.bin', 'Fri May  4  16:49:10.200 UTC', 'audit_aadscp_audit_admin.bin                    0%    0     0.0KB/s   --:-- ETA', 'audit_aadscp_audit_admin.bin                  100% 6882KB   6.7MB/s   00:00', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:10,380 - DebugZTPLogger - DEBUG - Received admin exec command request: "run rm -f /misc/scratch/audit_aadscp_audit_admin.bin"
+2018-05-04 16:49:11,056 - DebugZTPLogger - DEBUG - Exec command output is ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run rm -f /misc/scratch/audit_aadscp_audit_admin.bin', 'Fri May  4  16:49:10.991 UTC', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:11,056 - DebugZTPLogger - INFO - Admin LXC audit app successfully copied
+2018-05-04 16:49:11,057 - DebugZTPLogger - DEBUG - ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run scp /misc/scratch/audit_aadscp_audit_admin.bin root@192.0.0.1:/misc/scratch/audit_admin.bin', 'Fri May  4  16:49:10.200 UTC', 'audit_aadscp_audit_admin.bin                    0%    0     0.0KB/s   --:-- ETA', 'audit_aadscp_audit_admin.bin                  100% 6882KB   6.7MB/s   00:00', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:11,057 - DebugZTPLogger - DEBUG - Received bash cmd: rm -f /etc/cron.d/audit_cron_admin_* to run in shell of active RP's admin LXC
+2018-05-04 16:49:11,057 - DebugZTPLogger - DEBUG - Received admin exec command request: "run ssh root@192.0.0.1 rm -f /etc/cron.d/audit_cron_admin_*"
+2018-05-04 16:49:11,624 - DebugZTPLogger - DEBUG - Exec command output is ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run ssh root@192.0.0.1 rm -f /etc/cron.d/audit_cron_admin_*', 'Fri May  4  16:49:11.509 UTC', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:11,625 - DebugZTPLogger - DEBUG - Received bash cmd: ls /etc/cron.d/ to run in shell of active RP's admin LXC
+2018-05-04 16:49:11,625 - DebugZTPLogger - DEBUG - Received admin exec command request: "run ssh root@192.0.0.1 ls /etc/cron.d/"
+2018-05-04 16:49:12,199 - DebugZTPLogger - DEBUG - Exec command output is ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run ssh root@192.0.0.1 ls /etc/cron.d/', 'Fri May  4  16:49:12.950 UTC', 'logrotate.conf', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:12,200 - DebugZTPLogger - DEBUG - bash cmd being run: chmod 0644 /misc/app_host/audit_cron_admin_2018-05-04_16-49-11
+2018-05-04 16:49:12,205 - DebugZTPLogger - DEBUG - output: 
+2018-05-04 16:49:12,205 - DebugZTPLogger - DEBUG - error: 
+2018-05-04 16:49:12,205 - DebugZTPLogger - DEBUG - Inside active_adminscp
+2018-05-04 16:49:12,205 - DebugZTPLogger - DEBUG - Received scp request to transfer file from XR LXC to admin LXC
+2018-05-04 16:49:12,205 - DebugZTPLogger - DEBUG - Received admin exec command request: "run scp root@192.0.0.4:/misc/app_host/audit_cron_admin_2018-05-04_16-49-11 /misc/scratch/audit_aadscp_audit_cron_admin_2018-05-04_16-49-11"
+2018-05-04 16:49:12,822 - DebugZTPLogger - DEBUG - Exec command output is ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run scp root@192.0.0.4:/misc/app_host/audit_cron_admin_2018-05-04_16-49-11 /misc/scratch/audit_aadscp_audit_cron_admin_2018-05-04_16-49-11', 'Fri May  4  16:49:12.660 UTC', 'audit_cron_admin_2018-05-04_16-49-11            0%    0     0.0KB/s   --:-- ETA', 'audit_cron_admin_2018-05-04_16-49-11          100%   89     0.1KB/s   00:00', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:12,822 - DebugZTPLogger - DEBUG - Received admin exec command request: "run scp /misc/scratch/audit_aadscp_audit_cron_admin_2018-05-04_16-49-11 root@192.0.0.1:/etc/cron.d/audit_cron_admin_2018-05-04_16-49-11"
+2018-05-04 16:49:13,381 - DebugZTPLogger - DEBUG - Exec command output is ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run scp /misc/scratch/audit_aadscp_audit_cron_admin_2018-05-04_16-49-11 root@192.0.0.1:/etc/cron.d/audit_cron_admin_2018-05-04_16-49-11', 'Fri May  4  16:49:13.275 UTC', 'audit_aadscp_audit_cron_admin_2018-05-04_16-4   0%    0     0.0KB/s   --:-- ETA', 'audit_aadscp_audit_cron_admin_2018-05-04_16-4 100%   89     0.1KB/s   00:00', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:13,381 - DebugZTPLogger - DEBUG - Received admin exec command request: "run rm -f /misc/scratch/audit_aadscp_audit_cron_admin_2018-05-04_16-49-11"
+2018-05-04 16:49:13,935 - DebugZTPLogger - DEBUG - Exec command output is ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run rm -f /misc/scratch/audit_aadscp_audit_cron_admin_2018-05-04_16-49-11', 'Fri May  4  16:49:13.887 UTC', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:13,935 - DebugZTPLogger - INFO - Admin LXC audit cron file successfully copied and activated
+2018-05-04 16:49:13,935 - DebugZTPLogger - DEBUG - ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run scp /misc/scratch/audit_aadscp_audit_cron_admin_2018-05-04_16-49-11 root@192.0.0.1:/etc/cron.d/audit_cron_admin_2018-05-04_16-49-11', 'Fri May  4  16:49:13.275 UTC', 'audit_aadscp_audit_cron_admin_2018-05-04_16-4   0%    0     0.0KB/s   --:-- ETA', 'audit_aadscp_audit_cron_admin_2018-05-04_16-4 100%   89     0.1KB/s   00:00', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:13,935 - DebugZTPLogger - DEBUG - Received host command request: "ls /misc/scratch"
+2018-05-04 16:49:13,936 - DebugZTPLogger - DEBUG - Received bash cmd: ssh root@10.0.2.16 ls /misc/scratch to run in shell of active RP's admin LXC
+2018-05-04 16:49:13,936 - DebugZTPLogger - DEBUG - Received admin exec command request: "run ssh root@192.0.0.1 ssh root@10.0.2.16 ls /misc/scratch"
+2018-05-04 16:49:14,610 - DebugZTPLogger - DEBUG - Exec command output is ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run ssh root@192.0.0.1 ssh root@10.0.2.16 ls /misc/scratch', 'Fri May  4  16:49:14.390 UTC', 'core', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:14,610 - DebugZTPLogger - DEBUG - Received scp request to transfer file from XR LXC to host shell
+2018-05-04 16:49:14,611 - DebugZTPLogger - DEBUG - Inside active_adminscp
+2018-05-04 16:49:14,611 - DebugZTPLogger - DEBUG - Received scp request to transfer file from XR LXC to admin LXC
+2018-05-04 16:49:14,611 - DebugZTPLogger - DEBUG - Received admin exec command request: "run scp root@192.0.0.4:/tmp/_MEIMqQ1ge/./host//audit_host.bin /misc/scratch/audit_aadscp_audit_host.bin"
+2018-05-04 16:49:15,388 - DebugZTPLogger - DEBUG - Exec command output is ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run scp root@192.0.0.4:/tmp/_MEIMqQ1ge/./host//audit_host.bin /misc/scratch/audit_aadscp_audit_host.bin', 'Fri May  4  16:49:15.990 UTC', 'audit_host.bin                                  0%    0     0.0KB/s   --:-- ETA', 'audit_host.bin                                100% 6881KB   6.7MB/s   00:00', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:15,389 - DebugZTPLogger - DEBUG - Received admin exec command request: "run scp /misc/scratch/audit_aadscp_audit_host.bin root@192.0.0.1:/misc/scratch/audit_ahscp_audit_host.bin"
+2018-05-04 16:49:16,006 - DebugZTPLogger - DEBUG - Exec command output is ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run scp /misc/scratch/audit_aadscp_audit_host.bin root@192.0.0.1:/misc/scratch/audit_ahscp_audit_host.bin', 'Fri May  4  16:49:15.846 UTC', 'audit_aadscp_audit_host.bin                     0%    0     0.0KB/s   --:-- ETA', 'audit_aadscp_audit_host.bin                   100% 6881KB   6.7MB/s   00:00', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:16,006 - DebugZTPLogger - DEBUG - Received admin exec command request: "run rm -f /misc/scratch/audit_aadscp_audit_host.bin"
+2018-05-04 16:49:16,596 - DebugZTPLogger - DEBUG - Exec command output is ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run rm -f /misc/scratch/audit_aadscp_audit_host.bin', 'Fri May  4  16:49:16.538 UTC', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:16,596 - DebugZTPLogger - DEBUG - Received bash cmd: scp /misc/scratch/audit_ahscp_audit_host.bin root@10.0.2.16:/misc/scratch/audit_host.bin to run in shell of active RP's admin LXC
+2018-05-04 16:49:16,597 - DebugZTPLogger - DEBUG - Received admin exec command request: "run ssh root@192.0.0.1 scp /misc/scratch/audit_ahscp_audit_host.bin root@10.0.2.16:/misc/scratch/audit_host.bin"
+2018-05-04 16:49:17,321 - DebugZTPLogger - DEBUG - Exec command output is ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run ssh root@192.0.0.1 scp /misc/scratch/audit_ahscp_audit_host.bin root@10.0.2.16:/misc/scratch/audit_host.bin', 'Fri May  4  16:49:17.810 UTC', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:17,321 - DebugZTPLogger - DEBUG - Received bash cmd: rm -f /misc/scratch/audit_ahscp_audit_host.bin to run in shell of active RP's admin LXC
+2018-05-04 16:49:17,322 - DebugZTPLogger - DEBUG - Received admin exec command request: "run ssh root@192.0.0.1 rm -f /misc/scratch/audit_ahscp_audit_host.bin"
+2018-05-04 16:49:17,949 - DebugZTPLogger - DEBUG - Exec command output is ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run ssh root@192.0.0.1 rm -f /misc/scratch/audit_ahscp_audit_host.bin', 'Fri May  4  16:49:17.841 UTC', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:17,949 - DebugZTPLogger - INFO - HOST audit app successfully copied
+2018-05-04 16:49:17,949 - DebugZTPLogger - DEBUG - ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run ssh root@192.0.0.1 scp /misc/scratch/audit_ahscp_audit_host.bin root@10.0.2.16:/misc/scratch/audit_host.bin', 'Fri May  4  16:49:17.810 UTC', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:17,949 - DebugZTPLogger - DEBUG - Received host command request: "rm -f /etc/cron.d/audit_cron_host_*"
+2018-05-04 16:49:17,949 - DebugZTPLogger - DEBUG - Received bash cmd: ssh root@10.0.2.16 rm -f /etc/cron.d/audit_cron_host_* to run in shell of active RP's admin LXC
+2018-05-04 16:49:17,949 - DebugZTPLogger - DEBUG - Received admin exec command request: "run ssh root@192.0.0.1 ssh root@10.0.2.16 rm -f /etc/cron.d/audit_cron_host_*"
+2018-05-04 16:49:18,628 - DebugZTPLogger - DEBUG - Exec command output is ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run ssh root@192.0.0.1 ssh root@10.0.2.16 rm -f /etc/cron.d/audit_cron_host_*', 'Fri May  4  16:49:18.414 UTC', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:18,628 - DebugZTPLogger - DEBUG - Received host command request: "ls /etc/cron.d/"
+2018-05-04 16:49:18,628 - DebugZTPLogger - DEBUG - Received bash cmd: ssh root@10.0.2.16 ls /etc/cron.d/ to run in shell of active RP's admin LXC
+2018-05-04 16:49:18,629 - DebugZTPLogger - DEBUG - Received admin exec command request: "run ssh root@192.0.0.1 ssh root@10.0.2.16 ls /etc/cron.d/"
+2018-05-04 16:49:19,290 - DebugZTPLogger - DEBUG - Exec command output is ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run ssh root@192.0.0.1 ssh root@10.0.2.16 ls /etc/cron.d/', 'Fri May  4  16:49:19.900 UTC', 'logrotate.conf', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:19,290 - DebugZTPLogger - DEBUG - bash cmd being run: chmod 0644 /misc/app_host/audit_cron_host_2018-05-04_16-49-17
+2018-05-04 16:49:19,295 - DebugZTPLogger - DEBUG - output: 
+2018-05-04 16:49:19,295 - DebugZTPLogger - DEBUG - error: 
+2018-05-04 16:49:19,295 - DebugZTPLogger - DEBUG - Received scp request to transfer file from XR LXC to host shell
+2018-05-04 16:49:19,295 - DebugZTPLogger - DEBUG - Inside active_adminscp
+2018-05-04 16:49:19,295 - DebugZTPLogger - DEBUG - Received scp request to transfer file from XR LXC to admin LXC
+2018-05-04 16:49:19,295 - DebugZTPLogger - DEBUG - Received admin exec command request: "run scp root@192.0.0.4:/misc/app_host/audit_cron_host_2018-05-04_16-49-17 /misc/scratch/audit_aadscp_audit_cron_host_2018-05-04_16-49-17"
+2018-05-04 16:49:19,902 - DebugZTPLogger - DEBUG - Exec command output is ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run scp root@192.0.0.4:/misc/app_host/audit_cron_host_2018-05-04_16-49-17 /misc/scratch/audit_aadscp_audit_cron_host_2018-05-04_16-49-17', 'Fri May  4  16:49:19.753 UTC', 'audit_cron_host_2018-05-04_16-49-17             0%    0     0.0KB/s   --:-- ETA', 'audit_cron_host_2018-05-04_16-49-17           100%   88     0.1KB/s   00:00', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:19,903 - DebugZTPLogger - DEBUG - Received admin exec command request: "run scp /misc/scratch/audit_aadscp_audit_cron_host_2018-05-04_16-49-17 root@192.0.0.1:/misc/scratch/audit_ahscp_audit_cron_host_2018-05-04_16-49-17"
+2018-05-04 16:49:20,500 - DebugZTPLogger - DEBUG - Exec command output is ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run scp /misc/scratch/audit_aadscp_audit_cron_host_2018-05-04_16-49-17 root@192.0.0.1:/misc/scratch/audit_ahscp_audit_cron_host_2018-05-04_16-49-17', 'Fri May  4  16:49:20.389 UTC', 'audit_aadscp_audit_cron_host_2018-05-04_16-49   0%    0     0.0KB/s   --:-- ETA', 'audit_aadscp_audit_cron_host_2018-05-04_16-49 100%   88     0.1KB/s   00:00', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:20,500 - DebugZTPLogger - DEBUG - Received admin exec command request: "run rm -f /misc/scratch/audit_aadscp_audit_cron_host_2018-05-04_16-49-17"
+2018-05-04 16:49:21,032 - DebugZTPLogger - DEBUG - Exec command output is ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run rm -f /misc/scratch/audit_aadscp_audit_cron_host_2018-05-04_16-49-17', 'Fri May  4  16:49:20.991 UTC', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:21,033 - DebugZTPLogger - DEBUG - Received bash cmd: scp /misc/scratch/audit_ahscp_audit_cron_host_2018-05-04_16-49-17 root@10.0.2.16:/etc/cron.d/audit_cron_host_2018-05-04_16-49-17 to run in shell of active RP's admin LXC
+2018-05-04 16:49:21,033 - DebugZTPLogger - DEBUG - Received admin exec command request: "run ssh root@192.0.0.1 scp /misc/scratch/audit_ahscp_audit_cron_host_2018-05-04_16-49-17 root@10.0.2.16:/etc/cron.d/audit_cron_host_2018-05-04_16-49-17"
+2018-05-04 16:49:21,693 - DebugZTPLogger - DEBUG - Exec command output is ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run ssh root@192.0.0.1 scp /misc/scratch/audit_ahscp_audit_cron_host_2018-05-04_16-49-17 root@10.0.2.16:/etc/cron.d/audit_cron_host_2018-05-04_16-49-17', 'Fri May  4  16:49:21.488 UTC', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:21,694 - DebugZTPLogger - DEBUG - Received bash cmd: rm -f /misc/scratch/audit_ahscp_audit_cron_host_2018-05-04_16-49-17 to run in shell of active RP's admin LXC
+2018-05-04 16:49:21,694 - DebugZTPLogger - DEBUG - Received admin exec command request: "run ssh root@192.0.0.1 rm -f /misc/scratch/audit_ahscp_audit_cron_host_2018-05-04_16-49-17"
+2018-05-04 16:49:22,283 - DebugZTPLogger - DEBUG - Exec command output is ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run ssh root@192.0.0.1 rm -f /misc/scratch/audit_ahscp_audit_cron_host_2018-05-04_16-49-17', 'Fri May  4  16:49:22.174 UTC', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:22,283 - DebugZTPLogger - INFO - Host audit cron file successfully copied and activated
+2018-05-04 16:49:22,284 - DebugZTPLogger - DEBUG - ['vagrant connected from 127.0.0.1 using console on xr-vm_node0_RP0_CPU0', '\x1b[?7hsysadmin-vm:0_RP0# run ssh root@192.0.0.1 scp /misc/scratch/audit_ahscp_audit_cron_host_2018-05-04_16-49-17 root@10.0.2.16:/etc/cron.d/audit_cron_host_2018-05-04_16-49-17', 'Fri May  4  16:49:21.488 UTC', 'sysadmin-vm:0_RP0#']
+2018-05-04 16:49:22,285 - DebugZTPLogger - DEBUG - bash cmd being run: ls /misc/scratch
+2018-05-04 16:49:22,304 - DebugZTPLogger - DEBUG - output: audit_xr.bin
+auditor
+auditor_collated_logs.tar.gz
+clihistory
+config
+core
+crypto
+id_rsa
+nvgen_traces
+status_file
+tpa.log
+ztp
+
+2018-05-04 16:49:22,304 - DebugZTPLogger - DEBUG - error: 
+2018-05-04 16:49:22,312 - DebugZTPLogger - INFO - Collector app successfully copied
+2018-05-04 16:49:22,313 - DebugZTPLogger - DEBUG - bash cmd being run: chmod 0644 /etc/cron.d/audit_cron_collector_2018-05-04_16-49-22
+2018-05-04 16:49:22,318 - DebugZTPLogger - DEBUG - output: 
+2018-05-04 16:49:22,318 - DebugZTPLogger - DEBUG - error: 
+2018-05-04 16:49:22,319 - DebugZTPLogger - INFO - Collector cron job successfully set up in XR LXC
+2018-05-04 16:49:22,319 - DebugZTPLogger - INFO - Successfully set up artifacts, IOS-XR Linux auditing is now ON
+[xr-vm_node0_RP0_CPU0:~]$
+
+
+```
+
+
+
+###  Troubleshooting:  Gathering logs from all Domains
+
+In case something goes wrong and a particular app or cron job does not behave properly, it is advisable to collect logs from all the domains into a single tar ball.
+This is made easy by the `-o <tarfile_output_dir>` option which allows a user to quickly gather the logs from all domains (Active and Standby RP) and create a tarfile called  `auditor_collated_logs.tar.gz` for you.
+
+
+```
+
+[xr-vm_node0_RP0_CPU0:~]$
+[xr-vm_node0_RP0_CPU0:~]$/misc/scratch/auditor -o /misc/scratch/
+2018-05-04 16:53:34,073 - DebugZTPLogger - INFO - Using root-lr user specified in auditor.cfg.yml, Username: vagrant
+2018-05-04 16:53:34,079 - DebugZTPLogger - INFO - Successfully saved audit logs for Active XR LXC to /misc/scratch/auditor_collected_logs/ACTIVE-XR-LXC.audit.log
+2018-05-04 16:53:35,906 - DebugZTPLogger - INFO - Successfully copied audit logs from Active Admin LXC to Active XR LXC at /misc/scratch/auditor_collected_logs/ACTIVE-ADMIN-LXC.audit.log
+2018-05-04 16:53:38,967 - DebugZTPLogger - INFO - Successfully copied audit logs from Active HOST to Active XR LXC at /misc/scratch/auditor_collected_logs/ACTIVE-HOST.audit.log
+2018-05-04 16:53:39,001 - DebugZTPLogger - INFO - Audit logs tarfile created at: /misc/scratch//auditor_collated_logs.tar.gz
+[xr-vm_node0_RP0_CPU0:~]$
+```
+
+The log tar ball will then be available to copy from the router directory to another location for inspection and troubleshooting.
+
+```
+[xr-vm_node0_RP0_CPU0:~]$ls -lrt /misc/scratch/auditor_collated_logs.tar.gz 
+-rw-r--r-- 1 root root 28019 May  4 16:53 /misc/scratch/auditor_collated_logs.tar.gz
+[xr-vm_node0_RP0_CPU0:~]$
+
+
+```
+
+
+
+
+## Support for Active/Standby RP systems:
+
+As mentioned earlier, the app supports active/standby systems as well. To demonstate see the outputs from an NCS5508 device with an active/standby RP to see how the application installs components on both the RPs:
+
+
+NCS-5500 router running IOS-XR 6.1.31: 
+
+```
+RP/0/RP0/CPU0:rtr#show version 
+Sat May  5 00:43:20.533 UTC
+
+Cisco IOS XR Software, Version 6.1.31
+Copyright (c) 2013-2016 by Cisco Systems, Inc.
+
+Build Information:
+ Built By     : radharan
+ Built On     : Wed May 24 02:15:20 PDT 2017
+ Build Host   : iox-lnx-049
+ Workspace    : /san2/production/6.1.31/ncs5500/workspace
+ Version      : 6.1.31
+ Location     : /opt/cisco/XR/packages/
+
+cisco NCS-5500 () processor 
+System uptime is 2 days, 17 hours, 47 minutes
+
+RP/0/RP0/CPU0:rtr#
+```
+
+Active and Standby RPs are present and in the High-Availability State:
+
+```
+
+RP/0/RP0/CPU0:rtr#show redundancy summary 
+Sat May  5 00:43:28.737 UTC
+    Active Node    Standby Node
+    -----------    ------------
+     0/RP0/CPU0      0/RP1/CPU0 (Node Ready, NSR:Not Configured)
+RP/0/RP0/CPU0:rtr#
+RP/0/RP0/CPU0:rtr#
+
+
+```
+
+
+Follow the same process as shown earlier:  Set up `userfiles/auditor.cfg.yml` appropriately with ROUTER_CONFIG and SERVER_CONFIG sections and transfer the app to the router.
+
+> In this case, I have set up the `auditor.cfg.yml` ROUTER_CONFIG such that the `OUTGOING_INTERFACE` is unset. This forces the app to use the mgmt port ip by default. I do this so that when I force a switchover to happen, it becomes easy to distinguish on the server that is receiving the XML data that there is switch from the active to standby based on the name of the compliance file generated.
+
+
+When you run the installation of the app, you will see logs indicating that components were installed on the standby RP as well:  
+
+
+```
+[xr-vm_node0_RP0_CPU0:~]$
+[xr-vm_node0_RP0_CPU0:~]$/misc/scratch/auditor -i
+2018-05-05 00:45:58,971 - DebugZTPLogger - INFO - Using root-lr user specified in auditor.cfg.yml, Username: vagrant
+2018-05-05 00:46:00,588 - DebugZTPLogger - INFO - XR LXC audit app successfully copied
+2018-05-05 00:46:00,595 - DebugZTPLogger - INFO - XR LXC audit cron job successfully set up
+2018-05-05 00:46:14,238 - DebugZTPLogger - INFO - Admin LXC audit app successfully copied
+2018-05-05 00:46:23,931 - DebugZTPLogger - INFO - Admin LXC audit cron file successfully copied and activated
+2018-05-05 00:46:39,428 - DebugZTPLogger - INFO - HOST audit app successfully copied
+2018-05-05 00:46:52,978 - DebugZTPLogger - INFO - Host audit cron file successfully copied and activated
+2018-05-05 00:46:54,534 - DebugZTPLogger - INFO - Collector app successfully copied
+2018-05-05 00:46:54,540 - DebugZTPLogger - INFO - Collector cron job successfully set up in XR LXC
+2018-05-05 00:46:54,964 - DebugZTPLogger - INFO - Standby XR LXC auditor app successfully copied
+2018-05-05 00:46:56,634 - DebugZTPLogger - INFO - Standby XR LXC audit app successfully copied
+2018-05-05 00:46:56,958 - DebugZTPLogger - INFO - Standby XR LXC audit cron file successfully copied and activated
+2018-05-05 00:47:09,404 - DebugZTPLogger - INFO - Standby Admin LXC audit app successfully copied
+2018-05-05 00:47:20,155 - DebugZTPLogger - INFO - Standby Admin LXC audit cron file successfully copied and activated
+2018-05-05 00:47:36,755 - DebugZTPLogger - INFO - Standby HOST audit app successfully copied
+2018-05-05 00:47:50,351 - DebugZTPLogger - INFO - Standby host audit cron file successfully copied and activated
+2018-05-05 00:47:52,011 - DebugZTPLogger - INFO - Standby XR LXC Collector app successfully copied
+2018-05-05 00:47:52,335 - DebugZTPLogger - INFO - Standby XR LXC collector cron file successfully copied and activated
+2018-05-05 00:47:52,336 - DebugZTPLogger - INFO - Successfully set up artifacts, IOS-XR Linux auditing is now ON
+[xr-vm_node0_RP0_CPU0:~]$
+
+
+``` 
+
+
+On my connected server, I see the compliance file appear just like the vagrant scenario:
+
+```
+cisco@dhcpserver:~$ 
+cisco@dhcpserver:~$ ls -lrt ~/compliance_audit*
+-rw-rw-r-- 1 cisco cisco 24629 May  4 00:56 /home/cisco/compliance_audit_rtr_11_11_11_42.xml
+cisco@dhcpserver:~$ 
+```
+
+
+Now let's force a switchover to happen on the router:
+
+```
+
+RP/0/RP0/CPU0:rtr#redundancy switchover 
+Sat May  5 00:53:38.742 UTC
+Proceed with switchover 0/RP0/CPU0 -> 0/RP1/CPU0? [confirm]
+RP/0/RP1/CPU0:May  5 00:53:39.486 : rmf_svr[328]: %HA-REDCON-4-FAILOVER_REQUESTED : failover has been requested by operator, waiting to initiate 
+Initiating switch-over.
+RP/0/RP0/CPU0:rtr#[00:53:44.034] Sending KILL signal to ds..
+[00:53:44.034] Sending KILL signal to processmgr..
+PM disconnect successStopping OpenBSD Secure Shell server: sshdinitctl: Unknown instance: 
+Stopping system message bus: dbus.
+Libvirt not initialized for container instance
+Stopping system log daemon...0
+Stopping internet superserver: xinetd.
+
+```
+
+
+Now let's wait on the server for about 2-3 minutes, and we should see a new compliance file show up:
+
+
+```
+cisco@dhcpserver:~$ 
+cisco@dhcpserver:~$ 
+cisco@dhcpserver:~$ ls -lrt ~/compliance_audit*
+-rw-rw-r-- 1 cisco cisco 24629 May  4 00:57 /home/cisco/compliance_audit_rtr_11_11_11_42.xml
+cisco@dhcpserver:~$ 
+cisco@dhcpserver:~$ 
+cisco@dhcpserver:~$ ls -lrt ~/compliance_audit*
+-rw-rw-r-- 1 cisco cisco 24629 May  4 00:57 /home/cisco/compliance_audit_rtr_11_11_11_42.xml
+-rw-rw-r-- 1 cisco cisco 24373 May  4 00:59 /home/cisco/compliance_audit_rtr_11_11_11_41.xml
+cisco@dhcpserver:~$ 
+
+
+```
+
+Perfect! Within 2 minutes, we have the auditor apps on the standby RP sending us the required compliance data!
+
+
 
 
 
