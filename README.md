@@ -38,7 +38,7 @@ No SMUs needed, leverages the native app-hosting architecture in IOS-XR and the 
 &nbsp;    
 &nbsp;  
 
-<a href="https://raw.githubusercontent.com/akshshar/xr-auditor/master/user_story_auditor.png">![user-story](https://raw.githubusercontent.com/akshshar/xr-auditor/master/user_story_auditor.png)</a>
+<a href="https://raw.githubusercontent.com/akshshar/xr-auditor/master/images/user_story_auditor.png">![user-story](https://raw.githubusercontent.com/akshshar/xr-auditor/master/images/user_story_auditor.png)</a>
 
 
 &nbsp;    
@@ -49,7 +49,7 @@ For a quick refresher on the IOS-XR container based architecture, see the figure
 &nbsp;    
 &nbsp;  
 
-<a href="https://github.com/akshshar/xr-auditor/blob/master/IOS-XR-architecture.png?raw=true">![iosxr-architecture](https://github.com/akshshar/xr-auditor/blob/master/IOS-XR-architecture.png?raw=true)</a> . 
+<a href="https://github.com/akshshar/xr-auditor/blob/master/images/IOS-XR-architecture.png?raw=true">![iosxr-architecture](https://github.com/akshshar/xr-auditor/blob/master/images/IOS-XR-architecture.png?raw=true)</a> . 
 
 &nbsp;    
 &nbsp;  
@@ -68,7 +68,7 @@ xr-auditor is installed using a single binary generated out of the code in this 
 &nbsp;    
 &nbsp;  
 
-<a href="https://github.com/akshshar/xr-auditor/blob/master/iosxr-auditor-install.png?raw=true">![xr-auditor-install](https://github.com/akshshar/xr-auditor/blob/master/iosxr-auditor-install.png?raw=true)</a> . 
+<a href="https://github.com/akshshar/xr-auditor/blob/master/images/iosxr-auditor-install.png?raw=true">![xr-auditor-install](https://github.com/akshshar/xr-auditor/blob/master/images/iosxr-auditor-install.png?raw=true)</a> . 
 
 
 &nbsp;    
@@ -79,7 +79,7 @@ Once the install is triggered, individual cron jobs and apps are set up in the d
 &nbsp;    
 &nbsp;  
   
-<a href="https://github.com/akshshar/xr-auditor/blob/master/iosxr-auditor-operation.png?raw=true">![xr-auditor-install](https://github.com/akshshar/xr-auditor/blob/master/iosxr-auditor-operation.png?raw=true)</a> 
+<a href="https://github.com/akshshar/xr-auditor/blob/master/images/iosxr-auditor-operation.png?raw=true">![xr-auditor-install](https://github.com/akshshar/xr-auditor/blob/master/images/iosxr-auditor-operation.png?raw=true)</a> 
 
 &nbsp;    
 &nbsp;  
@@ -88,21 +88,34 @@ Once the install is triggered, individual cron jobs and apps are set up in the d
 
   
 
-## Setting up the Build environment:
+## Setting up the Build environment on your laptop:
 
 All you need to build the application is a linux environment with python 2.7 installed.
 To make things simpler, there is a vagrant setup already included with the code. We will use the vagrant setup to build and test our application against IOS-XRv64 on our laptops before we run it on physical hardware (NCS5500):
 
 The vagrant setup looks something like this:  
 
-<a href="https://raw.githubusercontent.com/akshshar/xr-auditor/master/vagrant_setup.png">![vagrant setup](https://raw.githubusercontent.com/akshshar/xr-auditor/master/vagrant_setup.png)</a>
+<a href="https://raw.githubusercontent.com/akshshar/xr-auditor/master/images/vagrant_setup.png">![vagrant setup](https://raw.githubusercontent.com/akshshar/xr-auditor/master/images/vagrant_setup.png)</a>
 
 
->If you're not familiar with vagrant and its workflows I would suggest going through the following tutorials on [xrdocs](https://xrdocs.github.io/) to get access to an IOS-XR vagrant box and to play around with this setup and a lot more:  
+>If you're not familiar with vagrant and associated workflows I would suggest first going through the following tutorials on [xrdocs](https://xrdocs.github.io/) before continuing (these tutorials will also show how to gain access to the IOS-XR vagrant box if you don't already have it):
 >
 >* [XR toolbox, Part 1 : IOS-XR Vagrant Quick Start](https://xrdocs.github.io/application-hosting/tutorials/iosxr-vagrant-quickstart)
 >* [XR Toolbox, Part 2 : Bootstrap XR configuration with Vagrant](https://xrdocs.github.io/application-hosting/tutorials/iosxr-vagrant-bootstrap-config)
->* [https://xrdocs.github.io/application-hosting/tutorials/2016-06-06-xr-toolbox-app-development-topology](https://xrdocs.github.io/application-hosting/tutorials/2016-06-06-xr-toolbox-app-development-topology)
+>* [https://xrdocs.github.io/application-hosting/tutorials/2016-06-06-xr-toolbox-app-development-topology](https://xrdocs.github.io/application-hosting/tutorials/2016-06-06-xr-toolbox-app-development-topology) . 
+  
+&nbsp;    
+&nbsp; 
+
+## Building the Application:
+&nbsp;      
+*  **Step 1**: Clone the [xr-auditor]() git repo:
+
+   ```
+   
+   ```
+
+
 
 
 
