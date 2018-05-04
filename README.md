@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This application enables **periodic auditing** of the linux shells in the IOS-XR container-based architecture by running **individual python applications in each individual environment in IOS-XR**, i.e.:  
+This application enables **periodic auditing** of the linux shells in the IOS-XR container-based architecture by running **individual python applications in each individual environment in IOS-XR (also supports Active-Standby HA systems)**, i.e.:  
 
 >*   XR-LXC     
 >*   ADMIN-LXC   
@@ -14,7 +14,7 @@ The individual python applications **collect local data based on a YAML based us
 Further, the **application supports**:  
 
 >1.  **Installation**: on a High-Availability (Active/Standby RP) system through a single command.  
->2.  **A clean uninstallation**  across the entire system through a single command.  
+>2.  **A clean uninstallation**  across the entire system through a single command.  
 >3.  **Troubleshooting**:   **Dump filesystem view** - The ability to view the entire system's affected (user-defined in YAML file) system across active/standby RPs using a single command.  
 >4.  **Troubleshooting**:   **Gather debug Data** - The ability to collect generated logs from all the environments (Active/Standby XR LXC, Admin LXC, HOST) and create a single tar ball using a single command.  
     
