@@ -602,10 +602,10 @@ AKSHSHAR-M-33WP:vagrant akshshar$ ssh -p 2223 vagrant@localhost
 vagrant@localhost's password: 
 
 
-RP/0/RP0/CPU0:ios#
-RP/0/RP0/CPU0:ios#
-RP/0/RP0/CPU0:ios#
-RP/0/RP0/CPU0:ios#
+RP/0/RP0/CPU0:rtr#
+RP/0/RP0/CPU0:rtr#
+RP/0/RP0/CPU0:rtr#
+RP/0/RP0/CPU0:rtr#
 
 ```
 
@@ -615,9 +615,9 @@ Jump into the bash shell in the IOS-XRv instance and use the `-h` option for the
 
 
 ```
-RP/0/RP0/CPU0:ios#
-RP/0/RP0/CPU0:ios#
-RP/0/RP0/CPU0:ios#bash
+RP/0/RP0/CPU0:rtr#
+RP/0/RP0/CPU0:rtr#
+RP/0/RP0/CPU0:rtr#bash
 Fri May  4 15:28:45.654 UTC
 
 [xr-vm_node0_RP0_CPU0:~]$
@@ -650,8 +650,8 @@ optional arguments:
 Use the `-v` option:
 
 ```
-RP/0/RP0/CPU0:ios#
-RP/0/RP0/CPU0:ios#bash
+RP/0/RP0/CPU0:rtr#
+RP/0/RP0/CPU0:rtr#bash
 Fri May  4 15:25:52.977 UTC
 
 [xr-vm_node0_RP0_CPU0:~]$
@@ -700,24 +700,23 @@ Use the `-l` option with the auditor app to dump the current state of all the re
 
 ```
 [xr-vm_node0_RP0_CPU0:~]$
-[xr-vm_node0_RP0_CPU0:~]$
 [xr-vm_node0_RP0_CPU0:~]$/misc/scratch/auditor -l
-2018-05-04 15:56:37,327 - DebugZTPLogger - INFO - Using root-lr user specified in auditor.cfg.yml, Username: vagrant
-2018-05-04 15:56:37,327 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:28,841 - DebugZTPLogger - INFO - Using root-lr user specified in auditor.cfg.yml, Username: vagrant
+2018-05-04 16:03:28,841 - DebugZTPLogger - INFO - 
 
 ####################################################
                        ACTIVE-RP XR                
 #####################################################
 
 
-2018-05-04 15:56:37,327 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:28,841 - DebugZTPLogger - INFO - 
 
 ###### App Directory ######
 
-2018-05-04 15:56:37,332 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:28,846 - DebugZTPLogger - INFO - 
  /misc/scratch:
 
-total 48164
+total 48172
 drwxr-xr-x 2 root root     4096 Apr 24  2017 core
 lrwxrwxrwx 1 root root       12 Apr 24  2017 config -> /misc/config
 drwx------ 2 root root     4096 Apr 24  2017 clihistory
@@ -729,14 +728,14 @@ drwxr-xr-x 2 root root     4096 May  4 07:27 nvgen_traces
 -rw-r--r-- 1 root root      798 May  4 10:50 auditor_collated_logs.tar.gz
 -rwx------ 1 root root  7049952 May  4 15:26 collector.bin
 -rwx------ 1 root root  7046744 May  4 15:26 audit_xr.bin
--rwx------ 1 root root     1675 May  4 15:56 id_rsa
--rw-r--r-- 1 root root   233450 May  4 15:56 tpa.log
+-rwx------ 1 root root     1675 May  4 16:03 id_rsa
+-rw-r--r-- 1 root root   240786 May  4 16:03 tpa.log
 
-2018-05-04 15:56:37,332 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:28,846 - DebugZTPLogger - INFO - 
 
 ###### Cron directory ######
 
-2018-05-04 15:56:37,337 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:28,851 - DebugZTPLogger - INFO - 
  /etc/cron.d:
 
 total 12
@@ -744,11 +743,11 @@ total 12
 -rw-r--r-- 1 root root 86 May  4 15:26 audit_cron_xr_2018-05-04_15-26-37
 -rw-r--r-- 1 root root 87 May  4 15:26 audit_cron_collector_2018-05-04_15-26-50
 
-2018-05-04 15:56:37,337 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:28,851 - DebugZTPLogger - INFO - 
 
 ###### XML Output Directory ######
 
-2018-05-04 15:56:37,342 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:28,855 - DebugZTPLogger - INFO - 
  /misc/app_host:
 
 total 84
@@ -758,26 +757,26 @@ drwxrwxr-x 2 root sudo  4096 Apr 24  2017 scratch
 drwx-----x 9 root root  4096 Apr 24  2017 docker
 drwxr-xr-x 5 root root  4096 Apr 24  2017 app_repo
 srw-rw---- 1 root root     0 May  4 06:31 docker.sock
--rw-r--r-- 1 root root  7908 May  4 15:56 ADMIN-LXC.xml
--rw-r--r-- 1 root root  8111 May  4 15:56 HOST.xml
--rw-r--r-- 1 root root 23798 May  4 15:56 compliance_audit__11_1_1_10.xml
--rw-r--r-- 1 root root  8263 May  4 15:56 XR-LXC.xml
+-rw-r--r-- 1 root root  8111 May  4 16:03 HOST.xml
+-rw-r--r-- 1 root root  7908 May  4 16:03 ADMIN-LXC.xml
+-rw-r--r-- 1 root root 23798 May  4 16:03 compliance_audit_rtr_11_1_1_10.xml
+-rw-r--r-- 1 root root  8264 May  4 16:03 XR-LXC.xml
 
-2018-05-04 15:56:37,342 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:28,855 - DebugZTPLogger - INFO - 
 
 ####################################################
                        ACTIVE-RP COLLECTOR                
 #####################################################
 
 
-2018-05-04 15:56:37,342 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:28,856 - DebugZTPLogger - INFO - 
 
 ###### App Directory ######
 
-2018-05-04 15:56:37,348 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:28,860 - DebugZTPLogger - INFO - 
  /misc/scratch:
 
-total 48164
+total 48172
 drwxr-xr-x 2 root root     4096 Apr 24  2017 core
 lrwxrwxrwx 1 root root       12 Apr 24  2017 config -> /misc/config
 drwx------ 2 root root     4096 Apr 24  2017 clihistory
@@ -789,14 +788,14 @@ drwxr-xr-x 2 root root     4096 May  4 07:27 nvgen_traces
 -rw-r--r-- 1 root root      798 May  4 10:50 auditor_collated_logs.tar.gz
 -rwx------ 1 root root  7049952 May  4 15:26 collector.bin
 -rwx------ 1 root root  7046744 May  4 15:26 audit_xr.bin
--rwx------ 1 root root     1675 May  4 15:56 id_rsa
--rw-r--r-- 1 root root   233450 May  4 15:56 tpa.log
+-rwx------ 1 root root     1675 May  4 16:03 id_rsa
+-rw-r--r-- 1 root root   240786 May  4 16:03 tpa.log
 
-2018-05-04 15:56:37,348 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:28,860 - DebugZTPLogger - INFO - 
 
 ###### Cron directory ######
 
-2018-05-04 15:56:37,354 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:28,866 - DebugZTPLogger - INFO - 
  /etc/cron.d:
 
 total 12
@@ -804,11 +803,11 @@ total 12
 -rw-r--r-- 1 root root 86 May  4 15:26 audit_cron_xr_2018-05-04_15-26-37
 -rw-r--r-- 1 root root 87 May  4 15:26 audit_cron_collector_2018-05-04_15-26-50
 
-2018-05-04 15:56:37,354 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:28,866 - DebugZTPLogger - INFO - 
 
 ###### XML Output Directory ######
 
-2018-05-04 15:56:37,359 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:28,872 - DebugZTPLogger - INFO - 
  /misc/app_host:
 
 total 84
@@ -818,26 +817,26 @@ drwxrwxr-x 2 root sudo  4096 Apr 24  2017 scratch
 drwx-----x 9 root root  4096 Apr 24  2017 docker
 drwxr-xr-x 5 root root  4096 Apr 24  2017 app_repo
 srw-rw---- 1 root root     0 May  4 06:31 docker.sock
--rw-r--r-- 1 root root  7908 May  4 15:56 ADMIN-LXC.xml
--rw-r--r-- 1 root root  8111 May  4 15:56 HOST.xml
--rw-r--r-- 1 root root 23798 May  4 15:56 compliance_audit__11_1_1_10.xml
--rw-r--r-- 1 root root  8263 May  4 15:56 XR-LXC.xml
+-rw-r--r-- 1 root root  8111 May  4 16:03 HOST.xml
+-rw-r--r-- 1 root root  7908 May  4 16:03 ADMIN-LXC.xml
+-rw-r--r-- 1 root root 23798 May  4 16:03 compliance_audit_rtr_11_1_1_10.xml
+-rw-r--r-- 1 root root  8264 May  4 16:03 XR-LXC.xml
 
-2018-05-04 15:56:37,359 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:28,872 - DebugZTPLogger - INFO - 
 
 ####################################################
                        ACTIVE-RP ADMIN                
 #####################################################
 
 
-2018-05-04 15:56:37,359 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:28,872 - DebugZTPLogger - INFO - 
 
 ###### App Directory ######
 
-2018-05-04 15:56:37,945 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:29,460 - DebugZTPLogger - INFO - 
  /misc/scratch:
 
-total 7156
+total 7164
 drwxr-xr-x 2 root root    4096 Apr 24  2017 core
 drwxr-xr-x 2 root root    4096 Apr 24  2017 shelf_mgr_pds
 -rw-r--r-- 1 root root     579 May  4 06:31 card_specific_install
@@ -846,26 +845,26 @@ drwxr-xr-x 2 root root    4096 Apr 24  2017 shelf_mgr_pds
 --wxr-Sr-- 1 root root    3388 May  4 06:31 calvados_log_vmm_0_0.out
 --wxr-sr-x 1 root root   28112 May  4 06:33 calvados_log_confd_helper_0_0.out
 -rwx------ 1 root root 7046848 May  4 15:26 audit_admin.bin
--rw-r--r-- 1 root root    7908 May  4 15:56 ADMIN-LXC.xml
---wxr-Sr-x 1 root root  201479 May  4 15:56 calvados_log_aaad_0_0.out
-2018-05-04 15:56:37,945 - DebugZTPLogger - INFO - 
+-rw-r--r-- 1 root root    7908 May  4 16:03 ADMIN-LXC.xml
+--wxr-Sr-x 1 root root  211763 May  4 16:03 calvados_log_aaad_0_0.out
+2018-05-04 16:03:29,460 - DebugZTPLogger - INFO - 
 
 ###### Cron directory ######
 
-2018-05-04 15:56:38,539 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:30,075 - DebugZTPLogger - INFO - 
  /etc/cron.d:
 
 total 8
 -rw-r--r-- 1 root root 73 Apr 24  2017 logrotate.conf
 -rw-r--r-- 1 root root 89 May  4 15:26 audit_cron_admin_2018-05-04_15-26-40
-2018-05-04 15:56:38,539 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:30,076 - DebugZTPLogger - INFO - 
 
 ###### XML Output Directory ######
 
-2018-05-04 15:56:39,159 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:30,639 - DebugZTPLogger - INFO - 
  /misc/scratch:
 
-total 7160
+total 7168
 drwxr-xr-x 2 root root    4096 Apr 24  2017 core
 drwxr-xr-x 2 root root    4096 Apr 24  2017 shelf_mgr_pds
 -rw-r--r-- 1 root root     579 May  4 06:31 card_specific_install
@@ -874,40 +873,40 @@ drwxr-xr-x 2 root root    4096 Apr 24  2017 shelf_mgr_pds
 --wxr-Sr-- 1 root root    3388 May  4 06:31 calvados_log_vmm_0_0.out
 --wxr-sr-x 1 root root   28112 May  4 06:33 calvados_log_confd_helper_0_0.out
 -rwx------ 1 root root 7046848 May  4 15:26 audit_admin.bin
--rw-r--r-- 1 root root    7908 May  4 15:56 ADMIN-LXC.xml
---wxr-Sr-x 1 root root  204907 May  4 15:56 calvados_log_aaad_0_0.out
-2018-05-04 15:56:39,160 - DebugZTPLogger - INFO - 
+-rw-r--r-- 1 root root    7908 May  4 16:03 ADMIN-LXC.xml
+--wxr-Sr-x 1 root root  215191 May  4 16:03 calvados_log_aaad_0_0.out
+2018-05-04 16:03:30,640 - DebugZTPLogger - INFO - 
 
 ####################################################
                        ACTIVE-RP HOST                
 #####################################################
 
 
-2018-05-04 15:56:39,160 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:30,640 - DebugZTPLogger - INFO - 
 
 ###### App Directory ######
 
-2018-05-04 15:56:39,894 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:31,334 - DebugZTPLogger - INFO - 
  /misc/scratch:
 
 total 6888
 drwxr-xr-x 2 root root    4096 Apr 24  2017 core
 -rwx------ 1 root root 7046616 May  4 15:26 audit_host.bin
-2018-05-04 15:56:39,894 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:31,334 - DebugZTPLogger - INFO - 
 
 ###### Cron directory ######
 
-2018-05-04 15:56:40,583 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:32,063 - DebugZTPLogger - INFO - 
  /etc/cron.d:
 
 total 8
 -rw-r--r-- 1 root root 73 Apr 24  2017 logrotate.conf
 -rw-r--r-- 1 root root 88 May  4 15:26 audit_cron_host_2018-05-04_15-26-46
-2018-05-04 15:56:40,584 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:32,064 - DebugZTPLogger - INFO - 
 
 ###### XML Output Directory ######
 
-2018-05-04 15:56:41,284 - DebugZTPLogger - INFO - 
+2018-05-04 16:03:32,788 - DebugZTPLogger - INFO - 
  /misc/app_host:
 
 total 84
@@ -917,15 +916,556 @@ drwxrwxr-x 2 root sudo  4096 Apr 24  2017 scratch
 drwx-----x 9 root root  4096 Apr 24  2017 docker
 drwxr-xr-x 5 root root  4096 Apr 24  2017 app_repo
 srw-rw---- 1 root root     0 May  4 06:31 docker.sock
--rw-r--r-- 1 root root  7908 May  4 15:56 ADMIN-LXC.xml
--rw-r--r-- 1 root root  8111 May  4 15:56 HOST.xml
--rw-r--r-- 1 root root 23798 May  4 15:56 compliance_audit__11_1_1_10.xml
--rw-r--r-- 1 root root  8263 May  4 15:56 XR-LXC.xml
+-rw-r--r-- 1 root root  8111 May  4 16:03 HOST.xml
+-rw-r--r-- 1 root root  7908 May  4 16:03 ADMIN-LXC.xml
+-rw-r--r-- 1 root root 23798 May  4 16:03 compliance_audit_rtr_11_1_1_10.xml
+-rw-r--r-- 1 root root  8264 May  4 16:03 XR-LXC.xml
+[xr-vm_node0_RP0_CPU0:~]$
+
+
+```
+
+
+### list the generated XML files
+
+You will see the generated XML files in the directories specified in the `userfiles/auditor.cfg.yml` files as explained in the previous section. The recommendation is to set the `output_xml_dir` for both XR and collector to `/misc/app_host` to view all the XML files in one location, but it is not mandatory.  
+
+
+```
+[xr-vm_node0_RP0_CPU0:~]$
+[xr-vm_node0_RP0_CPU0:~]$ls -lrt /misc/app_host/
+total 84
+drwx------ 2 root root 16384 Apr 24  2017 lost+found
+drwxr-xr-x 5 root root  4096 Apr 24  2017 etc
+drwxrwxr-x 2 root sudo  4096 Apr 24  2017 scratch
+drwx-----x 9 root root  4096 Apr 24  2017 docker
+drwxr-xr-x 5 root root  4096 Apr 24  2017 app_repo
+srw-rw---- 1 root root     0 May  4 06:31 docker.sock
+-rw-r--r-- 1 root root  7908 May  4 16:05 ADMIN-LXC.xml
+-rw-r--r-- 1 root root  8111 May  4 16:05 HOST.xml
+-rw-r--r-- 1 root root 23799 May  4 16:05 compliance_audit_rtr_11_1_1_10.xml
+-rw-r--r-- 1 root root  8264 May  4 16:05 XR-LXC.xml
 [xr-vm_node0_RP0_CPU0:~]$
 
 
 
 ```
+
+Here,
+`-rw-r--r-- 1 root root  7908 May  4 16:05 ADMIN-LXC.xml`  is generated by audit_admin.bin running in the Admin LXC
+`-rw-r--r-- 1 root root  8111 May  4 16:05 HOST.xml` is generated by audit_host.bin running in the Host shell
+`-rw-r--r-- 1 root root  8264 May  4 16:05 XR-LXC.xml` is generated by audit_xr.bin running in the XR shell
+`-rw-r--r-- 1 root root 23799 May  4 16:05 compliance_audit_rtr_11_1_1_10.xml` is generated by the collector app running in the XR shell.
+
+
+
+### View the generated XML content on the Server
+
+
+As specified earlier, the XML content generated by the collector app is transferred over SSH to the remote server, based on the SERVER_CONFIG settings in `userfiles/auditor.cfg.yml`:
+
+So log back into devbox(server) and drop into the directory that you specified as `REMOTE_DIRECTORY` in `userfiles/auditor.cfg.yml`.
+
+```
+    # Specify the remote directory on the server
+    # where the compliance XML file should be copied
+
+    REMOTE_DIRECTORY: "/home/vagrant"
+
+```
+
+In this case, it is set to `/home/vagrant` so checking there:
+
+```
+AKSHSHAR-M-33WP:vagrant akshshar$ 
+AKSHSHAR-M-33WP:vagrant akshshar$ vagrant ssh devbox
+vagrant@127.0.0.1's password: 
+Welcome to Ubuntu 16.04.4 LTS (GNU/Linux 4.4.0-87-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+0 packages can be updated.
+0 updates are security updates.
+
+
+Last login: Fri May  4 16:13:51 2018 from 10.0.2.2
+vagrant@vagrant:~$ 
+vagrant@vagrant:~$ 
+vagrant@vagrant:~$ ls -lrt /misc/app
+ls: cannot access '/misc/app': No such file or directory
+vagrant@vagrant:~$ ls -lrt /home/vagrant/
+total 28
+drwxrwxr-x 10 vagrant vagrant  4096 May  4 10:42 xr-auditor
+-rw-rw-r--  1 vagrant vagrant 23799 May  4 16:14 compliance_audit_rtr_11_1_1_10.xml
+vagrant@vagrant:~$ 
+vagrant@vagrant:~$ 
+```
+
+>Great! We see the xml file appear on the server, transmitted by the collector app.
+
+Let's dump the content:
+
+```
+vagrant@vagrant:~$ cat compliance_audit_rtr_11_1_1_10.xml 
+<?xml version="1.0" encoding="utf-8"?>
+<COMPLIANCE-DUMP xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0.0" xsi:noNamespaceSchemaLocation="compliance.xsd">
+	<GENERAL>
+		<PRODUCT>XRV-P-L--CH</PRODUCT>
+		<VENDOR>Cisco</VENDOR>
+		<IPADDR>11.1.1.10/24</IPADDR>
+		<HOST>rtr</HOST>
+		<VERSION>6.1.2</VERSION>
+		<DATE>20180504-16:14 UTC</DATE>
+		<OS>IOS-XR</OS>
+	</GENERAL>
+	<INTEGRITY-SET>
+		<INTEGRITY domain="XR-LXC">
+			<FILES>
+				<FILE>
+					<CONTENT>["#\t$OpenBSD: sshd_config,v 1.80 2008/07/02 02:24:18 djm Exp $", "# This is the sshd server system-wide configuration file.  See", "# sshd_config(5) for more information.", "# This sshd was compiled with PATH=/usr/bin:/bin:/usr/sbin:/sbin", "# The strategy used for options in the default sshd_config shipped with", "# OpenSSH is to specify options with their default value where", "# possible, but leave them commented.  Uncommented options change a", "# default value.", "#Port 22", "AddressFamily inet", "#ListenAddress 0.0.0.0", "#ListenAddress ::", "# Disable legacy (protocol version 1) support in the server for new", "# installations. In future the default will change to require explicit", "# activation of protocol 1", "Protocol 2", "# HostKey for protocol version 1", "#HostKey /etc/ssh/ssh_host_key", "# HostKeys for protocol version 2", "#HostKey /etc/ssh/ssh_host_rsa_key", "#HostKey /etc/ssh/ssh_host_dsa_key", "# Lifetime and size of ephemeral version 1 server key", "#KeyRegenerationInterval 1h", "#ServerKeyBits 1024", "# Logging", "# obsoletes QuietMode and FascistLogging", "#SyslogFacility AUTH", "#LogLevel INFO", "# Authentication:", "#LoginGraceTime 2m", "PermitRootLogin yes", "#StrictModes yes", "#MaxAuthTries 6", "#MaxSessions 10", "#RSAAuthentication yes", "#PubkeyAuthentication yes", "#AuthorizedKeysFile\t.ssh/authorized_keys", "# For this to work you will also need host keys in /etc/ssh/ssh_known_hosts", "#RhostsRSAAuthentication no", "# similar for protocol version 2", "#HostbasedAuthentication no", "# Change to yes if you don't trust ~/.ssh/known_hosts for", "# RhostsRSAAuthentication and HostbasedAuthentication", "#IgnoreUserKnownHosts no", "# Don't read the user's ~/.rhosts and ~/.shosts files", "#IgnoreRhosts yes", "# To disable tunneled clear text passwords, change to no here!", "#PasswordAuthentication yes", "PermitEmptyPasswords yes", "# Change to no to disable s/key passwords", "#ChallengeResponseAuthentication yes", "# Kerberos options", "#KerberosAuthentication no", "#KerberosOrLocalPasswd yes", "#KerberosTicketCleanup yes", "#KerberosGetAFSToken no", "# GSSAPI options", "#GSSAPIAuthentication no", "#GSSAPICleanupCredentials yes", "# Set this to 'yes' to enable PAM authentication, account processing,", "# and session processing. If this is enabled, PAM authentication will", "# be allowed through the ChallengeResponseAuthentication and", "# PasswordAuthentication.  Depending on your PAM configuration,", "# PAM authentication via ChallengeResponseAuthentication may bypass", "# the setting of \"PermitRootLogin without-password\".", "# If you just want the PAM account and session checks to run without", "# PAM authentication, then enable this but set PasswordAuthentication", "# and ChallengeResponseAuthentication to 'no'.", "#UsePAM no", "#AllowAgentForwarding yes", "#AllowTcpForwarding yes", "#GatewayPorts no", "#X11Forwarding no", "#X11DisplayOffset 10", "#X11UseLocalhost yes", "#PrintMotd yes", "#PrintLastLog yes", "#TCPKeepAlive yes", "#UseLogin no", "UsePrivilegeSeparation no", "#PermitUserEnvironment no", "Compression no", "ClientAliveInterval 15", "ClientAliveCountMax 4", "UseDNS no", "#PidFile /var/run/sshd.pid", "#MaxStartups 10", "#PermitTunnel no", "#ChrootDirectory none", "# no default banner path", "#Banner none", "# override default of no subsystems", "Subsystem\tsftp\t/usr/lib64/openssh/sftp-server", "# Example of overriding settings on a per-user basis", "#Match User anoncvs", "#\tX11Forwarding no", "#\tAllowTcpForwarding no", "#\tForceCommand cvs server"]</CONTENT>
+					<CHECKSUM>97884b5c2cb2b75022c4b440ddc4245a</CHECKSUM>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -la</REQUEST>
+							<RESPONSE>-rwxr-xr-x 1 root root 3275 Apr 24  2017 /etc/ssh/sshd_config</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/etc/ssh/sshd_config</NAME>
+				</FILE>
+				<FILE>
+					<CONTENT>["root:x:0:0:root:/root:/bin/sh", "daemon:x:1:1:daemon:/usr/sbin:/bin/sh", "bin:x:2:2:bin:/bin:/bin/sh", "sys:x:3:3:sys:/dev:/bin/sh", "sync:x:4:65534:sync:/bin:/bin/sync", "games:x:5:60:games:/usr/games:/bin/sh", "man:x:6:12:man:/var/cache/man:/bin/sh", "lp:x:7:7:lp:/var/spool/lpd:/bin/sh", "mail:x:8:8:mail:/var/mail:/bin/sh", "news:x:9:9:news:/var/spool/news:/bin/sh", "uucp:x:10:10:uucp:/var/spool/uucp:/bin/sh", "proxy:x:13:13:proxy:/bin:/bin/sh", "www-data:x:33:33:www-data:/var/www:/bin/sh", "backup:x:34:34:backup:/var/backups:/bin/sh", "list:x:38:38:Mailing List Manager:/var/list:/bin/sh", "irc:x:39:39:ircd:/var/run/ircd:/bin/sh", "gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/bin/sh", "nobody:x:65534:65534:nobody:/nonexistent:/bin/sh", "messagebus:x:999:998::/var/lib/dbus:/bin/false", "rpc:x:998:996::/:/bin/false", "sshd:x:997:995::/var/run/sshd:/bin/false", "vagrant:x:1000:1009::/home/vagrant:/bin/sh"]</CONTENT>
+					<CHECKSUM>0cabf9f93101d6876bba590e48bfda5e</CHECKSUM>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -la</REQUEST>
+							<RESPONSE>-rw-r--r-- 1 root root 874 Apr 24  2017 /etc/passwd</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/etc/passwd</NAME>
+				</FILE>
+				<FILE>
+					<CHECKSUM>7ea587858977ef205c6a7419463359f7</CHECKSUM>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -la</REQUEST>
+							<RESPONSE>lrwxrwxrwx 1 root root 7 Apr 24  2017 /usr/bin/python -&gt; python2</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/usr/bin/python</NAME>
+				</FILE>
+				<FILE>
+					<CONTENT>["# Defaults for dhcp initscript", "# sourced by /etc/init.d/dhcp-server", "# installed at /etc/default/dhcp-server by the maintainer scripts", "# On what interfaces should the DHCP server (dhcpd) serve DHCP requests?", "#       Separate multiple interfaces with spaces, e.g. \"eth0 eth1\".", "INTERFACES=\"\""]</CONTENT>
+					<CHECKSUM>1c905007d96a8b16c58454b6da8cfd86</CHECKSUM>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -lhrt</REQUEST>
+							<RESPONSE>-rw-r--r-- 1 root root 290 Apr 24  2017 /etc/default/dhcp-server</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/etc/default/dhcp-server</NAME>
+				</FILE>
+			</FILES>
+			<DIRECTORIES>
+				<DIRECTORY>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -ld</REQUEST>
+							<RESPONSE>drwxr-xr-x 3 root root 20480 Apr 24  2017 /usr/bin</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/usr/bin</NAME>
+				</DIRECTORY>
+				<DIRECTORY>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -lrt</REQUEST>
+							<RESPONSE>total 8
+-rwx------ 1 root root   0 Apr 24  2017 log.txt
+-rwx------ 1 root root  13 Apr 24  2017 card_instances.txt
+-rw-r--r-- 1 root root 218 Apr 24  2017 cmdline
+-rw-r--r-- 1 root root   0 May  4 16:13 test.txt</RESPONSE>
+						</CMD>
+						<CMD>
+							<REQUEST>touch test.txt</REQUEST>
+							<RESPONSE></RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/root</NAME>
+				</DIRECTORY>
+				<DIRECTORY>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -ld</REQUEST>
+							<RESPONSE>drwxr-xr-x 7 root root 4096 May  4 15:26 /misc/scratch</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/misc/scratch</NAME>
+				</DIRECTORY>
+				<DIRECTORY>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -ld</REQUEST>
+							<RESPONSE>drwxr-xr-x 7 root root 4096 May  4 16:03 /misc/app_host</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/misc/app_host</NAME>
+				</DIRECTORY>
+				<DIRECTORY>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -ld</REQUEST>
+							<RESPONSE>drwxr-xr-x 57 root root 4096 May  4 06:32 /etc</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/etc</NAME>
+				</DIRECTORY>
+				<DIRECTORY>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -ld</REQUEST>
+							<RESPONSE>drwxr-xr-x 34 root root 4096 May  4 10:52 /</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/</NAME>
+				</DIRECTORY>
+			</DIRECTORIES>
+		</INTEGRITY>
+		<INTEGRITY domain="ADMIN-LXC">
+			<FILES>
+				<FILE>
+					<CONTENT>["#\t$OpenBSD: sshd_config,v 1.80 2008/07/02 02:24:18 djm Exp $", "# This is the sshd server system-wide configuration file.  See", "# sshd_config(5) for more information.", "# This sshd was compiled with PATH=/usr/bin:/bin:/usr/sbin:/sbin", "# The strategy used for options in the default sshd_config shipped with", "# OpenSSH is to specify options with their default value where", "# possible, but leave them commented.  Uncommented options change a", "# default value.", "#Port 22", "AddressFamily inet", "#ListenAddress 0.0.0.0", "#ListenAddress ::", "# Disable legacy (protocol version 1) support in the server for new", "# installations. In future the default will change to require explicit", "# activation of protocol 1", "Protocol 2", "# HostKey for protocol version 1", "#HostKey /etc/ssh/ssh_host_key", "# HostKeys for protocol version 2", "#HostKey /etc/ssh/ssh_host_rsa_key", "#HostKey /etc/ssh/ssh_host_dsa_key", "# Lifetime and size of ephemeral version 1 server key", "#KeyRegenerationInterval 1h", "#ServerKeyBits 1024", "# Logging", "# obsoletes QuietMode and FascistLogging", "#SyslogFacility AUTH", "#LogLevel INFO", "# Authentication:", "#LoginGraceTime 2m", "PermitRootLogin yes", "#StrictModes yes", "#MaxAuthTries 6", "#MaxSessions 10", "#RSAAuthentication yes", "#PubkeyAuthentication yes", "#AuthorizedKeysFile\t.ssh/authorized_keys", "# For this to work you will also need host keys in /etc/ssh/ssh_known_hosts", "#RhostsRSAAuthentication no", "# similar for protocol version 2", "#HostbasedAuthentication no", "# Change to yes if you don't trust ~/.ssh/known_hosts for", "# RhostsRSAAuthentication and HostbasedAuthentication", "#IgnoreUserKnownHosts no", "# Don't read the user's ~/.rhosts and ~/.shosts files", "#IgnoreRhosts yes", "# To disable tunneled clear text passwords, change to no here!", "#PasswordAuthentication yes", "PermitEmptyPasswords yes", "# Change to no to disable s/key passwords", "#ChallengeResponseAuthentication yes", "# Kerberos options", "#KerberosAuthentication no", "#KerberosOrLocalPasswd yes", "#KerberosTicketCleanup yes", "#KerberosGetAFSToken no", "# GSSAPI options", "#GSSAPIAuthentication no", "#GSSAPICleanupCredentials yes", "# Set this to 'yes' to enable PAM authentication, account processing,", "# and session processing. If this is enabled, PAM authentication will", "# be allowed through the ChallengeResponseAuthentication and", "# PasswordAuthentication.  Depending on your PAM configuration,", "# PAM authentication via ChallengeResponseAuthentication may bypass", "# the setting of \"PermitRootLogin without-password\".", "# If you just want the PAM account and session checks to run without", "# PAM authentication, then enable this but set PasswordAuthentication", "# and ChallengeResponseAuthentication to 'no'.", "#UsePAM no", "#AllowAgentForwarding yes", "#AllowTcpForwarding yes", "#GatewayPorts no", "#X11Forwarding no", "#X11DisplayOffset 10", "#X11UseLocalhost yes", "#PrintMotd yes", "#PrintLastLog yes", "#TCPKeepAlive yes", "#UseLogin no", "UsePrivilegeSeparation no", "#PermitUserEnvironment no", "Compression no", "ClientAliveInterval 15", "ClientAliveCountMax 4", "UseDNS no", "#PidFile /var/run/sshd.pid", "#MaxStartups 10", "#PermitTunnel no", "#ChrootDirectory none", "# no default banner path", "#Banner none", "# override default of no subsystems", "Subsystem\tsftp\t/usr/lib64/openssh/sftp-server", "# Example of overriding settings on a per-user basis", "#Match User anoncvs", "#\tX11Forwarding no", "#\tAllowTcpForwarding no", "#\tForceCommand cvs server"]</CONTENT>
+					<CHECKSUM>97884b5c2cb2b75022c4b440ddc4245a</CHECKSUM>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -la</REQUEST>
+							<RESPONSE>-rwxr-xr-x 1 root root 3275 Apr 24  2017 /etc/ssh/sshd_config</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/etc/ssh/sshd_config</NAME>
+				</FILE>
+				<FILE>
+					<CONTENT>["root:x:0:0:root:/root:/bin/sh", "daemon:x:1:1:daemon:/usr/sbin:/bin/sh", "bin:x:2:2:bin:/bin:/bin/sh", "sys:x:3:3:sys:/dev:/bin/sh", "sync:x:4:65534:sync:/bin:/bin/sync", "games:x:5:60:games:/usr/games:/bin/sh", "man:x:6:12:man:/var/cache/man:/bin/sh", "lp:x:7:7:lp:/var/spool/lpd:/bin/sh", "mail:x:8:8:mail:/var/mail:/bin/sh", "news:x:9:9:news:/var/spool/news:/bin/sh", "uucp:x:10:10:uucp:/var/spool/uucp:/bin/sh", "proxy:x:13:13:proxy:/bin:/bin/sh", "www-data:x:33:33:www-data:/var/www:/bin/sh", "backup:x:34:34:backup:/var/backups:/bin/sh", "list:x:38:38:Mailing List Manager:/var/list:/bin/sh", "irc:x:39:39:ircd:/var/run/ircd:/bin/sh", "gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/bin/sh", "nobody:x:65534:65534:nobody:/nonexistent:/bin/sh", "messagebus:x:999:998::/var/lib/dbus:/bin/false", "rpc:x:998:996::/:/bin/false", "sshd:x:997:995::/var/run/sshd:/bin/false"]</CONTENT>
+					<CHECKSUM>591fb16f798d29aa9dab2db5557ff4f8</CHECKSUM>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -la</REQUEST>
+							<RESPONSE>-rw-r--r-- 1 root root 831 Apr 24  2017 /etc/passwd</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/etc/passwd</NAME>
+				</FILE>
+				<FILE>
+					<CHECKSUM>7ea587858977ef205c6a7419463359f7</CHECKSUM>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -la</REQUEST>
+							<RESPONSE>lrwxrwxrwx 1 root root 7 Apr 24  2017 /usr/bin/python -&gt; python2</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/usr/bin/python</NAME>
+				</FILE>
+				<FILE>
+					<CONTENT>["# Defaults for dhcp initscript", "# sourced by /etc/init.d/dhcp-server", "# installed at /etc/default/dhcp-server by the maintainer scripts", "# On what interfaces should the DHCP server (dhcpd) serve DHCP requests?", "#       Separate multiple interfaces with spaces, e.g. \"eth0 eth1\".", "INTERFACES=\"\""]</CONTENT>
+					<CHECKSUM>1c905007d96a8b16c58454b6da8cfd86</CHECKSUM>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -lhrt</REQUEST>
+							<RESPONSE>-rw-r--r-- 1 root root 290 Apr 24  2017 /etc/default/dhcp-server</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/etc/default/dhcp-server</NAME>
+				</FILE>
+			</FILES>
+			<DIRECTORIES>
+				<DIRECTORY>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -ld</REQUEST>
+							<RESPONSE>drwxr-sr-x 3 root root 20480 Apr 24  2017 /usr/bin</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/usr/bin</NAME>
+				</DIRECTORY>
+				<DIRECTORY>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -lrt</REQUEST>
+							<RESPONSE>total 4
+-rwx------ 1 root root   0 Apr 24  2017 calv_setup_ldpath.log
+-rw-r--r-- 1 root root 227 Apr 24  2017 cmdline
+-rw-r--r-- 1 root root   0 May  4 16:14 test.txt</RESPONSE>
+						</CMD>
+						<CMD>
+							<REQUEST>touch test.txt</REQUEST>
+							<RESPONSE></RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/root</NAME>
+				</DIRECTORY>
+				<DIRECTORY>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -ld</REQUEST>
+							<RESPONSE>drwxr-xr-x 4 root root 4096 May  4 15:27 /misc/scratch</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/misc/scratch</NAME>
+				</DIRECTORY>
+				<DIRECTORY>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -ld</REQUEST>
+							<RESPONSE></RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/misc/app_host</NAME>
+				</DIRECTORY>
+				<DIRECTORY>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -ld</REQUEST>
+							<RESPONSE>drwxr-sr-x 55 root root 4096 May  4 06:32 /etc</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/etc</NAME>
+				</DIRECTORY>
+				<DIRECTORY>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -ld</REQUEST>
+							<RESPONSE>drwxr-sr-x 28 root root 4096 May  4 06:30 /</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/</NAME>
+				</DIRECTORY>
+			</DIRECTORIES>
+		</INTEGRITY>
+		<INTEGRITY domain="HOST">
+			<FILES>
+				<FILE>
+					<CONTENT>["#\t$OpenBSD: sshd_config,v 1.80 2008/07/02 02:24:18 djm Exp $", "# This is the sshd server system-wide configuration file.  See", "# sshd_config(5) for more information.", "# This sshd was compiled with PATH=/usr/bin:/bin:/usr/sbin:/sbin", "# The strategy used for options in the default sshd_config shipped with", "# OpenSSH is to specify options with their default value where", "# possible, but leave them commented.  Uncommented options change a", "# default value.", "#Port 22", "AddressFamily inet", "#ListenAddress 0.0.0.0", "#ListenAddress ::", "# Disable legacy (protocol version 1) support in the server for new", "# installations. In future the default will change to require explicit", "# activation of protocol 1", "Protocol 2", "# HostKey for protocol version 1", "#HostKey /etc/ssh/ssh_host_key", "# HostKeys for protocol version 2", "#HostKey /etc/ssh/ssh_host_rsa_key", "#HostKey /etc/ssh/ssh_host_dsa_key", "# Lifetime and size of ephemeral version 1 server key", "#KeyRegenerationInterval 1h", "#ServerKeyBits 1024", "# Logging", "# obsoletes QuietMode and FascistLogging", "#SyslogFacility AUTH", "#LogLevel INFO", "# Authentication:", "#LoginGraceTime 2m", "PermitRootLogin yes", "#StrictModes yes", "#MaxAuthTries 6", "#MaxSessions 10", "#RSAAuthentication yes", "#PubkeyAuthentication yes", "#AuthorizedKeysFile\t.ssh/authorized_keys", "# For this to work you will also need host keys in /etc/ssh/ssh_known_hosts", "#RhostsRSAAuthentication no", "# similar for protocol version 2", "#HostbasedAuthentication no", "# Change to yes if you don't trust ~/.ssh/known_hosts for", "# RhostsRSAAuthentication and HostbasedAuthentication", "#IgnoreUserKnownHosts no", "# Don't read the user's ~/.rhosts and ~/.shosts files", "#IgnoreRhosts yes", "# To disable tunneled clear text passwords, change to no here!", "#PasswordAuthentication yes", "PermitEmptyPasswords yes", "# Change to no to disable s/key passwords", "#ChallengeResponseAuthentication yes", "# Kerberos options", "#KerberosAuthentication no", "#KerberosOrLocalPasswd yes", "#KerberosTicketCleanup yes", "#KerberosGetAFSToken no", "# GSSAPI options", "#GSSAPIAuthentication no", "#GSSAPICleanupCredentials yes", "# Set this to 'yes' to enable PAM authentication, account processing,", "# and session processing. If this is enabled, PAM authentication will", "# be allowed through the ChallengeResponseAuthentication and", "# PasswordAuthentication.  Depending on your PAM configuration,", "# PAM authentication via ChallengeResponseAuthentication may bypass", "# the setting of \"PermitRootLogin without-password\".", "# If you just want the PAM account and session checks to run without", "# PAM authentication, then enable this but set PasswordAuthentication", "# and ChallengeResponseAuthentication to 'no'.", "#UsePAM no", "#AllowAgentForwarding yes", "#AllowTcpForwarding yes", "#GatewayPorts no", "#X11Forwarding no", "#X11DisplayOffset 10", "#X11UseLocalhost yes", "#PrintMotd yes", "#PrintLastLog yes", "#TCPKeepAlive yes", "#UseLogin no", "UsePrivilegeSeparation no", "#PermitUserEnvironment no", "Compression no", "ClientAliveInterval 15", "ClientAliveCountMax 4", "UseDNS no", "#PidFile /var/run/sshd.pid", "#MaxStartups 10", "#PermitTunnel no", "#ChrootDirectory none", "# no default banner path", "#Banner none", "# override default of no subsystems", "Subsystem\tsftp\t/usr/lib64/openssh/sftp-server", "# Example of overriding settings on a per-user basis", "#Match User anoncvs", "#\tX11Forwarding no", "#\tAllowTcpForwarding no", "#\tForceCommand cvs server", "#", "# Permit access from calvados and XR to host", "#", "Match Address 10.11.12.*", "PermitRootLogin yes", "#", "# Permit access from host to calvados and XR", "#", "Match Address 10.0.2.*", "PermitRootLogin yes"]</CONTENT>
+					<CHECKSUM>5b4a5d15629e9a81e16d64f8a7f2e873</CHECKSUM>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -la</REQUEST>
+							<RESPONSE>-rwxr-xr-x 1 root root 3466 Apr 24  2017 /etc/ssh/sshd_config</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/etc/ssh/sshd_config</NAME>
+				</FILE>
+				<FILE>
+					<CONTENT>["root:x:0:0:root:/root:/bin/sh", "daemon:x:1:1:daemon:/usr/sbin:/bin/sh", "bin:x:2:2:bin:/bin:/bin/sh", "sys:x:3:3:sys:/dev:/bin/sh", "sync:x:4:65534:sync:/bin:/bin/sync", "games:x:5:60:games:/usr/games:/bin/sh", "man:x:6:12:man:/var/cache/man:/bin/sh", "lp:x:7:7:lp:/var/spool/lpd:/bin/sh", "mail:x:8:8:mail:/var/mail:/bin/sh", "news:x:9:9:news:/var/spool/news:/bin/sh", "uucp:x:10:10:uucp:/var/spool/uucp:/bin/sh", "proxy:x:13:13:proxy:/bin:/bin/sh", "www-data:x:33:33:www-data:/var/www:/bin/sh", "backup:x:34:34:backup:/var/backups:/bin/sh", "list:x:38:38:Mailing List Manager:/var/list:/bin/sh", "irc:x:39:39:ircd:/var/run/ircd:/bin/sh", "gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/bin/sh", "nobody:x:65534:65534:nobody:/nonexistent:/bin/sh", "messagebus:x:999:998::/var/lib/dbus:/bin/false", "rpc:x:998:996::/:/bin/false", "sshd:x:997:995::/var/run/sshd:/bin/false"]</CONTENT>
+					<CHECKSUM>591fb16f798d29aa9dab2db5557ff4f8</CHECKSUM>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -la</REQUEST>
+							<RESPONSE>-rw-r--r-- 1 root root 831 Apr 24  2017 /etc/passwd</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/etc/passwd</NAME>
+				</FILE>
+				<FILE>
+					<CHECKSUM>7ea587858977ef205c6a7419463359f7</CHECKSUM>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -la</REQUEST>
+							<RESPONSE>lrwxrwxrwx 1 root root 7 Apr 24  2017 /usr/bin/python -&gt; python2</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/usr/bin/python</NAME>
+				</FILE>
+				<FILE>
+					<CONTENT>["# Defaults for dhcp initscript", "# sourced by /etc/init.d/dhcp-server", "# installed at /etc/default/dhcp-server by the maintainer scripts", "# On what interfaces should the DHCP server (dhcpd) serve DHCP requests?", "#       Separate multiple interfaces with spaces, e.g. \"eth0 eth1\".", "INTERFACES=\"\""]</CONTENT>
+					<CHECKSUM>1c905007d96a8b16c58454b6da8cfd86</CHECKSUM>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -lhrt</REQUEST>
+							<RESPONSE>-rw-r--r-- 1 root root 290 Apr 24  2017 /etc/default/dhcp-server</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/etc/default/dhcp-server</NAME>
+				</FILE>
+			</FILES>
+			<DIRECTORIES>
+				<DIRECTORY>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -ld</REQUEST>
+							<RESPONSE>drwxr-sr-x 3 root root 20480 Apr 24  2017 /usr/bin</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/usr/bin</NAME>
+				</DIRECTORY>
+				<DIRECTORY>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -lrt</REQUEST>
+							<RESPONSE>total 4
+-rw-r--r-- 1 root root 97 Apr 24  2017 cmdline
+-rw-r--r-- 1 root root  0 May  4 16:14 test.txt</RESPONSE>
+						</CMD>
+						<CMD>
+							<REQUEST>touch test.txt</REQUEST>
+							<RESPONSE></RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/root</NAME>
+				</DIRECTORY>
+				<DIRECTORY>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -ld</REQUEST>
+							<RESPONSE>drwxr-xr-x 3 root root 4096 May  4 15:26 /misc/scratch</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/misc/scratch</NAME>
+				</DIRECTORY>
+				<DIRECTORY>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -ld</REQUEST>
+							<RESPONSE>drwxr-xr-x 7 root root 4096 May  4 16:03 /misc/app_host</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/misc/app_host</NAME>
+				</DIRECTORY>
+				<DIRECTORY>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -ld</REQUEST>
+							<RESPONSE>drwxr-sr-x 56 root root 4096 May  4 06:29 /etc</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/etc</NAME>
+				</DIRECTORY>
+				<DIRECTORY>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -ld</REQUEST>
+							<RESPONSE>drwxr-sr-x 27 root root 4096 May  4 06:29 /</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/</NAME>
+				</DIRECTORY>
+			</DIRECTORIES>
+		</INTEGRITY>
+	</INTEGRITY-SET>
+</COMPLIANCE-DUMP>vagrant@vagrant:~$ 
+
+```
+
+
+Excellent, how does one read this data?
+
+The Basic structure is defined based on the XML schema `userfsfiles/compliance.xsd` in the git repo.
+
+>**NOTE**: The XML file will only be generated by the apps if the xml content validates successfully against the `compliance.xsd` file. So if you're receiveing XML content from the collector app, then you can be rest assured that it is already validated based on the schema.
+
+
+If we deconstruct parts of the XML data, we can see the basic structure starts with the <COMPLIANCE-DUMP> tag and the version of the auditor app (remember we used the `-v` option with the app earlier?) as an attribute:
+
+```
+
+<COMPLIANCE-DUMP xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0.0" xsi:noNamespaceSchemaLocation="compliance.xsd">
+....
+
+```
+
+The next set of higher level tags are:
+
+1.  <GENERAL>
+
+  ```
+
+  <COMPLIANCE-DUMP xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0.0" xsi:noNamespaceSchemaLocation="compliance.xsd">
+  <GENERAL>
+		<PRODUCT>XRV-P-L--CH</PRODUCT>
+		<VENDOR>Cisco</VENDOR>
+		<IPADDR>11.1.1.10/24</IPADDR>
+		<HOST>rtr</HOST>
+		<VERSION>6.1.2</VERSION>
+		<DATE>20180504-16:14 UTC</DATE>
+		<OS>IOS-XR</OS>
+	</GENERAL>
+  ```
+  
+  The <GENERAL> data is used to collect relevant information from the router config and oper state in order to uniquely identify the router that produced this XML content.
+
+
+
+2. <INTEGRITY-SET>
+
+This is the actual compliance/audit data being collected by the apps from the individual Linux shells. It can be seen from the snippets below, that the integrity set consists of three sections identified by the `domain` which can be `XR-LXC`, `ADMIN-LXC` or `HOST`.
+
+Within each domain, there are a list of `<FILES>` each of which can be subjected to a list of commands along with content, checksum outputs. Further, there is a section called `<DIRECTORIES>` which is very similar to the `<FILES>` section and also contains a list of directories with the outputs of a list of commands on each directory.
+
+
+```
+
+	<INTEGRITY-SET>
+		<INTEGRITY domain="XR-LXC">
+			<FILES>
+				<FILE>
+					<CONTENT>["#\t$OpenBSD: sshd_config,v 1.80 2008/07/02 02:24:18 djm Exp $", "# This is the sshd server system-wide configuration file.  See", "# sshd_config(5) for more information.", "# This sshd was compiled with 
+          
+       ......
+       
+"UsePrivilegeSeparation no", "#PermitUserEnvironment no", "Compression no", "ClientAliveInterval 15", "ClientAliveCountMax 4", "UseDNS no", "#PidFile /var/run/sshd.pid", "#MaxStartups 10", "#PermitTunnel no", "#ChrootDirectory none", "# no default banner path", "#Banner none", "# override default of no subsystems", "Subsystem\tsftp\t/usr/lib64/openssh/sftp-server", "# Example of overriding settings on a per-user basis", "#Match User anoncvs", "#\tX11Forwarding no", "#\tAllowTcpForwarding no", "#\tForceCommand cvs server"]</CONTENT>
+					<CHECKSUM>97884b5c2cb2b75022c4b440ddc4245a</CHECKSUM>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -la</REQUEST>
+							<RESPONSE>-rwxr-xr-x 1 root root 3275 Apr 24  2017 /etc/ssh/sshd_config</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/etc/ssh/sshd_config</NAME>
+				</FILE>       
+              
+        .....
+        
+      </FILES>
+      <DIRECTORIES>
+				<DIRECTORY>
+					<CMD-LIST>
+						<CMD>
+							<REQUEST>ls -ld</REQUEST>
+							<RESPONSE>drwxr-xr-x 3 root root 20480 Apr 24  2017 /usr/bin</RESPONSE>
+						</CMD>
+					</CMD-LIST>
+					<NAME>/usr/bin</NAME>
+				</DIRECTORY>
+				<DIRECTORY>
+
+      ....
+      
+				</DIRECTORY>
+			</DIRECTORIES>
+		</INTEGRITY>
+		<INTEGRITY domain="ADMIN-LXC">
+			<FILES>
+				<FILE>
+        
+        
+        ....
+        
+        
+			</DIRECTORIES>
+		</INTEGRITY>
+		<INTEGRITY domain="HOST">
+			<FILES>
+				<FILE>		  
+        
+        
+
+```
+
+>So where are the commands and the list of files and directories defined??
+>This is part of the `userfiles/auditor.cfg.yml` file as well. Jump to the `COMPLIANCE_CONFIG` section and you will see a YAML specification as shown below:
+><a href="https://github.com/akshshar/xr-auditor/blob/master/images/compliance_config.png?raw=true">![compliance_config](https://github.com/akshshar/xr-auditor/blob/master/images/compliance_config.png?raw=true)</a>
+
+
 
 
 
