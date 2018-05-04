@@ -38,14 +38,16 @@ No SMUs needed, leverages the native app-hosting architecture in IOS-XR and the 
 <a href="https://raw.githubusercontent.com/akshshar/xr-auditor/master/user_story_auditor.png">![user-story](https://raw.githubusercontent.com/akshshar/xr-auditor/master/user_story_auditor.png)</a>
 
 
-
+&nbsp;    
+&nbsp;  
 ## IOS-XR architecture
 
 For a quick refresher on the IOS-XR container based architecture, see the figure below:  
 
-<a href="https://github.com/akshshar/xr-auditor/blob/master/IOS-XR-architecture.png?raw=true">![iosxr-architecture](https://github.com/akshshar/xr-auditor/blob/master/IOS-XR-architecture.png?raw=true)</a>
+<a href="https://github.com/akshshar/xr-auditor/blob/master/IOS-XR-architecture.png?raw=true">![iosxr-architecture](https://github.com/akshshar/xr-auditor/blob/master/IOS-XR-architecture.png?raw=true)</a> . 
 
-&nsbp;  
+&nbsp;    
+&nbsp;  
 
 As shown above, access to the linux shells (in blue inside the containers) and the underlying shells is protected through XR AAA authentication and authorization.
 While IOS-XR supports the 3 A's of AAA (Authentication, Authorization and Accounting),  Linux supports only 2 of them: Authentication and authorization.  
@@ -58,17 +60,18 @@ This is where [xr-auditor](https://github.com/akshshar/xr-auditor) shines. It al
   
 xr-auditor is installed using a single binary generated out of the code in this git repo using pyinstaller. More details below. The installation involves running the binary on the XR-LXC shell of the Active RP: 
 
-<a href="https://github.com/akshshar/xr-auditor/blob/master/iosxr-auditor-install.png?raw=true">![xr-auditor-install](https://github.com/akshshar/xr-auditor/blob/master/iosxr-auditor-install.png?raw=true)</a>
+<a href="https://github.com/akshshar/xr-auditor/blob/master/iosxr-auditor-install.png?raw=true">![xr-auditor-install](https://github.com/akshshar/xr-auditor/blob/master/iosxr-auditor-install.png?raw=true)</a> . 
 
-&nbsp;  
+
+&nbsp;    
 &nbsp;  
 
 Once the install is triggered, individual cron jobs and apps are set up in the different domains as shown below to start sending collected data periodically to a remote server (identified in the SERVER_CONFIG in `userfiles/auditor.cfg.yml`) securely over SSH:
   
 <a href="https://github.com/akshshar/xr-auditor/blob/master/iosxr-auditor-operation.png?raw=true">![xr-auditor-install](https://github.com/akshshar/xr-auditor/blob/master/iosxr-auditor-operation.png?raw=true)</a> 
 
-&nsbp;
-&nbsp;
+&nbsp;    
+&nbsp;  
 
 
 
