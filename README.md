@@ -34,6 +34,9 @@ No SMUs needed, leverages the native app-hosting architecture in IOS-XR and the 
 
 
 ## User Story (Click to Expand)
+  
+&nbsp;    
+&nbsp;  
 
 <a href="https://raw.githubusercontent.com/akshshar/xr-auditor/master/user_story_auditor.png">![user-story](https://raw.githubusercontent.com/akshshar/xr-auditor/master/user_story_auditor.png)</a>
 
@@ -42,7 +45,9 @@ No SMUs needed, leverages the native app-hosting architecture in IOS-XR and the 
 &nbsp;  
 ## IOS-XR architecture
 
-For a quick refresher on the IOS-XR container based architecture, see the figure below:  
+For a quick refresher on the IOS-XR container based architecture, see the figure below:    
+&nbsp;    
+&nbsp;  
 
 <a href="https://github.com/akshshar/xr-auditor/blob/master/IOS-XR-architecture.png?raw=true">![iosxr-architecture](https://github.com/akshshar/xr-auditor/blob/master/IOS-XR-architecture.png?raw=true)</a> . 
 
@@ -58,7 +63,10 @@ Further, Linux doesn't really have a telemetry system by default - there are var
 This is where [xr-auditor](https://github.com/akshshar/xr-auditor) shines. It allows a user to specify their collection requirements through YAML files, build the application into single binary and deploy the auditors in each domain(container) of the system in a couple of steps.
   
   
-xr-auditor is installed using a single binary generated out of the code in this git repo using pyinstaller. More details below. The installation involves running the binary on the XR-LXC shell of the Active RP: 
+xr-auditor is installed using a single binary generated out of the code in this git repo using pyinstaller. More details below. The installation involves running the binary on the XR-LXC shell of the Active RP:   
+
+&nbsp;    
+&nbsp;  
 
 <a href="https://github.com/akshshar/xr-auditor/blob/master/iosxr-auditor-install.png?raw=true">![xr-auditor-install](https://github.com/akshshar/xr-auditor/blob/master/iosxr-auditor-install.png?raw=true)</a> . 
 
@@ -66,7 +74,10 @@ xr-auditor is installed using a single binary generated out of the code in this 
 &nbsp;    
 &nbsp;  
 
-Once the install is triggered, individual cron jobs and apps are set up in the different domains as shown below to start sending collected data periodically to a remote server (identified in the SERVER_CONFIG in `userfiles/auditor.cfg.yml`) securely over SSH:
+Once the install is triggered, individual cron jobs and apps are set up in the different domains as shown below to start sending collected data periodically to a remote server (identified in the SERVER_CONFIG in `userfiles/auditor.cfg.yml`) securely over SSH:  
+
+&nbsp;    
+&nbsp;  
   
 <a href="https://github.com/akshshar/xr-auditor/blob/master/iosxr-auditor-operation.png?raw=true">![xr-auditor-install](https://github.com/akshshar/xr-auditor/blob/master/iosxr-auditor-operation.png?raw=true)</a> 
 
