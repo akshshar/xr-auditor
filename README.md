@@ -1,16 +1,16 @@
 ## Contents:
-<li class="">
-<a href="#auditor" id="markdown-toc-auditor">Auditor</a><ul>
-<li class=""><a href="#user-story-click-to-expand" id="markdown-toc-user-story-click-to-expand">User Story (Click to Expand)</a></li>
-<li class="">
+<ul class="toc__menu" id="markdown-toc">
+<li><a href="#introduction" id="markdown-toc-introduction">Introduction</a></li>
+<li><a href="#user-story-click-to-expand" id="markdown-toc-user-story-click-to-expand">User Story (Click to Expand)</a></li>
+<li>
 <a href="#ios-xr-architecture" id="markdown-toc-ios-xr-architecture">IOS-XR architecture</a><ul>
-<li class=""><a href="#ios-xr-aaa-support-vs-linux" id="markdown-toc-ios-xr-aaa-support-vs-linux">IOS-XR AAA support vs Linux</a></li>
-<li class=""><a href="#ios-xr-telemetry-support-vs-linux-" id="markdown-toc-ios-xr-telemetry-support-vs-linux-">IOS-XR Telemetry support vs Linux .</a></li>
-<li class=""><a href="#enter-xr-auditor" id="markdown-toc-enter-xr-auditor">Enter xr-auditor</a></li>
+<li><a href="#ios-xr-aaa-support-vs-linux" id="markdown-toc-ios-xr-aaa-support-vs-linux">IOS-XR AAA support vs Linux</a></li>
+<li><a href="#ios-xr-telemetry-support-vs-linux-" id="markdown-toc-ios-xr-telemetry-support-vs-linux-">IOS-XR Telemetry support vs Linux .</a></li>
+<li><a href="#enter-xr-auditor" id="markdown-toc-enter-xr-auditor">Enter xr-auditor</a></li>
 </ul>
 </li>
-<li class=""><a href="#setting-up-the-build-environment-on-your-laptop" id="markdown-toc-setting-up-the-build-environment-on-your-laptop">Setting up the Build environment on your laptop:</a></li>
-<li class="active"><a href="#building-the-application" id="markdown-toc-building-the-application">Building the Application:</a></li>
+<li><a href="#setting-up-the-build-environment-on-your-laptop" id="markdown-toc-setting-up-the-build-environment-on-your-laptop">Setting up the Build environment on your laptop:</a></li>
+<li><a href="#building-the-application" id="markdown-toc-building-the-application">Building the Application:</a></li>
 <li>
 <a href="#running-the-auditor-app" id="markdown-toc-running-the-auditor-app">Running the auditor app</a><ul>
 <li><a href="#view-the-options-available" id="markdown-toc-view-the-options-available">View the options available</a></li>
@@ -25,7 +25,6 @@
 </li>
 <li><a href="#support-for-activestandby-rp-systems" id="markdown-toc-support-for-activestandby-rp-systems">Support for Active/Standby RP systems:</a></li>
 </ul>
-</li>
 
 ## Introduction
 
