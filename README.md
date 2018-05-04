@@ -386,65 +386,78 @@ The vagrant setup looks something like this:
      |          |---  id_rsa_server
      |
      |
-     |--- audit_xr.bin
-     |          |
-     |          |--- userfiles
-     |          |        |
-     |          |        |---  audit.cfg.yml
-     |          |        |
-     |          |        |---  compliance.xsd
-     |          |        |
-     |          |        |--- id_rsa_server
-     |          |
-     |          |
-     |          |--- audit_xr.py
-     |
-     |
-     |
-     |--- audit_admin.bin
-     |          |
-     |          |--- userfiles
-     |          |        |
-     |          |        |--- audit.cfg.yml
-     |          |        |
-     |          |        |--- compliance.xsd
-     |          |        |
-     |          |        |--- id_rsa_server
-     |          |
-     |          |
-     |          |--- audit_admin.py
-     |
+     |--- xr
+     |    |
+     |    |--- audit_xr.bin
+     |    |         |
+     |    |         |--- userfiles
+     |    |         |        |
+     |    |         |        |--- audit.cfg.yml
+     |    |         |        |
+     |    |         |        |--- compliance.xsd
+     |    |         |        |
+     |    |         |        |--- id_rsa_server
+     |    |         |
+     |    |         |
+     |    |         |--- audit_xr.py
+     |    | 
+     |    |--- audit_xr.cron
      |    
-     |     
-     |--- audit_host.bin
-     |          |
-     |          |--- userfiles
-     |          |        |
-     |          |        |--- audit.cfg.yml
-     |          |        |
-     |          |        |--- compliance.xsd
-     |          |        |
-     |          |        |--- id_rsa_server
-     |          |
-     |          |
-     |          |--- audit_host.py
      |
      |
-     |--- collector.bin
-     |          |
-     |          |--- userfiles
-     |          |        |
-     |          |        |--- audit.cfg.yml
-     |          |        |
-     |          |        |--- compliance.xsd
-     |          |        |
-     |          |        |--- id_rsa_server
-     |          |
-     |          |
-     |          |--- collector.py
+     |--- admin
+     |    |
+     |    |--- audit_admin.bin
+     |    |         |
+     |    |         |--- userfiles
+     |    |         |        |
+     |    |         |        |--- audit.cfg.yml
+     |    |         |        |
+     |    |         |        |--- compliance.xsd
+     |    |         |        |
+     |    |         |        |--- id_rsa_server
+     |    |         |
+     |    |         |
+     |    |         |--- audit_admin.py
+     |    | 
+     |    |--- audit_admin.cron
+     |    
      |
      |
-    
+     |--- host
+     |    |
+     |    |--- audit_host.bin
+     |    |         |
+     |    |         |--- userfiles
+     |    |         |        |
+     |    |         |        |--- audit.cfg.yml
+     |    |         |        |
+     |    |         |        |--- compliance.xsd
+     |    |         |        |
+     |    |         |        |--- id_rsa_server
+     |    |         |
+     |    |         |
+     |    |         |--- audit_xr.py
+     |    | 
+     |    |--- audit_host.cron
+     |    
+     |--- collector
+     |    |
+     |    |---collector.bin
+     |    |         |
+     |    |         |--- userfiles
+     |    |         |        |
+     |    |         |        |--- audit.cfg.yml
+     |    |         |        |
+     |    |         |        |--- compliance.xsd
+     |    |         |        |
+     |    |         |        |--- id_rsa_server
+     |    |         |
+     |    |         |
+     |    |         |--- collector.py
+     |    | 
+     |    |--- collector.cron
+     |         
      ```
      
      
@@ -514,37 +527,37 @@ The vagrant setup looks something like this:
      
     67 INFO: running Analysis out00-Analysis.toc
     81 INFO: Caching module hooks...  
-   83 INFO: Analyzing core/auditor.py
-   1855 INFO: Processing pre-safe import module hook   _xmlplus
-   1996 INFO: Processing pre-find module path hook   distutils
-   2168 INFO: Loading module hooks...
-   2169 INFO: Loading module hook "hook-distutils.py"...
-   2170 INFO: Loading module hook "hook-xml.py"...
-   2171 INFO: Loading module hook "hook-lxml.etree.py"...
-   2178 INFO: Loading module hook "hook-httplib.py"...
-   2179 INFO: Loading module hook "hook-encodings.py"...
-   2500 INFO: Looking for ctypes DLLs
-   2557 INFO: Analyzing run-time hooks ...
-   2563 INFO: Looking for dynamic libraries
-   2702 INFO: Looking for eggs
-   2702 INFO: Python library not in binary dependencies. Doing additional searching...
-   2722 INFO: Using Python library /usr/lib/x86_64-linux-gnu/libpython2.7.so.1.0
-   2724 INFO: Warnings written to /home/vagrant/xr-auditor/build/auditor/warnauditor.txt
-   2736 INFO: Graph cross-reference written to /home/vagrant/xr-auditor/build/auditor/xref-auditor.html
-   2771 INFO: Appending 'datas' from .spec
-   2773 INFO: checking PYZ
-   2776 INFO: checking PKG
-   2776 INFO: Building because /home/vagrant/xr-auditor/core/auditor.py changed
-   2777 INFO: Building PKG (CArchive) out00-PKG.pkg
-   6099 INFO: Building PKG (CArchive) out00-PKG.pkg completed successfully.
-   6110 INFO: Bootloader /usr/local/lib/python2.7/dist-packages/PyInstaller/bootloader/Linux-64bit/run
-   6111 INFO: checking EXE
-   6113 INFO: Rebuilding out00-EXE.toc because pkg is more recent
-   6114 INFO: Building EXE from out00-EXE.toc
-   6119 INFO: Appending archive to ELF section in EXE /home/vagrant/xr-auditor/dist/auditor
-   6172 INFO: Building EXE from out00-EXE.toc completed successfully.
-   vagrant@vagrant:~/xr-auditor$
-   ``` 
+    83 INFO: Analyzing core/auditor.py
+    1855 INFO: Processing pre-safe import module hook   _xmlplus
+    1996 INFO: Processing pre-find module path hook   distutils
+    2168 INFO: Loading module hooks... 
+    2169 INFO: Loading module hook "hook-distutils.py"...
+    2170 INFO: Loading module hook "hook-xml.py"...
+    2171 INFO: Loading module hook "hook-lxml.etree.py"...
+    2178 INFO: Loading module hook "hook-httplib.py"...
+    2179 INFO: Loading module hook "hook-encodings.py"...
+    2500 INFO: Looking for ctypes DLLs
+    2557 INFO: Analyzing run-time hooks ...
+    2563 INFO: Looking for dynamic libraries
+    2702 INFO: Looking for eggs
+    2702 INFO: Python library not in binary dependencies. Doing additional searching...
+    2722 INFO: Using Python library /usr/lib/x86_64-linux-gnu/libpython2.7.so.1.0
+    2724 INFO: Warnings written to /home/vagrant/xr-auditor/build/auditor/warnauditor.txt
+    2736 INFO: Graph cross-reference written to /home/vagrant/xr-auditor/build/auditor/xref-auditor.html
+    2771 INFO: Appending 'datas' from .spec
+    2773 INFO: checking PYZ
+    2776 INFO: checking PKG
+    2776 INFO: Building because /home/vagrant/xr-auditor/core/auditor.py changed
+    2777 INFO: Building PKG (CArchive) out00-PKG.pkg
+    6099 INFO: Building PKG (CArchive) out00-PKG.pkg completed successfully.
+    6110 INFO: Bootloader /usr/local/lib/python2.7/dist-packages/PyInstaller/bootloader/Linux-64bit/run
+    6111 INFO: checking EXE
+    6113 INFO: Rebuilding out00-EXE.toc because pkg is more recent
+    6114 INFO: Building EXE from out00-EXE.toc
+    6119 INFO: Appending archive to ELF section in EXE /home/vagrant/xr-auditor/dist/auditor
+    6172 INFO: Building EXE from out00-EXE.toc completed successfully.
+    vagrant@vagrant:~/xr-auditor$
+    ``` 
    
    At the end of the build, you will see the `auditor` binary appear inside a `dist/` directory at the root of the git repo:
    
@@ -652,10 +665,10 @@ v1.0.0
 
 ### Install all the auditing components:
 
-Use the `-i` option:  
+Use the `-i` option to install the apps and cron jobs: 
 
 
-``
+```
 [xr-vm_node0_RP0_CPU0:~]$
 [xr-vm_node0_RP0_CPU0:~]$/misc/scratch/auditor -i
 2018-05-04 15:26:37,536 - DebugZTPLogger - INFO - Using root-lr user specified in auditor.cfg.yml, Username: vagrant
@@ -670,5 +683,253 @@ Use the `-i` option:
 2018-05-04 15:26:50,868 - DebugZTPLogger - INFO - Successfully set up artifacts, IOS-XR Linux auditing is now ON
 [xr-vm_node0_RP0_CPU0:~]$
 ```  
-     
+
+
+The locations where the apps are installed and where the XML files get dumped are all defined in `userfiles/auditor.cfg.yml`. View the `INSTALLER_CONFIG` section of the yml file:  
+
+<a href="https://github.com/akshshar/xr-auditor/blob/master/images/auditor_cfg_yml_installer_config.png?raw=true">![installer_config](https://github.com/akshshar/xr-auditor/blob/master/images/auditor_cfg_yml_installer_config.png?raw=true)</a>
+
+
+These locations are used by the auditor app to install the `audit_xr.bin`, `collector.bin`, `audit_host.bin` and `audit_admin.bin` apps in the right directory and by the individual apps to determine where to generate and store the XML outputs.
+The cron jobs get installed in `/etc/cron.d` of each location (XR, admin, host).
+   
+   
+
+Use the `-l` option with the auditor app to dump the current state of all the relevant filesystems across active and standby RPs,  as defined by the `userfiles/auditor.cfg.yml` file :
+
+
+```
+[xr-vm_node0_RP0_CPU0:~]$
+[xr-vm_node0_RP0_CPU0:~]$
+[xr-vm_node0_RP0_CPU0:~]$/misc/scratch/auditor -l
+2018-05-04 15:56:37,327 - DebugZTPLogger - INFO - Using root-lr user specified in auditor.cfg.yml, Username: vagrant
+2018-05-04 15:56:37,327 - DebugZTPLogger - INFO - 
+
+####################################################
+                       ACTIVE-RP XR                
+#####################################################
+
+
+2018-05-04 15:56:37,327 - DebugZTPLogger - INFO - 
+
+###### App Directory ######
+
+2018-05-04 15:56:37,332 - DebugZTPLogger - INFO - 
+ /misc/scratch:
+
+total 48164
+drwxr-xr-x 2 root root     4096 Apr 24  2017 core
+lrwxrwxrwx 1 root root       12 Apr 24  2017 config -> /misc/config
+drwx------ 2 root root     4096 Apr 24  2017 clihistory
+drwxr-xr-x 2 root root     4096 Apr 24  2017 crypto
+-rw-r--r-- 1 root root     1549 May  4 06:32 status_file
+drwxr-xr-x 8 root root     4096 May  4 06:32 ztp
+drwxr-xr-x 2 root root     4096 May  4 07:27 nvgen_traces
+-rwxr-xr-x 1 root root 34949880 May  4 10:49 auditor
+-rw-r--r-- 1 root root      798 May  4 10:50 auditor_collated_logs.tar.gz
+-rwx------ 1 root root  7049952 May  4 15:26 collector.bin
+-rwx------ 1 root root  7046744 May  4 15:26 audit_xr.bin
+-rwx------ 1 root root     1675 May  4 15:56 id_rsa
+-rw-r--r-- 1 root root   233450 May  4 15:56 tpa.log
+
+2018-05-04 15:56:37,332 - DebugZTPLogger - INFO - 
+
+###### Cron directory ######
+
+2018-05-04 15:56:37,337 - DebugZTPLogger - INFO - 
+ /etc/cron.d:
+
+total 12
+-rw-r--r-- 1 root root 73 Apr 24  2017 logrotate.conf
+-rw-r--r-- 1 root root 86 May  4 15:26 audit_cron_xr_2018-05-04_15-26-37
+-rw-r--r-- 1 root root 87 May  4 15:26 audit_cron_collector_2018-05-04_15-26-50
+
+2018-05-04 15:56:37,337 - DebugZTPLogger - INFO - 
+
+###### XML Output Directory ######
+
+2018-05-04 15:56:37,342 - DebugZTPLogger - INFO - 
+ /misc/app_host:
+
+total 84
+drwx------ 2 root root 16384 Apr 24  2017 lost+found
+drwxr-xr-x 5 root root  4096 Apr 24  2017 etc
+drwxrwxr-x 2 root sudo  4096 Apr 24  2017 scratch
+drwx-----x 9 root root  4096 Apr 24  2017 docker
+drwxr-xr-x 5 root root  4096 Apr 24  2017 app_repo
+srw-rw---- 1 root root     0 May  4 06:31 docker.sock
+-rw-r--r-- 1 root root  7908 May  4 15:56 ADMIN-LXC.xml
+-rw-r--r-- 1 root root  8111 May  4 15:56 HOST.xml
+-rw-r--r-- 1 root root 23798 May  4 15:56 compliance_audit__11_1_1_10.xml
+-rw-r--r-- 1 root root  8263 May  4 15:56 XR-LXC.xml
+
+2018-05-04 15:56:37,342 - DebugZTPLogger - INFO - 
+
+####################################################
+                       ACTIVE-RP COLLECTOR                
+#####################################################
+
+
+2018-05-04 15:56:37,342 - DebugZTPLogger - INFO - 
+
+###### App Directory ######
+
+2018-05-04 15:56:37,348 - DebugZTPLogger - INFO - 
+ /misc/scratch:
+
+total 48164
+drwxr-xr-x 2 root root     4096 Apr 24  2017 core
+lrwxrwxrwx 1 root root       12 Apr 24  2017 config -> /misc/config
+drwx------ 2 root root     4096 Apr 24  2017 clihistory
+drwxr-xr-x 2 root root     4096 Apr 24  2017 crypto
+-rw-r--r-- 1 root root     1549 May  4 06:32 status_file
+drwxr-xr-x 8 root root     4096 May  4 06:32 ztp
+drwxr-xr-x 2 root root     4096 May  4 07:27 nvgen_traces
+-rwxr-xr-x 1 root root 34949880 May  4 10:49 auditor
+-rw-r--r-- 1 root root      798 May  4 10:50 auditor_collated_logs.tar.gz
+-rwx------ 1 root root  7049952 May  4 15:26 collector.bin
+-rwx------ 1 root root  7046744 May  4 15:26 audit_xr.bin
+-rwx------ 1 root root     1675 May  4 15:56 id_rsa
+-rw-r--r-- 1 root root   233450 May  4 15:56 tpa.log
+
+2018-05-04 15:56:37,348 - DebugZTPLogger - INFO - 
+
+###### Cron directory ######
+
+2018-05-04 15:56:37,354 - DebugZTPLogger - INFO - 
+ /etc/cron.d:
+
+total 12
+-rw-r--r-- 1 root root 73 Apr 24  2017 logrotate.conf
+-rw-r--r-- 1 root root 86 May  4 15:26 audit_cron_xr_2018-05-04_15-26-37
+-rw-r--r-- 1 root root 87 May  4 15:26 audit_cron_collector_2018-05-04_15-26-50
+
+2018-05-04 15:56:37,354 - DebugZTPLogger - INFO - 
+
+###### XML Output Directory ######
+
+2018-05-04 15:56:37,359 - DebugZTPLogger - INFO - 
+ /misc/app_host:
+
+total 84
+drwx------ 2 root root 16384 Apr 24  2017 lost+found
+drwxr-xr-x 5 root root  4096 Apr 24  2017 etc
+drwxrwxr-x 2 root sudo  4096 Apr 24  2017 scratch
+drwx-----x 9 root root  4096 Apr 24  2017 docker
+drwxr-xr-x 5 root root  4096 Apr 24  2017 app_repo
+srw-rw---- 1 root root     0 May  4 06:31 docker.sock
+-rw-r--r-- 1 root root  7908 May  4 15:56 ADMIN-LXC.xml
+-rw-r--r-- 1 root root  8111 May  4 15:56 HOST.xml
+-rw-r--r-- 1 root root 23798 May  4 15:56 compliance_audit__11_1_1_10.xml
+-rw-r--r-- 1 root root  8263 May  4 15:56 XR-LXC.xml
+
+2018-05-04 15:56:37,359 - DebugZTPLogger - INFO - 
+
+####################################################
+                       ACTIVE-RP ADMIN                
+#####################################################
+
+
+2018-05-04 15:56:37,359 - DebugZTPLogger - INFO - 
+
+###### App Directory ######
+
+2018-05-04 15:56:37,945 - DebugZTPLogger - INFO - 
+ /misc/scratch:
+
+total 7156
+drwxr-xr-x 2 root root    4096 Apr 24  2017 core
+drwxr-xr-x 2 root root    4096 Apr 24  2017 shelf_mgr_pds
+-rw-r--r-- 1 root root     579 May  4 06:31 card_specific_install
+--wxr-s--- 1 root root   11974 May  4 06:31 calvados_log_tacacsd_0_0.out
+--wxr-sr-- 1 root root    1822 May  4 06:31 calvados_log_instagt_log_0_0.out
+--wxr-Sr-- 1 root root    3388 May  4 06:31 calvados_log_vmm_0_0.out
+--wxr-sr-x 1 root root   28112 May  4 06:33 calvados_log_confd_helper_0_0.out
+-rwx------ 1 root root 7046848 May  4 15:26 audit_admin.bin
+-rw-r--r-- 1 root root    7908 May  4 15:56 ADMIN-LXC.xml
+--wxr-Sr-x 1 root root  201479 May  4 15:56 calvados_log_aaad_0_0.out
+2018-05-04 15:56:37,945 - DebugZTPLogger - INFO - 
+
+###### Cron directory ######
+
+2018-05-04 15:56:38,539 - DebugZTPLogger - INFO - 
+ /etc/cron.d:
+
+total 8
+-rw-r--r-- 1 root root 73 Apr 24  2017 logrotate.conf
+-rw-r--r-- 1 root root 89 May  4 15:26 audit_cron_admin_2018-05-04_15-26-40
+2018-05-04 15:56:38,539 - DebugZTPLogger - INFO - 
+
+###### XML Output Directory ######
+
+2018-05-04 15:56:39,159 - DebugZTPLogger - INFO - 
+ /misc/scratch:
+
+total 7160
+drwxr-xr-x 2 root root    4096 Apr 24  2017 core
+drwxr-xr-x 2 root root    4096 Apr 24  2017 shelf_mgr_pds
+-rw-r--r-- 1 root root     579 May  4 06:31 card_specific_install
+--wxr-s--- 1 root root   11974 May  4 06:31 calvados_log_tacacsd_0_0.out
+--wxr-sr-- 1 root root    1822 May  4 06:31 calvados_log_instagt_log_0_0.out
+--wxr-Sr-- 1 root root    3388 May  4 06:31 calvados_log_vmm_0_0.out
+--wxr-sr-x 1 root root   28112 May  4 06:33 calvados_log_confd_helper_0_0.out
+-rwx------ 1 root root 7046848 May  4 15:26 audit_admin.bin
+-rw-r--r-- 1 root root    7908 May  4 15:56 ADMIN-LXC.xml
+--wxr-Sr-x 1 root root  204907 May  4 15:56 calvados_log_aaad_0_0.out
+2018-05-04 15:56:39,160 - DebugZTPLogger - INFO - 
+
+####################################################
+                       ACTIVE-RP HOST                
+#####################################################
+
+
+2018-05-04 15:56:39,160 - DebugZTPLogger - INFO - 
+
+###### App Directory ######
+
+2018-05-04 15:56:39,894 - DebugZTPLogger - INFO - 
+ /misc/scratch:
+
+total 6888
+drwxr-xr-x 2 root root    4096 Apr 24  2017 core
+-rwx------ 1 root root 7046616 May  4 15:26 audit_host.bin
+2018-05-04 15:56:39,894 - DebugZTPLogger - INFO - 
+
+###### Cron directory ######
+
+2018-05-04 15:56:40,583 - DebugZTPLogger - INFO - 
+ /etc/cron.d:
+
+total 8
+-rw-r--r-- 1 root root 73 Apr 24  2017 logrotate.conf
+-rw-r--r-- 1 root root 88 May  4 15:26 audit_cron_host_2018-05-04_15-26-46
+2018-05-04 15:56:40,584 - DebugZTPLogger - INFO - 
+
+###### XML Output Directory ######
+
+2018-05-04 15:56:41,284 - DebugZTPLogger - INFO - 
+ /misc/app_host:
+
+total 84
+drwx------ 2 root root 16384 Apr 24  2017 lost+found
+drwxr-xr-x 5 root root  4096 Apr 24  2017 etc
+drwxrwxr-x 2 root sudo  4096 Apr 24  2017 scratch
+drwx-----x 9 root root  4096 Apr 24  2017 docker
+drwxr-xr-x 5 root root  4096 Apr 24  2017 app_repo
+srw-rw---- 1 root root     0 May  4 06:31 docker.sock
+-rw-r--r-- 1 root root  7908 May  4 15:56 ADMIN-LXC.xml
+-rw-r--r-- 1 root root  8111 May  4 15:56 HOST.xml
+-rw-r--r-- 1 root root 23798 May  4 15:56 compliance_audit__11_1_1_10.xml
+-rw-r--r-- 1 root root  8263 May  4 15:56 XR-LXC.xml
+[xr-vm_node0_RP0_CPU0:~]$
+
+
+
+```
+
+
+
+
+
+
      
