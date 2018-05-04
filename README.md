@@ -2,7 +2,8 @@
 
 ## Introduction
 
-This application enables **periodic auditing** of the linux shells in the IOS-XR container-based architecture by running **individual python applications in each individual environment in IOS-XR (also supports Active-Standby HA systems)**, i.e.:  
+This application enables **periodic auditing** of the linux shells in the IOS-XR container-based architecture by running **individual python applications in each individual environment in IOS-XR   
+(across Active-Standby HA systems)**, i.e.:  
 
 >*   XR-LXC     
 >*   ADMIN-LXC   
