@@ -32,12 +32,11 @@ No SMUs needed, leverages the native app-hosting architecture in IOS-XR and the 
 
 
 
-
+&nbsp;    
+&nbsp;
 ## User Story (Click to Expand)
   
 &nbsp;    
-&nbsp;  
-
 <a href="https://raw.githubusercontent.com/akshshar/xr-auditor/master/images/user_story_auditor.png">![user-story](https://raw.githubusercontent.com/akshshar/xr-auditor/master/images/user_story_auditor.png)</a>
 
 
@@ -70,6 +69,8 @@ Similarly, IOS-XR also supports sending structured operational data (modeled usi
 Further, Linux doesn't really have a telemetry system by default - there are variety of solutions available that can provide structured data for various individual applications and files on the system, but none of them support a clean one step installation, collection and troubleshooting capabilities across container based architecture as shown above.  
 
 
+### Enter xr-auditor 
+
 This is where [xr-auditor](https://github.com/akshshar/xr-auditor) shines. It allows a user to specify their collection requirements through YAML files, build the application into single binary and deploy the auditors in each domain(container) of the system in a couple of steps.
   
   
@@ -96,8 +97,6 @@ Once the install is triggered, individual cron jobs and apps are set up in the d
 
 
 
-  
-
 ## Setting up the Build environment on your laptop:
 
 All you need to build the application is a linux environment with python 2.7 installed.
@@ -122,8 +121,137 @@ The vagrant setup looks something like this:
 *  **Step 1**: Clone the [xr-auditor]() git repo:
 
    ```
-   
+   AKSHSHAR-M-33WP: akshshar$ git clone https://github.com/akshshar/xr-auditor.git
+   Cloning into 'xr-auditor'...
+   remote: Counting objects: 502, done.
+   remote: Compressing objects: 100% (23/23), done.
+   remote: Total 502 (delta 12), reused 4 (delta 1), pack-reused 478
+   Receiving objects: 100% (502/502), 8.92 MiB | 4.19 MiB/s, done.
+   Resolving deltas: 100% (317/317), done.
+   AKSHSHAR-M-33WP: akshshar$ 
+   AKSHSHAR-M-33WP: akshshar$ cd xr-auditor/
+   AKSHSHAR-M-33WP:xr-auditor akshshar$ ls
+   README.md		cleanup.sh		cron			requirements.txt	userfiles
+   build_app.sh		core			images			specs			vagrant
+   AKSHSHAR-M-33WP:xr-auditor akshshar$ 
    ```
+   
+*  **Step 2**: Drop into the `vagrant` directory and spin up the vagrant topology (shown above):
+
+    >**Note**:  Make sure you've gone through the tutorial:  [XR toolbox, Part 1 : IOS-XR Vagrant Quick Start](https://xrdocs.github.io/application-hosting/tutorials/iosxr-vagrant-quickstart) and already have the `IOS-XRv` vagrant box on your system:  
+   > ```
+   > AKSHSHAR-M-33WP:~ akshshar$ vagrant box list
+   > IOS-XRv            (virtualbox, 0)
+   > AKSHSHAR-M-33WP:~ akshshar$ 
+   > ```
+
+
+    
+    Now, in the vagrant directory, issue a `vagrant up`:
+    
+    ```
+    AKSHSHAR-M-33WP:vagrant akshshar$ vagrant up
+    Bringing machine 'rtr' up with 'virtualbox' provider...
+    Bringing machine 'devbox' up with 'virtualbox' provider...
+    ==> rtr: Importing base box 'IOS-XRv'...
+    ==> rtr: Matching MAC address for NAT networking...
+    ==> rtr: Setting the name of the VM: vagrant_rtr_1525415374584_85170
+    ==> rtr: Clearing any previously set network interfaces...
+    ==> rtr: Preparing network interfaces based on configuration...
+        rtr: Adapter 1: nat
+        rtr: Adapter 2: intnet
+    ==> rtr: Forwarding ports...
+        rtr: 57722 (guest) => 2222 (host) (adapter 1)
+        rtr: 22 (guest) => 2223 (host) (adapter 1)
+    ==> rtr: Running 'pre-boot' VM customizations...
+    ==> rtr: Booting VM...
+    
+    
+    
+    .......
+    
+    
+    
+    devbox: Removing insecure key from the guest if it's present...
+    devbox: Key inserted! Disconnecting and reconnecting using new SSH key... 
+    ==> devbox: Machine booted and ready!
+    ==> devbox: Checking for guest additions in VM...
+    ==> devbox: Configuring and enabling network interfaces...
+    ==> devbox: Mounting shared folders...
+        devbox: /vagrant => /Users/akshshar/xr-auditor/vagrant
+        
+    ==> rtr: Machine 'rtr' has a post `vagrant up` message. This is a message
+    ==> rtr: from the creator of the Vagrantfile, and not from Vagrant itself:
+    ==> rtr: 
+    ==> rtr: 
+    ==> rtr:     Welcome to the IOS XRv (64-bit) VirtualBox.
+    ==> rtr:     To connect to the XR Linux shell, use: 'vagrant ssh'.
+    ==> rtr:     To ssh to the XR Console, use: 'vagrant port' (vagrant version > 1.8)
+    ==> rtr:     to determine the port that maps to guestport 22,
+    ==> rtr:     then: 'ssh vagrant@localhost -p <forwarded port>'
+    ==> rtr: 
+    ==> rtr:     IMPORTANT:  READ CAREFULLY
+    ==> rtr:     The Software is subject to and governed by the terms and conditions
+    ==> rtr:     of the End User License Agreement and the Supplemental End User
+    ==> rtr:     License Agreement accompanying the product, made available at the
+    ==> rtr:     time of your order, or posted on the Cisco website at
+    ==> rtr:     www.cisco.com/go/terms (collectively, the 'Agreement').
+    ==> rtr:     As set forth more fully in the Agreement, use of the Software is
+    ==> rtr:     strictly limited to internal use in a non-production environment
+    ==> rtr:     solely for demonstration and evaluation purposes. Downloading,
+    ==> rtr:     installing, or using the Software constitutes acceptance of the
+    ==> rtr:     Agreement, and you are binding yourself and the business entity
+    ==> rtr:     that you represent to the Agreement. If you do not agree to all
+    ==> rtr:     of the terms of the Agreement, then Cisco is unwilling to license
+    ==> rtr:     the Software to you and (a) you may not download, install or use the
+    ==> rtr:     Software, and (b) you may return the Software as more fully set forth
+    ==> rtr:     in the Agreement.
+    AKSHSHAR-M-33WP:vagrant akshshar$ 
+
+    ```
+    Once you see the above message, the devices should have booted up. You can check the status using `vagrant status`
+    
+    ```
+    AKSHSHAR-M-33WP:vagrant akshshar$ vagrant status
+    Current machine states:
+
+    rtr                       running (virtualbox)
+    devbox                    running (virtualbox)
+
+    This environment represents multiple VMs. The VMs are all listed
+    above with their current state. For more information about a specific
+    VM, run `vagrant status NAME`.
+    AKSHSHAR-M-33WP:vagrant akshshar$ 
+    
+    ```
+    
+*  **Step 3**:  Note down the ports used for SSH (port 22) by the `rtr` and by `devbox`:
+
+   ```
+   AKSHSHAR-M-33WP:vagrant akshshar$ vagrant port rtr
+   The forwarded ports for the machine are listed below. Please note that
+   these values may differ from values configured in the Vagrantfile if the
+   provider supports automatic port collision detection and resolution.
+
+        22 (guest) => 2223 (host)
+     57722 (guest) => 2222 (host)
+   AKSHSHAR-M-33WP:vagrant akshshar$ 
+   AKSHSHAR-M-33WP:vagrant akshshar$ 
+   AKSHSHAR-M-33WP:vagrant akshshar$ vagrant port devbox
+   The forwarded ports for the machine are listed below. Please note that
+   these values may differ from values configured in the Vagrantfile if the
+   provider supports automatic port collision detection and resolution.
+
+        22 (guest) => 2200 (host)
+    AKSHSHAR-M-33WP:vagrant akshshar$ 
+    AKSHSHAR-M-33WP:vagrant akshshar$ 
+    ```
+    
+    
+ 
+    
+
+    
 
 
 
