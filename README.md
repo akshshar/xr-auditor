@@ -10,7 +10,6 @@ This application enables **periodic auditing** of the linux shells in the IOS-XR
   
 &nbsp;    
 &nbsp;  
-
 **Functionally**, the individual python applications:    
 &nbsp;   
 >*  **Collect local data based on a YAML based user-config** provided during the build process 
@@ -50,14 +49,38 @@ For a quick refresher on the IOS-XR container based architecture, see the figure
 
 As shown above, access to the linux shells (in blue inside the containers) and the underlying shells is protected through XR AAA authentication and authorization.
 While IOS-XR supports the 3 A's of AAA (Authentication, Authorization and Accounting),  Linux supports only 2 of them: Authentication and authorization.  
-Usually accounting is handled through separate tools such as auditd, snoopy etc. We showcase the usage of snoopy with IOS-XR here:  <https://github.com/akshshar/snoopy-xr> 
+Usually accounting is handled through separate tools such as auditd, snoopy etc. We showcase the usage of snoopy with IOS-XR here:  <https://github.com/akshshar/snoopy-xr>    
+
 Further, Linux doesn't really have a telemetry system by default - there are variety of solutions available that can provide structured data for various individual applications and files on the system, but none of them support a clean one step installation, collection and troubleshooting capabilities across container based architecture as shown above.  
 
-This is where [xr-auditor](https://github.com/akshshar/xr-auditor) comes in. It allows a user to specify their collection requirements through YAML files, build the application into single binary and deploy the auditors in each domain(container) of the system in a couple of steps.
+This is where [xr-auditor](https://github.com/akshshar/xr-auditor) shines. It allows a user to specify their collection requirements through YAML files, build the application into single binary and deploy the auditors in each domain(container) of the system in a couple of steps.
+  
+  
+xr-auditor is installed using a single binary generated out of the code in this git repo using pyinstaller. More details below. The installation involves running the binary on the XR-LXC shell of the Active RP: 
+
+<a href="https://github.com/akshshar/xr-auditor/blob/master/iosxr-auditor-install.png?raw=true">![xr-auditor-install](https://github.com/akshshar/xr-auditor/blob/master/iosxr-auditor-install.png?raw=true)</a>
+
+&nbsp;  
+&nbsp;  
+
+Once the install is triggered, individual cron jobs and apps are set up in the different domains as shown below to start sending collected data periodically to a remote server (identified in the SERVER_CONFIG in `userfiles/auditor.cfg.yml`) securely over SSH:
+  
+<a href="https://github.com/akshshar/xr-auditor/blob/master/iosxr-auditor-operation.png?raw=true">![xr-auditor-install](https://github.com/akshshar/xr-auditor/blob/master/iosxr-auditor-operation.png?raw=true)</a> 
+
+&nsbp;
+&nbsp;
+
+
+
+  
+
 
 
 
 ## Setting up the application environment
+
+
+
 
 
     
