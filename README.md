@@ -88,10 +88,22 @@ Once the install is triggered, individual cron jobs and apps are set up in the d
 
   
 
+## Setting up the Build environment:
+
+All you need to build the application is a linux environment with python 2.7 installed.
+To make things simpler, there is a vagrant setup already included with the code. We will use the vagrant setup to build and test our application against IOS-XRv64 on our laptops before we run it on physical hardware (NCS5500):
+
+The vagrant setup looks something like this:  
+
+<a href="https://raw.githubusercontent.com/akshshar/xr-auditor/master/vagrant_setup.png">![vagrant setup](https://raw.githubusercontent.com/akshshar/xr-auditor/master/vagrant_setup.png)</a>
 
 
+>If you're not familiar with vagrant and its workflows I would suggest going through the following tutorials on [xrdocs](https://xrdocs.github.io/) to get access to an IOS-XR vagrant box and to play around with this setup and a lot more:  
+>
+>* [XR toolbox, Part 1 : IOS-XR Vagrant Quick Start](https://xrdocs.github.io/application-hosting/tutorials/iosxr-vagrant-quickstart)
+>* [XR Toolbox, Part 2 : Bootstrap XR configuration with Vagrant](https://xrdocs.github.io/application-hosting/tutorials/iosxr-vagrant-bootstrap-config)
+>* [https://xrdocs.github.io/application-hosting/tutorials/2016-06-06-xr-toolbox-app-development-topology](https://xrdocs.github.io/application-hosting/tutorials/2016-06-06-xr-toolbox-app-development-topology)
 
-## Setting up the application environment
 
 
 
