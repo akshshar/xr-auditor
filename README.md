@@ -10,7 +10,7 @@ This application enables **periodic auditing** of the linux shells in the IOS-XR
 >*   HOST    
   
 
-The individual python applications:  
+**Functionally**, the individual python applications:  
 
 >*  **Collect local data based on a YAML based user-config** provided during the build process 
 >*  **Store accummulated data in the form of XML that is strictly validated against a user-defined XML schema**.
