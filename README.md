@@ -29,9 +29,9 @@ No SMUs needed, leverages the native app-hosting architecture in IOS-XR and the 
 
 
 
-## User Story
+## User Story (Click to Expand)
 
-<a href="/user_story_auditor.png">![user-story](/user_story_auditor.png)</a>
+<a href="https://raw.githubusercontent.com/akshshar/xr-auditor/master/user_story_auditor.png">![user-story](https://raw.githubusercontent.com/akshshar/xr-auditor/master/user_story_auditor.png)</a>
 
 
 
