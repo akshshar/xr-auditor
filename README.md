@@ -300,16 +300,16 @@ The vagrant setup looks something like this:
 &nbsp;    
 &nbsp;  
 
-*   **Step 5**:   Create a new ssh-key pair for your devbox environment (if you see see the earlier [image]
+*  **Step 5**:   Create a new ssh-key pair for your devbox environment (if you see see the earlier [image]
 (https://github.com/akshshar/xr-auditor/blob/master/images/iosxr-auditor-operation.png?raw=true) the devbox will serve as the remote server to which the router sends the collected XML data.
 
    >For password-less operation, the way we make this work is:  
-   >
-   >1.  Create an ssh-key pair on the server (devbox) .  
+   >    
+   >1. Create an ssh-key pair on the server (devbox) .  
    > 
-   >2.  Add the public key of the pair to the devbox (server)'s  ~/.ssh/authorized_keys file . 
+   >2. Add the public key of the pair to the devbox (server)'s  ~/.ssh/authorized_keys file . 
    > 
-   >3.  Package the private key as part of the app during the build process and transfer to the router .  
+   >3. Package the private key as part of the app during the build process and transfer to the router .  
    >  
    >The app on the router then uses the private key to ssh and transfer files to the server (devbox) without requiring a password.   
     
