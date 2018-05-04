@@ -1,7 +1,6 @@
 ## Contents:
 <li class="">
 <a href="#auditor" id="markdown-toc-auditor">Auditor</a><ul>
-<li class=""><a href="#introduction" id="markdown-toc-introduction">Introduction</a></li>
 <li class=""><a href="#user-story-click-to-expand" id="markdown-toc-user-story-click-to-expand">User Story (Click to Expand)</a></li>
 <li class="">
 <a href="#ios-xr-architecture" id="markdown-toc-ios-xr-architecture">IOS-XR architecture</a><ul>
