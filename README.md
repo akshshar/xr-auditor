@@ -117,7 +117,9 @@ The vagrant setup looks something like this:
 &nbsp; 
 
 ## Building the Application:
-&nbsp;      
+      
+&nbsp;    
+&nbsp;   
 *  **Step 1**: Clone the [xr-auditor]() git repo:
 
    ```
@@ -135,7 +137,9 @@ The vagrant setup looks something like this:
    build_app.sh		core			images			specs			vagrant
    AKSHSHAR-M-33WP:xr-auditor akshshar$ 
    ```
-   
+     
+&nbsp;    
+&nbsp;     
 *  **Step 2**: Drop into the `vagrant` directory and spin up the vagrant topology (shown above):
 
     >**Note**:  Make sure you've gone through the tutorial:  [XR toolbox, Part 1 : IOS-XR Vagrant Quick Start](https://xrdocs.github.io/application-hosting/tutorials/iosxr-vagrant-quickstart) and already have the `IOS-XRv` vagrant box on your system:  
@@ -223,7 +227,10 @@ The vagrant setup looks something like this:
     VM, run `vagrant status NAME`.
     AKSHSHAR-M-33WP:vagrant akshshar$ 
     
-    ```
+    ```    
+    
+&nbsp;    
+&nbsp;   
     
 *  **Step 3**:  Note down the ports used for SSH (port 22) by the `rtr` and by `devbox`:
 
@@ -247,9 +254,114 @@ The vagrant setup looks something like this:
     AKSHSHAR-M-33WP:vagrant akshshar$ 
     ```
     
+&nbsp;    
+&nbsp;       
+*   **Step 4**:  SSH into the vagrant box (either by using `vagrant ssh devbox` or by using the port discovered above (2200 for devbox): `ssh -p 2200 vagrant@localhost`): 
+
+    >Password is `vagrant`
+
+    ```
+    AKSHSHAR-M-33WP:vagrant akshshar$ ssh -p 2200 vagrant@localhost
+    vagrant@localhost's password: 
+    Welcome to Ubuntu 16.04.4 LTS (GNU/Linux 4.4.0-87-generic x86_64)
+
+    * Documentation:  https://help.ubuntu.com
+    * Management:     https://landscape.canonical.com
+    * Support:        https://ubuntu.com/advantage
+
+    0 packages can be updated.
+    0 updates are security updates.
     
- 
+    Last login: Fri May  4 10:41:50 2018 from 10.0.2.2
+    vagrant@vagrant:~$ 
+    vagrant@vagrant:~$ 
     
+    ```
+&nbsp;     
+    
+    Now again clone the xr-auditor app so that you have the application code available for build inside the devbox environment:
+    
+    ```
+    vagrant@vagrant:~$ git clone https://github.com/akshshar/xr-auditor.git
+    Cloning into 'xr-auditor'...
+    remote: Counting objects: 390, done.
+    remote: Compressing objects: 100% (185/185), done.
+    remote: Total 390 (delta 252), reused 333 (delta 195), pack-reused 0
+    Receiving objects: 100% (390/390), 7.56 MiB | 3.51 MiB/s, done.
+    Resolving deltas: 100% (252/252), done.
+    Checking connectivity... done.
+    vagrant@vagrant:~$ cd xr-auditor/
+    vagrant@vagrant:~/xr-auditor$ 
+
+    
+    ```
+&nbsp;    
+&nbsp;  
+
+*   **Step 5**:   Create a new ssh-key pair for your devbox environment (if you see see the earlier [image](https://github.com/akshshar/xr-auditor/blob/master/images/iosxr-auditor-operation.png?raw=true) the devbox will serve as the remote server to which the router sends the collected XML data.
+
+    >For password-less operation, the way we make this work is:
+    >
+    >1.  Create an ssh-key pair on the server (devbox)
+    >2.  Add the public key of the pair to the devbox (server)'s  ~/.ssh/authorized_keys file
+    >3.  Package the private key as part of the app during the build process and transfer to the router
+    >4.  The app on the router then uses the private key to ssh and transfer files to the server (devbox) without requiring a password.
+
+    Following the above steps on devbox:  
+    
+    1.  Create the ssh-key pair:
+    
+    ```
+    vagrant@vagrant:~/xr-auditor$ ssh-keygen -t rsa
+    Generating public/private rsa key pair.
+    Enter file in which to save the key (/home/vagrant/.ssh/id_rsa): 
+    Enter passphrase (empty for no passphrase): 
+    Enter same passphrase again: 
+    Your identification has been saved in /home/vagrant/.ssh/id_rsa.
+    Your public key has been saved in /home/vagrant/.ssh/id_rsa.pub.
+    The key fingerprint is:
+    SHA256:nUQqNANDpVUjwJLZ+7LrFY4go/y+yBcc+ProRqYejF8 vagrant@vagrant
+    The key's randomart image is:
+    +---[RSA 2048]----+
+    |   *=+B.o .      |
+    |  + o= + +       |
+    |  ..... . .      |
+    | . ..  . o .     |
+    |o + ... S o      |
+    |== =.o..         |
+    |*+. Eoo          |
+    |o+=o..           |
+    |+*=*+.           |
+    +----[SHA256]-----+
+    vagrant@vagrant:~/xr-auditor$ 
+    ```
+    
+    
+    2.  Add the public key to authorized_keys:
+    
+    ```
+    vagrant@vagrant:~/xr-auditor$ 
+    vagrant@vagrant:~/xr-auditor$ cat ~/.ssh/id_rsa >> ~/.ssh/authorized_keys 
+    vagrant@vagrant:~/xr-auditor$ 
+    ```
+    
+    3.  Copy the private key to the folder `userfiles/` in the xr-auditor directory:
+    
+    ```
+    vagrant@vagrant:~/xr-auditor$ 
+    vagrant@vagrant:~/xr-auditor$ cp ~/.ssh/id_rsa userfiles/id_rsa_server 
+    vagrant@vagrant:~/xr-auditor$ 
+    ```
+&nbsp;    
+&nbsp;  
+
+* **Step 6**:  Edit the appropriate settings in the `userfiles/auditor.cfg.yml` file to match the environment you are building for. This file encapsulates information about the router, the server to which the data will be sent, the installation directories for the app and the compliance data that the app must collect:
+
+<a href="https://github.com/akshshar/xr-auditor/blob/master/images/auditor_cfg_yml_edits.png?raw=true">![auditor_cfg_yml_edits](https://github.com/akshshar/xr-auditor/blob/master/images/auditor_cfg_yml_edits.png?raw=true)</a>
+
+
+
+
 
     
 
