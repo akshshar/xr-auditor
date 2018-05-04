@@ -31,7 +31,7 @@ No SMUs needed, leverages the native app-hosting architecture in IOS-XR and the 
 
 ## User Story
 
-![user-story](/user_story_auditor.png)
+<a href="/user_story_auditor.png">![user-story](/user_story_auditor.png)</a>
 
 
 
