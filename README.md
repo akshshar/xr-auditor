@@ -40,7 +40,24 @@ No SMUs needed, leverages the native app-hosting architecture in IOS-XR and the 
 
 
 
+## IOS-XR architecture
 
+For a quick refresher on the IOS-XR container based architecture, see the figure below:  
+
+<a href="https://github.com/akshshar/xr-auditor/blob/master/IOS-XR-architecture.png?raw=true">![iosxr-architecture](https://github.com/akshshar/xr-auditor/blob/master/IOS-XR-architecture.png?raw=true)</a>
+
+&nsbp;  
+
+As shown above, access to the linux shells (in blue inside the containers) and the underlying shells is protected through XR AAA authentication and authorization.
+While IOS-XR supports the 3 A's of AAA (Authentication, Authorization and Accounting),  Linux supports only 2 of them: Authentication and authorization.  
+Usually accounting is handled through separate tools such as auditd, snoopy etc. We showcase the usage of snoopy with IOS-XR here:  <https://github.com/akshshar/snoopy-xr> 
+Further, Linux doesn't really have a telemetry system by default - there are variety of solutions available that can provide structured data for various individual applications and files on the system, but none of them support a clean one step installation, collection and troubleshooting capabilities across container based architecture as shown above.  
+
+This is where [xr-auditor](https://github.com/akshshar/xr-auditor) comes in. It allows a user to specify their collection requirements through YAML files, build the application into single binary and deploy the auditors in each domain(container) of the system in a couple of steps.
+
+
+
+## Setting up the application environment
 
 
     
