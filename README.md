@@ -1,12 +1,14 @@
 # Auditor
 
+## Introduction
+
 This application enables **periodic auditing** of the linux shells in the IOS-XR container-based architecture by running **individual python applications in each individual environment in IOS-XR**, i.e.:  
 
-  1.  XR-LXC  
+  *    XR-LXC   
   
-  2.  ADMIN-LXC   
+  *    ADMIN-LXC   
   
-  3. HOST 
+  *    HOST 
   
   
 
