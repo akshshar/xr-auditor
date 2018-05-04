@@ -13,13 +13,10 @@ The individual python applications **collect local data based on a YAML based us
 
 Further, the **application supports**:  
 
-    1.  **Installation** on a High-Availability (Active/Standby RP) system through a single command.  
-    
-    2.  **A clean uninstallation** across the entire system through a single command.  
-    
-    3.  **Troubleshooting**:  **Dump filesystem view** - The ability to view the entire system's affected (user-defined in YAML file) system across active/standby RPs using a single command.  
-    
-    4.  **Troubleshooting**:  **Gather debug Data** - The ability to collect generated logs from all the environments (Active/Standby XR LXC, Admin LXC, HOST) and create a single tar ball using a single command.  
+>1.  **Installation** on a High-Availability (Active/Standby RP) system through a single command.  
+>2.  **A clean uninstallation** across the entire system through a single command.  
+>3.  **Troubleshooting**:  **Dump filesystem view** - The ability to view the entire system's affected (user-defined in YAML file) system across active/standby RPs using a single command.  
+>4.  **Troubleshooting**:  **Gather debug Data** - The ability to collect generated logs from all the environments (Active/Standby XR LXC, Admin LXC, HOST) and create a single tar ball using a single command.  
     
     
 No SMUs needed, leverages the native app-hosting architecture and the internal SSH-based access between different parts of the IOS-XR architecture - namely, XR-LXC, Admin-LXC and HOST of the active and/or Standby RPs.
