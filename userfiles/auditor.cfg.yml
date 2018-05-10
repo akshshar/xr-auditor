@@ -53,15 +53,13 @@ SERVER_CONFIG:
     #      1)  router_hostname
     #      2)  router_ip
     #
-    # So, if both the above parameters are specified, then final compliance 
-    # file will look something like:
+    # NOTE:  Use the "keys" ==> "router_hostname" and "router_ip" as strings.
+    #        Do not use the actual values (rtr1 or 11_33_33_33) etc. These  
+    #        values are meant to be collected by the app before naming the
+    #        compliance file and will be unique per router in the network.
+    #        The setting shown below is the current supported setting.
     #
-    #        compliance_audit_{{router_hostname}}_{{router_ip}}.xml
     #
-    #
-    #    For e.g. compliance_audit_rtr1_11_11_11_33.xml
-    #             where  rtr1        =  router_hostname
-    #                    11_11_11_33 =  router_ip (with . replaced with _) 
     # 
     #
 
