@@ -941,11 +941,11 @@ class AuditHelpers(ZtpHelpers):
                     return {"status" : "error", "output" : cmd_run["output"]}
             else:
                 self.syslogger.info("No standby xr ip, (no standby RP?)")
-                return {"status" : "error", "output" : result["output"]}
+                return {"status" : "error", "output" : cmd_run["output"]}
 
         else:
             self.syslogger.info("Not an HA setup, no standby - Bailing out")
-            return {"status" : "error", "output" : result["output"]}
+            return {"status" : "error", "output" : ""}
 
 
     def standby_xrscp(self, src=None, dest=None):
@@ -982,11 +982,11 @@ class AuditHelpers(ZtpHelpers):
                     return {"status" : "error", "output" : cmd_run["error"]}
             else:
                 self.syslogger.info("No standby xr ip, (no standby RP?)")
-                return {"status" : "error", "output" : result["output"]}
+                return {"status" : "error", "output" : cmd_run["output"]}
 
         else:
             self.syslogger.info("Failed to fetch the  xr xrnns ips")
-            return {"status" : "error", "output" : result["output"]}
+            return {"status" : "error", "output" : ""}
 
 
     def standby_to_active_xr_scp(self, src=None, dest=None):
@@ -1022,11 +1022,11 @@ class AuditHelpers(ZtpHelpers):
                     return {"status" : "error", "output" : cmd_run["error"]}
             else:
                 self.syslogger.info("No standby xr ip, (no standby RP?)")
-                return {"status" : "error", "output" : result["output"]}
+                return {"status" : "error", "output" : cmd_run["output"]}
 
         else:
             self.syslogger.info("Failed to fetch the  xr xrnns ips")
-            return {"status" : "error", "output" : result["output"]}
+            return {"status" : "error", "output" : ""}
 
 
 
