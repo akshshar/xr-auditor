@@ -398,7 +398,8 @@ The vagrant setup looks something like this:
 *  **Step 7**:  Now you're all ready to build the app. Eventually a single binary will be created as part of the build process  and this app will be called `auditor`.
 
    This app internally will consist of the following file structure:
-   
+     
+     
    ```
    auditor
      |
@@ -482,7 +483,8 @@ The vagrant setup looks something like this:
      |    |         |--- collector.py
      |    | 
      |    |--- collector.cron
-     |         
+     |    
+     
      ```
      
      
