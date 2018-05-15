@@ -585,13 +585,14 @@ The vagrant setup looks something like this:
    6119 INFO: Appending archive to ELF section in EXE /home/vagrant/xr-auditor/dist/auditor
    6172 INFO: Building EXE from out00-EXE.toc completed successfully.
    vagrant@vagrant:~/xr-auditor$    
-   ``` 
+   ```   
    
-     At the end of the build, you will see the `auditor` binary appear inside a `dist/` directory at the root of the git
-     repo:
-   
-   
-     ```
+      
+      
+   At the end of the build, you will see the `auditor` binary appear inside a `dist/` directory at the root of the git repo:
+      
+      
+   ```
      vagrant@vagrant:~/xr-auditor$ ls -lrt dist/
      total 61672
      -rwxr-xr-x 1 root root  7046744 May  4 10:43 audit_xr.bin
@@ -600,15 +601,16 @@ The vagrant setup looks something like this:
      -rwxr-xr-x 1 root root  7049952 May  4 10:43 collector.bin
      -rwxr-xr-x 1 root root 34949880 May  4 10:49 auditor
      vagrant@vagrant:~/xr-auditor$ 
-     ```
-   
+   ```
+  
+  
    
  ## Transfer auditor app to the router
  
  You will need the ssh credentials for your IOS-XR router to transfer the generated app to its `/misc/scratch` directory (also called `disk0:`.
  
  >In our **vagrant** setup, the credentials are `vagrant/vagrant`.
- > Note, 2223 is the port used by the vagrant IOS-XRv instance for its SSH session (See `vagrant port` output from earlier)
+ >Note, 2223 is the port used by the vagrant IOS-XRv instance for its SSH session (See `vagrant port` output from earlier)
  
  ```
  vagrant@vagrant:~/xr-auditor$ scp -P 2223 dist/auditor vagrant@10.0.2.2:/misc/scratch/
