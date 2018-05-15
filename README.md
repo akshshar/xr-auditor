@@ -489,118 +489,119 @@ The vagrant setup looks something like this:
      
      
      
-     To build the app, at the root of the git repo, issue the following command:
-     (The `build_app.sh` shell script will automatically install the required dependencies, including pyinstaller, inside the devbox)
+   To build the app, at the root of the git repo, issue the following command:
+   (The `build_app.sh` shell script will automatically install the required dependencies, including pyinstaller, inside the 
+   devbox)
      
-     ```
-     vagrant@vagrant:~/xr-auditor$ 
-     vagrant@vagrant:~/xr-auditor$ sudo -E ./build_app.sh 
+   ```
+   vagrant@vagrant:~/xr-auditor$ 
+   vagrant@vagrant:~/xr-auditor$ sudo -E ./build_app.sh 
      
-     +++ which ./build_app.sh
-     ++ dirname ./build_app.sh
-     + SCRIPT_PATH=.
-     + apt-get install -y git python-pip
-     Reading package lists... Done
-     Building dependency tree       
-     Reading state information... Done
-     git is already the newest version (1:2.7.4-0ubuntu1.3).
-     python-pip is already the newest version (8.1.1-2ubuntu0.4).
-     0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
-     + cd .
-     + echo
+   +++ which ./build_app.sh
+   ++ dirname ./build_app.sh
+   + SCRIPT_PATH=.
+   + apt-get install -y git python-pip
+   Reading package lists... Done
+   Building dependency tree       
+   Reading state information... Done
+   git is already the newest version (1:2.7.4-0ubuntu1.3).
+   python-pip is already the newest version (8.1.1-2ubuntu0.4).
+   0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+   + cd .
+   + echo
      
-     + [[ '' == '' ]]
-     + pip install --upgrade pip==9.0.3
+   + [[ '' == '' ]]
+   + pip install --upgrade pip==9.0.3
   
-     ....
+   ....
      
-     + pyinstaller ./specs/xr.spec
-     20 INFO: PyInstaller: 3.3.1
-     20 INFO: Python: 2.7.12
-     21 INFO: Platform: Linux-4.4.0-87-generic-x86_64-with-Ubuntu-16.04-xenial
-     25 INFO: UPX is not available.
-     26 INFO: Extending PYTHONPATH with paths
-     ['/home/vagrant/xr-auditor/core', '/home/cisco/audit_xr_linux/specs']
-     26 INFO: checking Analysis
-     30 INFO: Appending 'datas' from .spec
-     31 INFO: checking PYZ
-     34 INFO: checking PKG
-     34 INFO: Bootloader /usr/local/lib/python2.7/dist-packages/PyInstaller/bootloader/Linux-64bit/run
-     35 INFO: checking EXE
-     + pyinstaller ./specs/admin.spec
-     20 INFO: PyInstaller: 3.3.1
-     21 INFO: Python: 2.7.12
-     21 INFO: Platform: Linux-4.4.0-87-generic-x86_64-with-Ubuntu-16.04-xenial
-     24 INFO: UPX is not available.
-     26 INFO: Extending PYTHONPATH with paths
-     ['/home/vagrant/xr-auditor/core', '/home/cisco/audit_xr_linux/specs']
-     26 INFO: checking Analysis
-     30 INFO: Appending 'datas' from .spec
-     30 INFO: checking PYZ
-     33 INFO: checking PKG
-     33 INFO: Bootloader /usr/local/lib/python2.7/dist-packages/PyInstaller/bootloader/Linux-64bit/run
-     34 INFO: checking EXE
-     + pyinstaller ./specs/host.spec
-     20 INFO: PyInstaller: 3.3.1
-     20 INFO: Python: 2.7.12
-     21 INFO: Platform: Linux-4.4.0-87-generic-x86_64-with-Ubuntu-16.04-xenial
-     24 INFO: UPX is not available.
-     25 INFO: Extending PYTHONPATH with paths
-     ['/home/vagrant/xr-auditor/core', '/home/cisco/audit_xr_linux/specs']
-     25 INFO: checking Analysis
+   + pyinstaller ./specs/xr.spec
+   20 INFO: PyInstaller: 3.3.1
+   20 INFO: Python: 2.7.12
+   21 INFO: Platform: Linux-4.4.0-87-generic-x86_64-with-Ubuntu-16.04-xenial
+   25 INFO: UPX is not available.
+   26 INFO: Extending PYTHONPATH with paths
+   ['/home/vagrant/xr-auditor/core', '/home/cisco/audit_xr_linux/specs']
+   26 INFO: checking Analysis
+   30 INFO: Appending 'datas' from .spec
+   31 INFO: checking PYZ
+   34 INFO: checking PKG
+   34 INFO: Bootloader /usr/local/lib/python2.7/dist-packages/PyInstaller/bootloader/Linux-64bit/run
+   35 INFO: checking EXE
+   + pyinstaller ./specs/admin.spec
+   20 INFO: PyInstaller: 3.3.1
+   21 INFO: Python: 2.7.12
+   21 INFO: Platform: Linux-4.4.0-87-generic-x86_64-with-Ubuntu-16.04-xenial
+   24 INFO: UPX is not available.
+   26 INFO: Extending PYTHONPATH with paths
+   ['/home/vagrant/xr-auditor/core', '/home/cisco/audit_xr_linux/specs']
+   26 INFO: checking Analysis
+   30 INFO: Appending 'datas' from .spec
+   30 INFO: checking PYZ
+   33 INFO: checking PKG
+   33 INFO: Bootloader /usr/local/lib/python2.7/dist-packages/PyInstaller/bootloader/Linux-64bit/run
+   34 INFO: checking EXE
+   + pyinstaller ./specs/host.spec
+   20 INFO: PyInstaller: 3.3.1
+   20 INFO: Python: 2.7.12
+   21 INFO: Platform: Linux-4.4.0-87-generic-x86_64-with-Ubuntu-16.04-xenial
+   24 INFO: UPX is not available.
+   25 INFO: Extending PYTHONPATH with paths
+   ['/home/vagrant/xr-auditor/core', '/home/cisco/audit_xr_linux/specs']
+   25 INFO: checking Analysis
      
-     .....
+   .....
      
      
-     67 INFO: running Analysis out00-Analysis.toc
-     81 INFO: Caching module hooks...  
-     83 INFO: Analyzing core/auditor.py
-     1855 INFO: Processing pre-safe import module hook   _xmlplus
-     1996 INFO: Processing pre-find module path hook   distutils
-     2168 INFO: Loading module hooks... 
-     2169 INFO: Loading module hook "hook-distutils.py"...
-     2170 INFO: Loading module hook "hook-xml.py"...
-     2171 INFO: Loading module hook "hook-lxml.etree.py"...
-     2178 INFO: Loading module hook "hook-httplib.py"...
-     2179 INFO: Loading module hook "hook-encodings.py"...
-     2500 INFO: Looking for ctypes DLLs
-     2557 INFO: Analyzing run-time hooks ...
-     2563 INFO: Looking for dynamic libraries
-     2702 INFO: Looking for eggs
-     2702 INFO: Python library not in binary dependencies. Doing additional searching...
-     2722 INFO: Using Python library /usr/lib/x86_64-linux-gnu/libpython2.7.so.1.0
-     2724 INFO: Warnings written to /home/vagrant/xr-auditor/build/auditor/warnauditor.txt
-     2736 INFO: Graph cross-reference written to /home/vagrant/xr-auditor/build/auditor/xref-auditor.html
-     2771 INFO: Appending 'datas' from .spec
-     2773 INFO: checking PYZ
-     2776 INFO: checking PKG
-     2776 INFO: Building because /home/vagrant/xr-auditor/core/auditor.py changed
-     2777 INFO: Building PKG (CArchive) out00-PKG.pkg
-     6099 INFO: Building PKG (CArchive) out00-PKG.pkg completed successfully.
-     6110 INFO: Bootloader /usr/local/lib/python2.7/dist-packages/PyInstaller/bootloader/Linux-64bit/run
-     6111 INFO: checking EXE
-     6113 INFO: Rebuilding out00-EXE.toc because pkg is more recent
-     6114 INFO: Building EXE from out00-EXE.toc
-     6119 INFO: Appending archive to ELF section in EXE /home/vagrant/xr-auditor/dist/auditor
-     6172 INFO: Building EXE from out00-EXE.toc completed successfully.
-     vagrant@vagrant:~/xr-auditor$
+   67 INFO: running Analysis out00-Analysis.toc
+   81 INFO: Caching module hooks...  
+   83 INFO: Analyzing core/auditor.py
+   1855 INFO: Processing pre-safe import module hook   _xmlplus
+   1996 INFO: Processing pre-find module path hook   distutils
+   2168 INFO: Loading module hooks... 
+   2169 INFO: Loading module hook "hook-distutils.py"...
+   2170 INFO: Loading module hook "hook-xml.py"...
+   2171 INFO: Loading module hook "hook-lxml.etree.py"...
+   2178 INFO: Loading module hook "hook-httplib.py"...
+   2179 INFO: Loading module hook "hook-encodings.py"...
+   2500 INFO: Looking for ctypes DLLs
+   2557 INFO: Analyzing run-time hooks ...
+   2563 INFO: Looking for dynamic libraries
+   2702 INFO: Looking for eggs
+   2702 INFO: Python library not in binary dependencies. Doing additional searching...
+   2722 INFO: Using Python library /usr/lib/x86_64-linux-gnu/libpython2.7.so.1.0
+   2724 INFO: Warnings written to /home/vagrant/xr-auditor/build/auditor/warnauditor.txt
+   2736 INFO: Graph cross-reference written to /home/vagrant/xr-auditor/build/auditor/xref-auditor.html
+   2771 INFO: Appending 'datas' from .spec
+   2773 INFO: checking PYZ
+   2776 INFO: checking PKG
+   2776 INFO: Building because /home/vagrant/xr-auditor/core/auditor.py changed
+   2777 INFO: Building PKG (CArchive) out00-PKG.pkg
+   6099 INFO: Building PKG (CArchive) out00-PKG.pkg completed successfully.
+   6110 INFO: Bootloader /usr/local/lib/python2.7/dist-packages/PyInstaller/bootloader/Linux-64bit/run
+   6111 INFO: checking EXE
+   6113 INFO: Rebuilding out00-EXE.toc because pkg is more recent
+   6114 INFO: Building EXE from out00-EXE.toc
+   6119 INFO: Appending archive to ELF section in EXE /home/vagrant/xr-auditor/dist/auditor
+   6172 INFO: Building EXE from out00-EXE.toc completed successfully.
+   vagrant@vagrant:~/xr-auditor$
      
-     ``` 
+   ``` 
    
-     At the end of the build, you will see the `auditor` binary appear inside a `dist/` directory at the root of the git
-     repo:
+   At the end of the build, you will see the `auditor` binary appear inside a `dist/` directory at the root of the git
+   repo:
    
    
-     ```
-     vagrant@vagrant:~/xr-auditor$ ls -lrt dist/
-     total 61672
-     -rwxr-xr-x 1 root root  7046744 May  4 10:43 audit_xr.bin
-     -rwxr-xr-x 1 root root  7046848 May  4 10:43 audit_admin.bin
-     -rwxr-xr-x 1 root root  7046616 May  4 10:43 audit_host.bin
-     -rwxr-xr-x 1 root root  7049952 May  4 10:43 collector.bin
-     -rwxr-xr-x 1 root root 34949880 May  4 10:49 auditor
-     vagrant@vagrant:~/xr-auditor$ 
-     ```
+   ```
+   vagrant@vagrant:~/xr-auditor$ ls -lrt dist/
+   total 61672
+   -rwxr-xr-x 1 root root  7046744 May  4 10:43 audit_xr.bin
+   -rwxr-xr-x 1 root root  7046848 May  4 10:43 audit_admin.bin
+   -rwxr-xr-x 1 root root  7046616 May  4 10:43 audit_host.bin
+   -rwxr-xr-x 1 root root  7049952 May  4 10:43 collector.bin
+   -rwxr-xr-x 1 root root 34949880 May  4 10:49 auditor
+   vagrant@vagrant:~/xr-auditor$ 
+   ```
    
    
  ## Transfer auditor app to the router
