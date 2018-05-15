@@ -585,10 +585,24 @@ The vagrant setup looks something like this:
    6119 INFO: Appending archive to ELF section in EXE /home/vagrant/xr-auditor/dist/auditor
    6172 INFO: Building EXE from out00-EXE.toc completed successfully.
    vagrant@vagrant:~/xr-auditor$    
-   ```   
+
    
 
-  
+        
+      
+ At the end of the build, you will see the `auditor` binary appear inside a `dist/` directory at the root of the git repo:
+      
+      
+ ```
+   vagrant@vagrant:~/xr-auditor$ ls -lrt dist/
+   total 61672
+   -rwxr-xr-x 1 root root  7046744 May  4 10:43 audit_xr.bi
+   -rwxr-xr-x 1 root root  7046848 May  4 10:43 audit_admin.bin
+   -rwxr-xr-x 1 root root  7046616 May  4 10:43 audit_host.bin
+   -rwxr-xr-x 1 root root  7049952 May  4 10:43 collector.bin
+   -rwxr-xr-x 1 root root 34949880 May  4 10:49 auditor
+   vagrant@vagrant:~/xr-auditor$ 
+ ```
   
    
  ## Transfer auditor app to the router
