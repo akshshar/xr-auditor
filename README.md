@@ -400,92 +400,92 @@ The vagrant setup looks something like this:
    This app internally will consist of the following file structure:
      
      
-   ```
-   auditor
-     |
-     |--- userfiles
-     |          |
-     |          |---  audit.cfg.yml
-     |          | 
-     |          |---  compliance.xsd
-     |          |
-     |          |---  id_rsa_server
-     |
-     |
-     |--- xr
-     |    |
-     |    |--- audit_xr.bin
-     |    |         |
-     |    |         |--- userfiles
-     |    |         |        |
-     |    |         |        |--- audit.cfg.yml
-     |    |         |        |
-     |    |         |        |--- compliance.xsd
-     |    |         |        |
-     |    |         |        |--- id_rsa_server
-     |    |         |
-     |    |         |
-     |    |         |--- audit_xr.py
-     |    | 
-     |    |--- audit_xr.cron
-     |    
-     |
-     |
-     |--- admin
-     |    |
-     |    |--- audit_admin.bin
-     |    |         |
-     |    |         |--- userfiles
-     |    |         |        |
-     |    |         |        |--- audit.cfg.yml
-     |    |         |        |
-     |    |         |        |--- compliance.xsd
-     |    |         |        |
-     |    |         |        |--- id_rsa_server
-     |    |         |
-     |    |         |
-     |    |         |--- audit_admin.py
-     |    | 
-     |    |--- audit_admin.cron
-     |    
-     |
-     |
-     |--- host
-     |    |
-     |    |--- audit_host.bin
-     |    |         |
-     |    |         |--- userfiles
-     |    |         |        |
-     |    |         |        |--- audit.cfg.yml
-     |    |         |        |
-     |    |         |        |--- compliance.xsd
-     |    |         |        |
-     |    |         |        |--- id_rsa_server
-     |    |         |
-     |    |         |
-     |    |         |--- audit_host.py
-     |    | 
-     |    |--- audit_host.cron
-     |    
-     |--- collector
-     |    |
-     |    |---collector.bin
-     |    |         |
-     |    |         |--- userfiles
-     |    |         |        |
-     |    |         |        |--- audit.cfg.yml
-     |    |         |        |
-     |    |         |        |--- compliance.xsd
-     |    |         |        |
-     |    |         |        |--- id_rsa_server
-     |    |         |
-     |    |         |
-     |    |         |--- collector.py
-     |    | 
-     |    |--- collector.cron
-     |    
+ ```
+ auditor
+   |
+   |--- userfiles
+   |          |
+   |          |---  audit.cfg.yml
+   |          | 
+   |          |---  compliance.xsd
+   |          |
+   |          |---  id_rsa_server
+   |
+   |
+   |--- xr
+   |    |
+   |    |--- audit_xr.bin
+   |    |         |
+   |    |         |--- userfiles
+   |    |         |        |
+   |    |         |        |--- audit.cfg.yml
+   |    |         |        |
+   |    |         |        |--- compliance.xsd
+   |    |         |        |
+   |    |         |        |--- id_rsa_server
+   |    |         |
+   |    |         |
+   |    |         |--- audit_xr.py
+   |    | 
+   |    |--- audit_xr.cron
+   |    
+   |
+   |
+   |--- admin
+   |    |
+   |    |--- audit_admin.bin
+   |    |         |
+   |    |         |--- userfiles
+   |    |         |        |
+   |    |         |        |--- audit.cfg.yml
+   |    |         |        |
+   |    |         |        |--- compliance.xsd
+   |    |         |        |
+   |    |         |        |--- id_rsa_server
+   |    |         |
+   |    |         |
+   |    |         |--- audit_admin.py
+   |    | 
+   |    |--- audit_admin.cron
+   |    
+   |
+   |
+   |--- host
+   |    |
+   |    |--- audit_host.bin
+   |    |         |
+   |    |         |--- userfiles
+   |    |         |        |
+   |    |         |        |--- audit.cfg.yml
+   |    |         |        |
+   |    |         |        |--- compliance.xsd
+   |    |         |        |
+   |    |         |        |--- id_rsa_server
+   |    |         |
+   |    |         |
+   |    |         |--- audit_host.py
+   |    | 
+   |    |--- audit_host.cron
+   |    
+   |--- collector
+   |    |
+   |    |---collector.bin
+   |    |         |
+   |    |         |--- userfiles
+   |    |         |        |
+   |    |         |        |--- audit.cfg.yml
+   |    |         |        |
+   |    |         |        |--- compliance.xsd
+   |    |         |        |
+   |    |         |        |--- id_rsa_server
+   |    |         |
+   |    |         |
+   |    |         |--- collector.py
+   |    | 
+   |    |--- collector.cron
+   |    
      
-     ```
+ ```
      
      
      
