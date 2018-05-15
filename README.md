@@ -552,39 +552,39 @@ The vagrant setup looks something like this:
      .....
      
      
-    67 INFO: running Analysis out00-Analysis.toc
-    81 INFO: Caching module hooks...  
-    83 INFO: Analyzing core/auditor.py
-    1855 INFO: Processing pre-safe import module hook   _xmlplus
-    1996 INFO: Processing pre-find module path hook   distutils
-    2168 INFO: Loading module hooks... 
-    2169 INFO: Loading module hook "hook-distutils.py"...
-    2170 INFO: Loading module hook "hook-xml.py"...
-    2171 INFO: Loading module hook "hook-lxml.etree.py"...
-    2178 INFO: Loading module hook "hook-httplib.py"...
-    2179 INFO: Loading module hook "hook-encodings.py"...
-    2500 INFO: Looking for ctypes DLLs
-    2557 INFO: Analyzing run-time hooks ...
-    2563 INFO: Looking for dynamic libraries
-    2702 INFO: Looking for eggs
-    2702 INFO: Python library not in binary dependencies. Doing additional searching...
-    2722 INFO: Using Python library /usr/lib/x86_64-linux-gnu/libpython2.7.so.1.0
-    2724 INFO: Warnings written to /home/vagrant/xr-auditor/build/auditor/warnauditor.txt
-    2736 INFO: Graph cross-reference written to /home/vagrant/xr-auditor/build/auditor/xref-auditor.html
-    2771 INFO: Appending 'datas' from .spec
-    2773 INFO: checking PYZ
-    2776 INFO: checking PKG
-    2776 INFO: Building because /home/vagrant/xr-auditor/core/auditor.py changed
-    2777 INFO: Building PKG (CArchive) out00-PKG.pkg
-    6099 INFO: Building PKG (CArchive) out00-PKG.pkg completed successfully.
-    6110 INFO: Bootloader /usr/local/lib/python2.7/dist-packages/PyInstaller/bootloader/Linux-64bit/run
-    6111 INFO: checking EXE
-    6113 INFO: Rebuilding out00-EXE.toc because pkg is more recent
-    6114 INFO: Building EXE from out00-EXE.toc
-    6119 INFO: Appending archive to ELF section in EXE /home/vagrant/xr-auditor/dist/auditor
-    6172 INFO: Building EXE from out00-EXE.toc completed successfully.
-    vagrant@vagrant:~/xr-auditor$
-    ``` 
+     67 INFO: running Analysis out00-Analysis.toc
+     81 INFO: Caching module hooks...  
+     83 INFO: Analyzing core/auditor.py
+     1855 INFO: Processing pre-safe import module hook   _xmlplus
+     1996 INFO: Processing pre-find module path hook   distutils
+     2168 INFO: Loading module hooks... 
+     2169 INFO: Loading module hook "hook-distutils.py"...
+     2170 INFO: Loading module hook "hook-xml.py"...
+     2171 INFO: Loading module hook "hook-lxml.etree.py"...
+     2178 INFO: Loading module hook "hook-httplib.py"...
+     2179 INFO: Loading module hook "hook-encodings.py"...
+     2500 INFO: Looking for ctypes DLLs
+     2557 INFO: Analyzing run-time hooks ...
+     2563 INFO: Looking for dynamic libraries
+     2702 INFO: Looking for eggs
+     2702 INFO: Python library not in binary dependencies. Doing additional searching...
+     2722 INFO: Using Python library /usr/lib/x86_64-linux-gnu/libpython2.7.so.1.0
+     2724 INFO: Warnings written to /home/vagrant/xr-auditor/build/auditor/warnauditor.txt
+     2736 INFO: Graph cross-reference written to /home/vagrant/xr-auditor/build/auditor/xref-auditor.html
+     2771 INFO: Appending 'datas' from .spec
+     2773 INFO: checking PYZ
+     2776 INFO: checking PKG
+     2776 INFO: Building because /home/vagrant/xr-auditor/core/auditor.py changed
+     2777 INFO: Building PKG (CArchive) out00-PKG.pkg
+     6099 INFO: Building PKG (CArchive) out00-PKG.pkg completed successfully.
+     6110 INFO: Bootloader /usr/local/lib/python2.7/dist-packages/PyInstaller/bootloader/Linux-64bit/run
+     6111 INFO: checking EXE
+     6113 INFO: Rebuilding out00-EXE.toc because pkg is more recent
+     6114 INFO: Building EXE from out00-EXE.toc
+     6119 INFO: Appending archive to ELF section in EXE /home/vagrant/xr-auditor/dist/auditor
+     6172 INFO: Building EXE from out00-EXE.toc completed successfully.
+     vagrant@vagrant:~/xr-auditor$
+     ``` 
    
    At the end of the build, you will see the `auditor` binary appear inside a `dist/` directory at the root of the git repo:
    
@@ -609,11 +609,11 @@ The vagrant setup looks something like this:
  > Note, 2223 is the port used by the vagrant IOS-XRv instance for its SSH session (See `vagrant port` output from earlier)
  
  ```
-vagrant@vagrant:~/xr-auditor$ scp -P 2223 dist/auditor vagrant@10.0.2.2:/misc/scratch/
-vagrant@10.0.2.2's password: 
-auditor  
+ vagrant@vagrant:~/xr-auditor$ scp -P 2223 dist/auditor vagrant@10.0.2.2:/misc/scratch/
+ vagrant@10.0.2.2's password: 
+ auditor  
 
-```
+ ```
 
 
 ## Running the auditor app
