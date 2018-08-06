@@ -3,7 +3,7 @@ set -x
 
 SCRIPT_PATH=$(dirname `which $0`)
 
-apt-get install -y git python-pip
+apt-get install -y git python-pip libxml2-dev libxslt1-dev zlib1g-dev
 
 cd $SCRIPT_PATH
 echo $https_proxy
